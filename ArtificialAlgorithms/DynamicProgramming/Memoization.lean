@@ -1,3 +1,8 @@
+/- 
+Memoization, with examples
+The second example is done by Claude Sonnet 3.5 on Claude.ai, with manual feedback of Lean error messages.
+Content of this file is the source for the blog post https://gasstationmanager.github.io/ai/2024/12/03/memoization1.html
+-/
 
 import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Fintype.Prod
