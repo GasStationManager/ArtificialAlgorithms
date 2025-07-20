@@ -39,7 +39,7 @@ def DPArray_push {ftarget: Nat → β} {n: Nat}
     intro i
     let i' := i.val
     have hi' : i' < newArr.size := i.isLt
-    have hsz : newArr.size = arr.val.size + 1 := Array.size_push arr.val c
+    have hsz : newArr.size = arr.val.size + 1 := by grind [Array.size_push]
 
     if h1 : i' < arr.val.size then
       -- For indices less than original size
@@ -143,7 +143,7 @@ def step (prices: List (Nat×Nat)) {n: Nat} (arr: DPArray (rodCutMap prices) n):
 
     ⟩
 
-  DPArray_push arr newCell (by simp)
+  DPArray_push arr newCell (by grind)
 
 def rodDP (prices:List (Nat×Nat)) (n:Nat):{x:Nat // rodCutMap prices n=x} :=
   match n with
@@ -152,7 +152,7 @@ def rodDP (prices:List (Nat×Nat)) (n:Nat):{x:Nat // rodCutMap prices n=x} :=
     -- Create initial array with just solution for 0
     let initCell : Cell (rodCutMap prices) := ⟨(0, 0), by rw [rodCutMap]⟩
     let initArr := Array.mk [initCell]
-    have hsize : initArr.size = 0 + 1 := by simp [Array.size]
+    have hsize : initArr.size = 0 + 1 := by grind
     have hind : ∀ i: Fin initArr.size, i = initArr[i].val.fst := by
       intro i
       have : i.val = 0 := by simp

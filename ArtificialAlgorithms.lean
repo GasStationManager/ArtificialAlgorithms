@@ -2,3 +2,4 @@
 -- Import modules here that should be built as part of the library.
 import ArtificialAlgorithms.Basic
 import ArtificialAlgorithms.DynamicProgramming.Memoization
+import ArtificialAlgorithms.DynamicProgramming.RodCutting
