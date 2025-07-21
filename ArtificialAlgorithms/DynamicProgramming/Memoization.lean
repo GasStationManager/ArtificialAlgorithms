@@ -41,6 +41,8 @@ for the n-th Fibonacci number.
 
 -/
 
+namespace Memoization
+
 def fibRec (n:Nat) :Nat := match n with
   |0=>1
   |1=>1
@@ -289,6 +291,9 @@ def cMemo (i j: Nat): {r: Nat // c (i,j) = r} :=
   let hm: WeakMHMap c := mkHashMap
   let r := cMemoHelper (i,j) hm
   r.1
+
+
+end Memoization
 
 /-
 In fact, this memoized binomial coefficient implementation and proof was written by Claude Sonnet 3.5.
