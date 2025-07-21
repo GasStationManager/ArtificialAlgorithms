@@ -5,10 +5,12 @@ This repo is a collection of verified algorithms in [Lean](https://lean-lang.org
 
 - *Be useful.* A secondary goal is to serve as a library of verified algorithms, that can be used to build more complex projects with provable guarantees.
 
-This is part of an effort to create safe and hallucination-free coding AIs.
+This is part of an effort to create [safe and hallucination-free coding AIs](https://gasstationmanager.github.io/ai/2024/11/04/a-proposal.html).
 
-Contributions welcome! We are interested in algorithms that are partially or wholly produced by AIs. Methods of production may include but are not limited to:
-- **prompting**, including with worked examples
-- **translation / autoformalization**, from natural languages, other programming languages and/or formal languages.
-- **tool calling**, including LeanTool, LeanExplore, lean-lsp-mcp
-- **other custom scaffolding**.
+**Contributions welcome!** We are interested in algorithms that are partially or wholly produced by AIs. Methods of production may include but are not limited to:
+- **prompting**, including with worked examples;
+- **translation / autoformalization**, from natural languages, other programming languages and/or formal languages;
+- **tool calling**, including [LeanTool](https://github.com/GasStationManager/LeanTool), [LeanExplore](https://www.leanexplore.com/), lean-lsp-mcp;
+- **custom models**, including fine-tuning via SFT or RL;
+- **other custom scaffolding**, such as multi-agent workflows.
+Feel free to send in PRs. Please document your process in the open comments of the source file.
