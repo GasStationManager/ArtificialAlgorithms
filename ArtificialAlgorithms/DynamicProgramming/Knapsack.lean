@@ -2,7 +2,8 @@
 Solution of the Knapsack problem, and proof of optimality
 Contributed by Huỳnh Trần Khanh
 Translated from Coq/Rocq proof at https://github.com/huynhtrankhanh/CoqCP/blob/main/theories/Knapsack.v
-using Claude Code
+using Claude Code, with LeanTool and LeanExplore.
+Prompt: "ultrathink to translate this code into Lean and save to knapsack.lean" and pasted the Rocq code. And "ultrathink continue" when it stopped.
 -/
 
 
