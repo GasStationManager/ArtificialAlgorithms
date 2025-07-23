@@ -4,6 +4,7 @@ import ArtificialAlgorithms.DynamicProgramming.Memoization
 import ArtificialAlgorithms.DynamicProgramming.RodCutting
 import ArtificialAlgorithms.DynamicProgramming.Knapsack
 import ArtificialAlgorithms.Sorting.InsertionSort
+import ArtificialAlgorithms.Sorting.SelectionSort
 import ArtificialAlgorithms.DivideConquer.BinarySearch
 import ArtificialAlgorithms.AI.AlphaBeta
 import ArtificialAlgorithms.AI.AlphaBetaClaude
