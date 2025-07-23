@@ -11,6 +11,8 @@ def binary_search_aux(arr : Array Nat) (target : Nat)
   |none => Not (∃ i, i>=lo ∧ i<=hi ∧  arr[i]? = some target)
 } :=sorry
 ```
+This continuation prompt was helpful:
+"please continue. try to maintain a syntactically valid proof sketch with sorrys, and iteratively refine. If a sorry could not be immediately solved, try to get the goal (via check_lean), and come up with an informal proof sketch for the goal. Then turn it into a formal Lean proof sketch."
 -/
 
 import Mathlib
