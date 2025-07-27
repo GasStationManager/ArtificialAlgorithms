@@ -6,5 +6,6 @@ import ArtificialAlgorithms.DynamicProgramming.Knapsack
 import ArtificialAlgorithms.Sorting.InsertionSort
 import ArtificialAlgorithms.Sorting.SelectionSort
 import ArtificialAlgorithms.DivideConquer.BinarySearch
+import ArtificialAlgorithms.DivideConquer.MaxSubarraySum
 import ArtificialAlgorithms.AI.AlphaBeta
 import ArtificialAlgorithms.AI.AlphaBetaClaude
