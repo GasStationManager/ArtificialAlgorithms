@@ -10,7 +10,8 @@ This is part of an effort to create [safe and hallucination-free coding AIs](htt
 **Contributions welcome!** We are interested in algorithms that are partially or wholly produced by AIs. Methods of production may include but are not limited to:
 - **prompting**, including with worked examples;
 - **translation / autoformalization**, from natural languages, other programming languages and/or formal languages;
-- **tool calling**, including [LeanTool](https://github.com/GasStationManager/LeanTool), [LeanExplore](https://www.leanexplore.com/), lean-lsp-mcp;
+- **tool calling**, including [LeanTool](https://github.com/GasStationManager/LeanTool), [LeanExplore](https://www.leanexplore.com/), [lean-lsp-mcp](https://github.com/oOo0oOo/lean-lsp-mcp);
 - **custom models**, including fine-tuning via SFT or RL;
 - **other custom scaffolding**, such as multi-agent workflows.
+
 Feel free to send in PRs. Please document your process in the open comments of the source file.
