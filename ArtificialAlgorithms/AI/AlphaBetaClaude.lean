@@ -1,6 +1,6 @@
 /-
 Alpha-Beta Pruning Algorithm for perfect-information zero-sum games
-Done by Claude Sonnet 4 and Opus 4
+Done by Claude Sonnet 4 and Opus 4, on Claude Code + LeanTool
 See blog post https://gasstationmanager.github.io/ai/2025/07/06/leantool-updates.html for more details
 Note that this was done with a slightly different signature for GameTree than AlphaBeta.lean
 -/

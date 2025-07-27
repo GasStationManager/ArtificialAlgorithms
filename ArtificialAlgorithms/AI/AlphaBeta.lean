@@ -1,6 +1,6 @@
 /-
 Alpha-Beta Pruning Algorithm for perfect-information zero-sum games
-Done by o3 and GPT 4.1, with LeanTool
+Done by o3 and GPT 4.1, with LeanTool on Cursor
 See blog post https://gasstationmanager.github.io/ai/2025/06/08/proving-alphabeta.html for more details.
 -/
 
