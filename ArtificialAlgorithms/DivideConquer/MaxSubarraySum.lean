@@ -1,7 +1,7 @@
 /-
 Maximum Subarray Sum - Divide and Conquer algorithm
-Partially done by Sonnet 4 and Opus 4, with LeanTool and LeanExplore. Human provided guidance, code review and feedback.
-- started with Claude Desktop + LeanTool + LeanExplore. -> produced specification, implementation and overall structure of proofs
+Partially done Sonnet 4, Opus 4 and Grok 4, with LeanTool and LeanExplore. Human provided guidance, code review and feedback.
+- started with an initial implementation by Grok 4; continued with Claude Desktop + LeanTool + LeanExplore. -> produced specification, implementation and overall structure of proofs
 - as the file becomes large, moved to Cursor + LeanTool + LeanExplore. One lemma (foldl_split_at_boundary) was proved separately by Opus 4 in Claude Desktop. -> produced full proof; file contains some errors 
 - finished with Claude Code (+ LeanTool) to fix the remaining errors.
 Version note: the last stage was done in Lean v4.21.0; to get this to compile in 4.20.1, needed to comment out line 93. Will need to fix this back once we upgrade to 4.21

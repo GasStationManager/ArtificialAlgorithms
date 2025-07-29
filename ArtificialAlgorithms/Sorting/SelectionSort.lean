@@ -1,7 +1,7 @@
 /-
 Selection Sort
 By Sonnet 4, on Claude Desktop with LeanTool and LeanExplore
-Prompted with the following implementation + proof sketch, which was adapted from an earlier implementation by Sonnet 4
+Prompted with the following implementation + proof sketch, which was adapted from an earlier implementation by Grok 4 + Sonnet 4
 ```
 import Mathlib
 -- Helper function to find minimum element in a list
