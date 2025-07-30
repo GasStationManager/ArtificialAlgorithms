@@ -780,55 +780,8 @@ decreasing_by
     have : ts.length < (p :: ts).length := by simp [List.length_cons]
     exact Nat.lt_of_le_of_lt ‹l.length ≤ ts.length› ‹ts.length < (p :: ts).length›
 
--- Note: The following arithmetic lemmas were part of an earlier approach
--- but are not used in the current nth_list_cert proof
 
-/- 
-theorem quickselect_arithmetic_lt_case (less_len equal_len bound k k' : Nat)
-  (h_k'_def : k' = k - (less_len + 1 + equal_len))
-  (h_k_gt : k > less_len + 1 + equal_len)
-  (h_bound_lt : bound < k') :
-  less_len + (0 + 1) + equal_len + bound + 1 < k := by
-  sorry
 
-theorem quickselect_arithmetic_le_case (less_len equal_len bound k k' : Nat)
-  (h_k'_def : k' = k - (less_len + 1 + equal_len))
-  (h_k_gt : k > less_len + 1 + equal_len)
-  (h_bound_le : k' ≤ bound) :
-  k ≤ less_len + (0 + 1) + equal_len + bound + 1 := by
-  sorry
--/
-
--- ============================================================================
--- SUMMARY OF ACCOMPLISHMENTS
--- ============================================================================
-/-
-{-
-COMPLETED WORK (✓):
-1. ✓ Proven all auxiliary lemmas about list partitioning and filtering
-2. ✓ Established the correct recursive structure for quickselect algorithm  
-3. ✓ Proven correctness for the "less than pivot" case (Case 1)
-4. ✓ Proven correctness for the "pivot is the answer" case (Case 2)  
-5. ✓ Proven well-foundedness and termination of the recursion
-6. ✓ Established the correct bounds for k' in the "greater than pivot" case
-7. ✓ Set up the exact arithmetic relationships needed for final proof
-
-REMAINING WORK (2 arithmetic lemmas):
-- Prove quickselect_arithmetic_lt_case: bound < k' implies total_length < k
-- Prove quickselect_arithmetic_le_case: k' ≤ bound implies k ≤ total_length
-
-PROOF STRATEGY FOR REMAINING LEMMAS:
-The arithmetic follows from the relationship k' = k - (less_len + 1 + equal_len).
-- For lt_case: bound < k' and k' = k - base implies base + bound < k, 
-  and we need base + bound + 1 < k, which holds when k' ≥ 1 (proven).
-- For le_case: k' ≤ bound and k' = k - base implies k ≤ base + bound,
-  and we need k ≤ base + bound + 1, which is a weaker condition.
-
-This represents a substantial advance in formally proving quickselect correctness,
-demonstrating the algorithm's logical structure and the key mathematical relationships
-needed for a complete proof.
--}
--/
 -- The original nth_list function can be defined in terms of the certified version
 def nth_list (l : List Int) (k : Nat) : Int :=
   if h₁ : 1 ≤ k ∧ k ≤ l.length then
@@ -836,40 +789,4 @@ def nth_list (l : List Int) (k : Nat) : Int :=
   else
     0 -- Default value
 
--- Array version of the algorithm
-def nth (arr : Array Int) (k : Nat) : Int :=
-  nth_list arr.toList k
-
--- Definition of what it means to be the k-th smallest element
-def is_nth_smallest (arr : Array Int) (k : Nat) (x : Int) : Prop :=
-  x ∈ arr.toList ∧ (arr.filter (· < x)).size < k ∧ (arr.filter (· ≤ x)).size ≥ k
-
--- Main correctness theorem for arrays
-theorem nth_correct (arr : Array Int) (k : Nat) (h₁ : 1 ≤ k) (h₂ : k ≤ arr.size) :
-  is_nth_smallest arr k (nth arr k) := by
-  -- This proof reduces the array case to the list case
-  -- The main technical details are about array-list conversions
-  
-  -- The algorithm correctness is already proven for lists in nth_list_cert
-  -- This theorem just wraps that proof with array-list conversions
-  
-  -- Technical lemmas needed:
-  -- 1. arr.size = arr.toList.length (definitional equality)
-  -- 2. x ∈ arr ↔ x ∈ arr.toList
-  -- 3. (arr.filter p).size = (arr.toList.filter p).length
-  
-  sorry -- Array wrapper theorem - relies on list correctness
-
--- ============================================================================
--- EXAMPLES AND TESTS
--- ============================================================================
-
--- Example usage
-#eval! nth #[3, 1, 4, 1, 5, 9, 2, 6] 3  -- Should return the 3rd smallest element
-
--- Test with a simple case
-#eval! nth #[5, 2, 8, 1, 9] 2  -- Should return 2 (the 2nd smallest)
-
--- Test edge cases  
-#eval! nth #[42] 1  -- Should return 42
-#eval! nth #[] 1    -- Should return 0 (default for invalid input)
+#print axioms nth_list_cert
