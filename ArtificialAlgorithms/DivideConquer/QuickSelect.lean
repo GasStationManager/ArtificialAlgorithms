@@ -175,6 +175,7 @@ theorem filter_ts_eq_filter_less_le (ts : List Int) (p : Int) (x : Int) (h : x <
 
 -- When a list is partitioned into three disjoint parts by a pivot,
 -- filtering the original list can be related to filtering each part
+/- Old statement:
 lemma filter_partition_length_eq (ts : List Int) (p : Int) (pred : Int → Bool) :
   let less := ts.filter (· < p)
   let equal := ts.filter (· = p)
@@ -183,14 +184,105 @@ lemma filter_partition_length_eq (ts : List Int) (p : Int) (pred : Int → Bool)
   (∀ x ∈ less, pred x = true) →
   (∀ x ∈ equal, pred x = true) →
   -- Then the filtered length equals the sum
-  (ts.filter pred).length = less.length + equal.length + (greater.filter pred).length := by
-  -- This is a standard property of partitions:
-  -- When a list is partitioned into three disjoint parts (less, equal, greater),
-  -- and we know all elements in two parts satisfy a predicate,
-  -- then filtering the original list by that predicate gives us
-  -- all of those two parts plus the filtered third part.
-  -- The formal proof would use induction on the list structure.
-  sorry -- Partition filter counting property
+  (ts.filter pred).length = less.length + equal.length + (greater.filter pred).length 
+-/
+
+-- New statement with proof:
+lemma filter_partition_length_eq (ts : List Int) (p : Int) (pred : Int → Bool)
+  (h_less : ∀ x ∈ ts.filter (· < p), pred x = true)
+  (h_equal : ∀ x ∈ ts.filter (· = p), pred x = true) :
+  (ts.filter pred).length =
+    (ts.filter (· < p)).length + (ts.filter (· = p)).length + ((ts.filter (· > p)).filter pred).length := by
+
+  -- Use the simplification suggested by sorry hammer
+  simp_all only [List.mem_filter, decide_eq_true_eq, and_imp, gt_iff_lt, List.filter_filter]
+
+  -- Complete the proof using direct induction
+  -- Key insight: each element contributes to exactly one partition
+
+  induction ts with
+  | nil => simp
+  | cons head tail ih =>
+    simp only [List.filter_cons, List.length_cons]
+
+    -- Apply the inductive hypothesis
+    have ih_applied : (List.filter pred tail).length =
+      (List.filter (fun x => decide (x < p)) tail).length +
+      (List.filter (fun x => decide (x = p)) tail).length +
+      (List.filter (fun a => pred a && decide (p < a)) tail).length := by
+      apply ih
+      · intro x hx; exact h_less x (by simpa using List.mem_cons_of_mem head hx)
+      · intro x hx; exact h_equal x (by simpa using List.mem_cons_of_mem head hx)
+
+    -- Case analysis on head
+    by_cases h_pred : pred head
+    · -- head satisfies pred
+      simp only [h_pred, if_true, List.length_cons]
+
+      by_cases h_lt : head < p
+      · -- head < p: contributes to the "less" partition
+        have h_neq : ¬(head = p) := by omega
+        have h_ngt : ¬(p < head) := by omega
+        have h_dec_lt : decide (head < p) = true := by simp [h_lt]
+        have h_dec_eq : decide (head = p) = false := by simp [h_neq]
+        have h_dec_gt : decide (p < head) = false := by simp [h_ngt]
+        simp only [h_dec_lt, h_dec_eq, h_dec_gt, h_pred, Bool.true_and, Bool.false_and, if_true, if_false]
+        simp only [Bool.false_eq_true, if_false, List.length_cons]
+        rw [ih_applied]
+        ring
+      · by_cases h_eq : head = p
+        · -- head = p: contributes to the "equal" partition
+          have h_nlt : ¬(head < p) := by omega
+          have h_ngt : ¬(p < head) := by omega
+          have h_dec_lt : decide (head < p) = false := by simp [h_nlt]
+          have h_dec_eq : decide (head = p) = true := by simp [h_eq]
+          have h_dec_gt : decide (p < head) = false := by simp [h_ngt]
+          simp only [h_dec_lt, h_dec_eq, h_dec_gt, h_pred, Bool.true_and, Bool.false_and, if_false, if_true]
+          simp only [Bool.false_eq_true, if_false, List.length_cons]
+          rw [ih_applied]
+          ring
+        · -- head > p: contributes to the "greater" partition
+          have h_gt : p < head := by omega
+          have h_nlt : ¬(head < p) := by omega
+          have h_neq : ¬(head = p) := by omega
+          have h_dec_lt : decide (head < p) = false := by simp [h_nlt]
+          have h_dec_eq : decide (head = p) = false := by simp [h_neq]
+          have h_dec_gt : decide (p < head) = true := by simp [h_gt]
+          simp only [h_dec_lt, h_dec_eq, h_dec_gt, h_pred, Bool.true_and, Bool.false_and, if_false, if_true]
+          simp only [Bool.false_eq_true, if_false, List.length_cons]
+          rw [ih_applied]
+          ring
+
+    · -- head doesn't satisfy pred
+      simp only [h_pred, if_false]
+      simp only [h_pred, Bool.false_and, if_false]
+      by_cases h_head_lt : head < p
+      · by_cases h_head_eq : head = p
+        · omega -- contradiction: head < p and head = p
+        · simp only [h_head_lt, h_head_eq, decide_true, decide_false, if_true, if_false]
+          simp only [Bool.false_eq_true, if_false, List.length_cons]
+          -- This case is impossible: head < p but pred head = false contradicts h_less
+          exfalso
+          have h_mem : head ∈ head :: tail := by simp
+          have h_pred_true := h_less head h_mem h_head_lt
+          exact h_pred h_pred_true
+      · by_cases h_head_eq : head = p
+        · have h_not_pp : ¬(p < p) := by omega
+          simp only [h_head_lt, h_head_eq, h_not_pp, decide_false, decide_true, if_false, if_true, List.length_cons]
+          simp only [Bool.false_eq_true, if_false]
+          -- This case is impossible: head = p but pred head = false contradicts h_equal
+          exfalso
+          have h_mem : head ∈ head :: tail := by simp
+          have h_pred_true := h_equal head h_mem h_head_eq
+          -- h_pred_true : pred p = true, but h_pred : ¬(pred head = true) and head = p
+          rw [h_head_eq] at h_pred
+          -- Now h_pred : ¬(pred p = true) and h_pred_true : pred p = true
+          exact h_pred h_pred_true
+        · simp only [h_head_lt, h_head_eq, decide_false, if_false]
+          simp only [Bool.false_eq_true, if_false]
+          exact ih_applied
+
+
 
 -- For disjoint subsets, their sizes sum to at most the size of their union
 lemma disjoint_subsets_length_sum (ts : List Int) (pred : Int → Bool) 
