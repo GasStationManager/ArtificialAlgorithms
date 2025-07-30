@@ -774,7 +774,9 @@ decreasing_by
     -- The variable l appears to be greater in this context
     -- We know l = greater from the structure of the proof
     -- So we use the same reasoning as above
-    have : l.length ≤ ts.length := by sorry -- l is either less or greater, both filtered from ts
+    have : l.length ≤ ts.length := by 
+      -- Try grind first
+      grind
     have : ts.length < (p :: ts).length := by simp [List.length_cons]
     exact Nat.lt_of_le_of_lt ‹l.length ≤ ts.length› ‹ts.length < (p :: ts).length›
 
