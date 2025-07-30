@@ -7,5 +7,6 @@ import ArtificialAlgorithms.Sorting.InsertionSort
 import ArtificialAlgorithms.Sorting.SelectionSort
 import ArtificialAlgorithms.DivideConquer.BinarySearch
 import ArtificialAlgorithms.DivideConquer.MaxSubarraySum
+import ArtificialAlgorithms.DivideConquer.QuickSelect
 import ArtificialAlgorithms.AI.AlphaBeta
 import ArtificialAlgorithms.AI.AlphaBetaClaude
