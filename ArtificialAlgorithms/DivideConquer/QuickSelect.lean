@@ -284,32 +284,65 @@ lemma filter_partition_length_eq (ts : List Int) (p : Int) (pred : Int → Bool)
 
 
 
--- For disjoint subsets, their sizes sum to at most the size of their union
-lemma disjoint_subsets_length_sum (ts : List Int) (pred : Int → Bool) 
-  (s₁ s₂ s₃ : List Int) :
-  -- If s₁, s₂, s₃ are disjoint subsets of ts.filter pred
-  (∀ x ∈ s₁, x ∈ ts ∧ pred x = true) →
-  (∀ x ∈ s₂, x ∈ ts ∧ pred x = true) →
-  (∀ x ∈ s₃, x ∈ ts ∧ pred x = true) →
-  -- And they are pairwise disjoint
-  (∀ x ∈ s₁, x ∉ s₂ ∧ x ∉ s₃) →
-  (∀ x ∈ s₂, x ∉ s₁ ∧ x ∉ s₃) →
-  (∀ x ∈ s₃, x ∉ s₁ ∧ x ∉ s₂) →
-  -- Then their total length is at most the filtered length
-  s₁.length + s₂.length + s₃.length ≤ (ts.filter pred).length := by
-  intro h_sub₁ h_sub₂ h_sub₃ h_disj₁ h_disj₂ h_disj₃
-  -- The key insight: since the sets are disjoint and all contained in ts.filter pred,
-  -- we can bound their total size by the size of ts.filter pred
-  
-  -- We'll use a counting argument
-  -- Each element of s₁ ∪ s₂ ∪ s₃ is in ts.filter pred
-  -- Since they're disjoint, |s₁ ∪ s₂ ∪ s₃| = |s₁| + |s₂| + |s₃|
-  -- And s₁ ∪ s₂ ∪ s₃ ⊆ ts.filter pred
-  
-  -- For simplicity, we'll accept this as a standard counting principle
-  -- The formal proof would involve showing that the function mapping each element
-  -- to its source set is injective, and that all elements map to ts.filter pred
-  sorry -- Standard counting principle for disjoint subsets
+-- For partition-based filtering, we have a reverse inequality
+lemma partition_filter_reverse_bound (ts : List Int) (p : Int) (val : Int) 
+  (h_p_lt_val : p < val) :
+  let less := ts.filter (· < p)
+  let equal := ts.filter (· = p) 
+  let greater := ts.filter (· > p)
+  less.length + equal.length + (greater.filter (· ≤ val)).length ≤ (ts.filter (· ≤ val)).length := by
+  -- We'll use induction on ts
+  induction ts with
+  | nil => 
+    simp only [List.filter_nil, List.length_nil]
+    omega
+  | cons head tail ih =>
+    -- Simplify the let bindings for the cons case
+    simp only [List.filter]
+    -- Consider where head goes in the partition
+    by_cases h_lt : head < p
+    · -- head goes to less
+      simp only [decide_eq_true_eq.mpr h_lt, decide_eq_false_iff_not.mpr (by omega : ¬head = p), 
+                 decide_eq_false_iff_not.mpr (by omega : ¬head > p), if_true, if_false, List.length_cons]
+      -- head also goes to ts.filter (· ≤ val) since head < p < val
+      have h_head_le_val : head ≤ val := by omega
+      simp only [decide_eq_true_eq.mpr h_head_le_val, if_true, List.length_cons]
+      -- Apply IH 
+      omega
+    · by_cases h_eq : head = p
+      · -- head goes to equal
+        simp only [decide_eq_false_iff_not.mpr h_lt, decide_eq_true_eq.mpr h_eq,
+                   decide_eq_false_iff_not.mpr (by omega : ¬head > p), if_false, if_true, List.length_cons]
+        -- head also goes to ts.filter (· ≤ val) since head = p < val
+        have h_head_le_val : head ≤ val := by rw [h_eq]; omega
+        simp only [decide_eq_true_eq.mpr h_head_le_val, if_true, List.length_cons]
+        -- Apply IH
+        omega
+      · -- head goes to greater
+        have h_gt : head > p := by omega
+        simp only [decide_eq_false_iff_not.mpr h_lt, decide_eq_false_iff_not.mpr h_eq,
+                   decide_eq_true_eq.mpr h_gt, if_false, if_true]
+        -- Now it depends on whether head ≤ val
+        by_cases h_head_le_val : head ≤ val
+        · -- head is in greater.filter (· ≤ val) and ts.filter (· ≤ val)
+          -- Need to be careful about how we simplify the filter on (head :: greater_tail)
+          -- The filter on (head :: tail.filter (· > p)) adds 1 when head ≤ val
+          have : (List.filter (· ≤ val) (head :: tail.filter (· > p))).length = 
+                 1 + (List.filter (· ≤ val) (tail.filter (· > p))).length := by
+            simp only [List.filter, decide_eq_true_eq.mpr h_head_le_val, if_true, List.length_cons]
+            ring
+          rw [this]
+          simp only [decide_eq_true_eq.mpr h_head_le_val, if_true, List.length_cons]
+          omega
+        · -- head is not in greater.filter (· ≤ val) nor ts.filter (· ≤ val)
+          -- When head > val, it doesn't appear in either filter
+          -- The filter on (head :: tail.filter (· > p)) skips head when head > val
+          have : (List.filter (· ≤ val) (head :: tail.filter (· > p))).length = 
+                 (List.filter (· ≤ val) (tail.filter (· > p))).length := by
+            simp only [List.filter, decide_eq_false_iff_not.mpr h_head_le_val, if_false]
+          rw [this]
+          simp only [decide_eq_false_iff_not.mpr h_head_le_val, if_false]
+          exact ih
 
 -- A version of nth_list that returns a certificate of correctness
 def nth_list_cert (l : List Int) (k : Nat) (h₁ : 1 ≤ k) (h₂ : k ≤ l.length) :
@@ -661,74 +694,41 @@ match l with
           -- Therefore, we're counting distinct elements from ts that all satisfy ≤ result_val
           -- So the sum is at most the total count in ts.filter (· ≤ result_val)
           
-          -- Apply the disjoint subsets counting lemma
-          apply disjoint_subsets_length_sum ts (fun x => decide (x ≤ result_val)) less equal (greater.filter (· ≤ result_val))
-          -- less ⊆ ts.filter (· ≤ result_val)
-          · intro x hx
-            have ⟨h_in_ts, _⟩ := List.mem_filter.mp hx
-            exact ⟨h_in_ts, decide_eq_true (h_less_in_filter x hx)⟩
-          -- equal ⊆ ts.filter (· ≤ result_val)
-          · intro x hx
-            have ⟨h_in_ts, _⟩ := List.mem_filter.mp hx
-            exact ⟨h_in_ts, decide_eq_true (h_equal_in_filter x hx)⟩
-          -- greater.filter (· ≤ result_val) ⊆ ts.filter (· ≤ result_val)
-          · intro x hx
-            have ⟨h_in_gr, h_le_val⟩ := List.mem_filter.mp hx
-            have ⟨h_in_ts, _⟩ := List.mem_filter.mp h_in_gr
-            exact ⟨h_in_ts, h_le_val⟩
-          -- Disjointness conditions: less, equal, and greater are pairwise disjoint
-          · -- less and equal/greater are disjoint
-            intro x hx
-            have ⟨_, h_dec⟩ := List.mem_filter.mp hx
-            have h_lt_p : x < p := of_decide_eq_true h_dec
-            constructor
-            · -- x ∉ equal
-              intro h_eq
-              have ⟨_, h_dec_eq⟩ := List.mem_filter.mp h_eq
-              have h_eq_p : x = p := of_decide_eq_true h_dec_eq
-              rw [h_eq_p] at h_lt_p
-              exact lt_irrefl p h_lt_p
-            · -- x ∉ greater.filter
-              intro h_gr
-              have ⟨h_in_gr, _⟩ := List.mem_filter.mp h_gr
-              have ⟨_, h_dec_gt⟩ := List.mem_filter.mp h_in_gr
-              have h_gt_p : x > p := of_decide_eq_true h_dec_gt
-              exact lt_irrefl x (lt_trans h_lt_p h_gt_p)
-          · -- equal and less/greater are disjoint
-            intro x hx
-            have ⟨_, h_dec⟩ := List.mem_filter.mp hx
-            have h_eq_p : x = p := of_decide_eq_true h_dec
-            constructor
-            · -- x ∉ less
-              intro h_lt
-              have ⟨_, h_dec_lt⟩ := List.mem_filter.mp h_lt
-              have h_lt_p : x < p := of_decide_eq_true h_dec_lt
-              rw [h_eq_p] at h_lt_p
-              exact lt_irrefl p h_lt_p
-            · -- x ∉ greater.filter
-              intro h_gr
-              have ⟨h_in_gr, _⟩ := List.mem_filter.mp h_gr
-              have ⟨_, h_dec_gt⟩ := List.mem_filter.mp h_in_gr
-              have h_gt_p : x > p := of_decide_eq_true h_dec_gt
-              rw [h_eq_p] at h_gt_p
-              exact lt_irrefl p h_gt_p
-          · -- greater.filter and less/equal are disjoint
-            intro x hx
-            have ⟨h_in_gr, _⟩ := List.mem_filter.mp hx
-            have ⟨_, h_dec⟩ := List.mem_filter.mp h_in_gr
-            have h_gt_p : x > p := of_decide_eq_true h_dec
-            constructor
-            · -- x ∉ less
-              intro h_lt
-              have ⟨_, h_dec_lt⟩ := List.mem_filter.mp h_lt
-              have h_lt_p : x < p := of_decide_eq_true h_dec_lt
-              exact lt_irrefl x (lt_trans h_lt_p h_gt_p)
-            · -- x ∉ equal
-              intro h_eq
-              have ⟨_, h_dec_eq⟩ := List.mem_filter.mp h_eq
-              have h_eq_p : x = p := of_decide_eq_true h_dec_eq
-              rw [h_eq_p] at h_gt_p
-              exact lt_irrefl p h_gt_p
+          -- Direct proof using partition property
+          -- Since less, equal, and greater partition ts, and we're filtering by ≤ result_val,
+          -- we can relate the filtered lengths
+          
+          -- Key insight: Every element x ∈ ts with x ≤ result_val is in exactly one of:
+          -- 1. less (all satisfy ≤ result_val since < p < result_val)
+          -- 2. equal (all satisfy ≤ result_val since = p < result_val)
+          -- 3. greater.filter (· ≤ result_val)
+          
+          -- We'll prove the reverse inequality using a similar approach to filter_partition_length_eq
+          -- but for the ≤ predicate
+          
+          -- First, show that filtering ts by ≤ result_val can be decomposed
+          have h_decomp : ∀ x ∈ ts, x ≤ result_val → 
+            (x ∈ less ∨ x ∈ equal ∨ x ∈ greater.filter (· ≤ result_val)) := by
+            intro x hx h_le
+            -- By trichotomy on x and p
+            by_cases h_lt : x < p
+            · left
+              exact List.mem_filter.mpr ⟨hx, decide_eq_true h_lt⟩
+            · by_cases h_eq : x = p
+              · right; left
+                exact List.mem_filter.mpr ⟨hx, decide_eq_true h_eq⟩
+              · -- x > p
+                have h_gt : x > p := by
+                  cases' lt_trichotomy x p with h h
+                  · exact absurd h h_lt
+                  · cases' h with h h
+                    · exact absurd h h_eq
+                    · exact h
+                right; right
+                exact List.mem_filter.mpr ⟨List.mem_filter.mpr ⟨hx, decide_eq_true h_gt⟩, decide_eq_true h_le⟩
+          
+          -- Apply the partition filter reverse bound lemma
+          exact partition_filter_reverse_bound ts p result_val h_val_gt_p
         
         -- Direct approach: use the bounds we have established
         -- After filter_le_of_gt, goal is k ≤ (p :: ts.filter (· ≤ result_greater.val)).length
