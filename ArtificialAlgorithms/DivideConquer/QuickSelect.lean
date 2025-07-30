@@ -1,3 +1,13 @@
+/-
+Quickselect algorithm for finding n-th smallest element in a list
+Partially done by Sonnet 4, Opus 4 and Gemmini 2.5 Pro, based on initial implementation by Grok 4. Human provided guidance and feedback.
+- Initial code implementation by Grok 4 + LeanTool, on http://ProvablyCorrectVibeCoding.com
+- Further proofs by Sonnet 4 on Claude Desktop + LeanTool + LeanExplore
+- Progress by Gemini 2.5 Pro on Cline with MCP servers LeanTool and LeanExplore -> During which we switched proof strategy to subtyping the return type and interleaving proof and code
+- Further progress on proofs by Sonnet 4 on Claude Desktop + LeanTool + LeanExplore
+- As the file is getting big, moved to Sonnet 4/Opus 4 on Claude Code + LeanTool + LeanExplore, where the proof was finished. Two lemmas were factored out and sent to Sonnet 4 + Cursor + LeanTool; one was proved and one was disproved.
+-/
+
 import Mathlib
 
 -- ============================================================================
