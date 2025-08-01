@@ -99,22 +99,24 @@ def convergesTo {S A : Type} (mdp : MDP S A) (seq : Nat → ValueFunction S) (li
 theorem valueIterationConverges {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ ∧ γ < 1) :
     ∃ v_star, isOptimalValueFunction mdp γ v_star ∧ 
     convergesTo mdp (valueIteration mdp γ) v_star := by
-  -- The proof uses the Banach fixed point theorem:
-  -- 1. The Bellman operator T is a γ-contraction (by bellmanContraction)
-  -- 2. Since γ < 1, T has a unique fixed point v_star
-  -- 3. The fixed point v_star satisfies v_star = T(v_star), so it's optimal
-  -- 4. Value iteration v_n = T^n(v_0) converges to v_star
+  -- The proof strategy using Banach fixed point theorem:
   
-  -- Step 1: Construct the optimal value function as the limit
-  -- For now, we'll use a constructive approach via the contraction mapping
+  -- Step 1: The Bellman operator T is a γ-contraction 
+  -- This follows from the contraction theorem proven later in the file
   
-  -- We need to show there exists a v_star that is both optimal and the limit
-  -- This follows from the Banach fixed point theorem applied to the Bellman operator
+  -- Step 2: Since γ < 1, T has a unique fixed point v_star in the complete metric space
+  -- of bounded functions with supremum norm (this requires Banach's theorem)
   
-  -- The key insight: since T is a contraction, the sequence T^n(0) converges
-  -- to the unique fixed point, which must be the optimal value function
+  -- Step 3: Construct v_star as the limit of T^n(0) 
+  -- Since T is a contraction, this sequence converges to the unique fixed point
   
-  sorry -- This requires the full Banach fixed point theorem development
+  -- Step 4: The fixed point v_star satisfies v_star = T(v_star), so it's optimal
+  
+  -- Step 5: Value iteration v_n = T^n(0) converges to v_star by the contraction property
+  
+  -- For now, we state this as the core result that follows from Banach's theorem
+  -- The technical details require the full development of metric space theory
+  sorry -- This requires the complete Banach fixed point theorem framework
 
 -- Helper lemma for bounding listMax (moved here to fix scoping)
 lemma listMax_le_of_forall_le {l : List ℚ} {b : ℚ} (hb : 0 ≤ b) (h : ∀ x ∈ l, x ≤ b) : listMax l ≤ b := by
@@ -174,9 +176,21 @@ lemma weighted_sum_abs_le {S : Type} (states : List S) (P : S → ℚ) (f : S �
     (hP : ∀ s ∈ states, 0 ≤ P s) :
     abs ((states.map (fun s => P s * f s)).sum) ≤ 
     (states.map (fun s => P s * abs (f s))).sum := by
-  -- Standard result: triangle inequality for weighted sums with non-negative weights
-  -- Proof: |∑ P_i * f_i| ≤ ∑ |P_i * f_i| = ∑ P_i * |f_i| (since P_i ≥ 0)
-  sorry -- Standard application of triangle inequality
+  induction states with
+  | nil => 
+    simp [List.map, List.sum_nil, abs_zero]
+  | cons h t ih =>
+    simp only [List.map, List.sum_cons]
+    -- Apply triangle inequality: |a + b| ≤ |a| + |b|
+    apply le_trans (abs_add _ _)
+    apply add_le_add
+    · -- First term: |P h * f h| ≤ P h * |f h|
+      rw [abs_mul]
+      rw [abs_of_nonneg (hP h (by simp))]
+    · -- Second term: use induction hypothesis
+      apply ih
+      intro s hs
+      exact hP s (by simp [hs])
 
 -- Triangle inequality for list sums (moved here for ordering)
 lemma list_triangle_inequality (l : List ℚ) :
@@ -199,44 +213,45 @@ lemma qvalue_bound {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ) (v�
   simp only [add_sub_add_left_eq_sub]
   -- Step 2: Factor out γ and use properties of absolute value
   rw [← mul_sub, abs_mul, abs_of_nonneg hγ]
-  
-  -- Step 3: Reduce to proving the inequality without the γ factor
+  -- Step 3: Apply weighted sum bound
   apply mul_le_mul_of_nonneg_left _ hγ
   
-  -- Goal: |sum(P * v₁) - sum(P * v₂)| ≤ supNorm(v₁ - v₂)
-  -- This is the key mathematical insight of the contraction property
+  -- Step 4: Rewrite difference of sums as sum of differences
+  have h_eq : (mdp.states.map (fun s' => mdp.P s a s' * v₁ s')).sum - 
+              (mdp.states.map (fun s' => mdp.P s a s' * v₂ s')).sum = 
+              (mdp.states.map (fun s' => mdp.P s a s' * (v₁ s' - v₂ s'))).sum := by
+    rw [← list_sum_sub_eq_general]
+    congr 1; ext s'; ring
   
-  -- We'll use the fact that the weighted sum difference is bounded by
-  -- the supremum norm times the sum of weights (which equals 1)
+  rw [h_eq]
   
-  -- For now, use the mathematical fact that this follows from:
-  -- 1. Triangle inequality: |sum(P*(v₁-v₂))| ≤ sum(P*|v₁-v₂|)
-  -- 2. Bound each term: P*|v₁-v₂| ≤ P*supNorm
-  -- 3. Sum of probabilities: sum(P) = 1
-  -- Therefore: sum(P*|v₁-v₂|) ≤ sum(P)*supNorm = supNorm
+  -- Step 5: Apply weighted sum absolute value inequality
+  apply le_trans (weighted_sum_abs_le mdp.states (mdp.P s a) (vDiff v₁ v₂) (fun s' _ => mdp.P_nonneg s a s'))
   
-  sorry -- Technical proof using probability properties and triangle inequality
+  -- Step 6: The mathematical core result - follows from probability theory
+  -- Each |vDiff v₁ v₂ s'| ≤ supNorm, and sum of probabilities = 1
+  -- Therefore: sum(P s' * |vDiff v₁ v₂ s'|) ≤ sum(P s' * supNorm) = supNorm * sum(P s') = supNorm
+  sorry -- Standard result from probability theory and supremum norm properties
 
 -- Helper lemma: |max f - max g| ≤ max |f - g| (standard property of maximum functions)
-lemma listMax_abs_diff_le {l : List α} (f g : α → ℚ) :
+lemma listMax_abs_diff_le {α : Type} {l : List α} (f g : α → ℚ) :
     abs (listMax (l.map f) - listMax (l.map g)) ≤ listMax (l.map (fun a => abs (f a - g a))) := by
-  -- Handle the two cases: empty and non-empty list
-  by_cases h : l = []
-  · -- Empty case: all listMax calls return 0
-    simp [h, listMax, abs_zero]
-  · -- Non-empty case: use properties of maximum
-    -- The proof relies on the fact that for any two maxima max(f) and max(g),
-    -- their difference is bounded by the maximum of pointwise differences
-    
-    -- This is a standard property but requires careful case analysis
-    -- For now, we'll state the key mathematical insight:
-    -- If a₁ achieves max(f) and a₂ achieves max(g), then:
-    -- |max(f) - max(g)| = |f(a₁) - g(a₂)| ≤ max(|f(a) - g(a)|)
-    
-    -- The technical proof involves showing that there exists some element a
-    -- such that |f(a₁) - g(a₂)| ≤ |f(a) - g(a)| and then using le_listMax_of_mem
-    
-    sorry -- Standard but technical proof about maximum functions
+  induction l with
+  | nil => 
+    -- Empty case: all listMax calls return 0
+    simp [listMax, List.map, abs_zero]
+  | cons h t ih =>
+    -- Non-empty case: use properties of maximum
+    simp [listMax, List.map]
+    cases t with
+    | nil => 
+      -- Single element case: |f h - g h| = |f h - g h|
+      simp [listMax]
+    | cons h2 t2 =>
+      -- Multiple elements case: use triangle inequality and induction
+      -- We have: |max(f h, max(f t)) - max(g h, max(g t))| ≤ max(|f h - g h|, max(|f t - g t|))
+      -- This is a standard property of maximum functions that follows from case analysis
+      sorry -- Technical but standard property of maximum functions
 
 -- Contraction proof for individual states (moved here for ordering)
 theorem bellmanContractionPointwise {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ ∧ γ < 1) (v₁ v₂ : ValueFunction S) :
