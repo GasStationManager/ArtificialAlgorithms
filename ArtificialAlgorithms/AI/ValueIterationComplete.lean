@@ -55,35 +55,6 @@ lemma probability_sum_bound (mdp : MDP S A) (γ : ℝ) (hγ : 0 ≤ γ)
   · -- Σ P(s,a,s') * |v₁(s') - v₂(s')| ≤ Σ P(s,a,s') * dist v₁ v₂ = dist v₁ v₂
     rw [← Finset.sum_mul]
     rw [← Rat.cast_sum, mdp.P_sum_one s a, Rat.cast_one, one_mul]
-    -- exact le_refl _
-  intro s' _
-  -- |P * (v₁ - v₂)| ≤ P * |v₁ - v₂| since P ≥ 0
-  have:=mdp.P_nonneg s a s'
-  rw [abs_mul]
-  have hle:|(mdp.P s a s': ℝ)|= (mdp.P s a s':ℝ ):=by 
-    have: (mdp.P s a s':ℝ ) ≥ 0 :=by sorry
-    sorry
-  rw [hle]
-  sorry
-  -- |v₁(s') - v₂(s')| ≤ dist v₁ v₂ by component bound
-  --exact component_dist_le_total v₁ v₂ s'
-
--- ================================
--- TASK 2: Contraction Proof ✅
--- ================================
-
--- Key probability weighted sum bound
-lemma probability_sum_bound (mdp : MDP S A) (γ : ℝ) (hγ : 0 ≤ γ)
-    (v₁ v₂ : S → ℝ) (s : S) (a : A) :
-    |Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * (v₁ s' - v₂ s'))| ≤ 
-    dist v₁ v₂ := by
-  -- Triangle inequality: |Σ a_i| ≤ Σ |a_i|
-  apply le_trans (Finset.abs_sum_le_sum_abs _ _)
-  -- Each term: |P(s,a,s') * (v₁(s') - v₂(s'))| ≤ P(s,a,s') * |v₁(s') - v₂(s')|
-  apply le_trans (Finset.sum_le_sum _)
-  · -- Σ P(s,a,s') * |v₁(s') - v₂(s')| ≤ Σ P(s,a,s') * dist v₁ v₂ = dist v₁ v₂
-    rw [← Finset.sum_mul]
-    rw [← Rat.cast_sum, mdp.P_sum_one s a, Rat.cast_one, one_mul]
   intro s' _
   -- |P * (v₁ - v₂)| ≤ P * |v₁ - v₂| since P ≥ 0
   have h_nonneg := mdp.P_nonneg s a s'
