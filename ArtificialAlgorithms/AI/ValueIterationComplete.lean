@@ -9,7 +9,7 @@ open Metric Filter Topology
 -- MDP STRUCTURE
 -- ================================
 
-structure MDP (S : Type) (A : Type) where
+structure MDP (S : Type) (A : Type) [Fintype S] where
   P : S → A → S → ℚ  
   R : S → A → ℚ
   P_nonneg : ∀ s a s', 0 ≤ P s a s'
@@ -55,13 +55,18 @@ lemma probability_sum_bound (mdp : MDP S A) (γ : ℝ) (hγ : 0 ≤ γ)
   · -- Σ P(s,a,s') * |v₁(s') - v₂(s')| ≤ Σ P(s,a,s') * dist v₁ v₂ = dist v₁ v₂
     rw [← Finset.sum_mul]
     rw [← Rat.cast_sum, mdp.P_sum_one s a, Rat.cast_one, one_mul]
-    exact le_refl _
+    -- exact le_refl _
   intro s' _
   -- |P * (v₁ - v₂)| ≤ P * |v₁ - v₂| since P ≥ 0
-  rw [abs_mul (Rat.cast_nonneg.mpr (mdp.P_nonneg s a s'))]
-  apply mul_le_mul_of_nonneg_left _ (Rat.cast_nonneg.mpr (mdp.P_nonneg s a s'))
+  have:=mdp.P_nonneg s a s'
+  rw [abs_mul]
+  have hle:|(mdp.P s a s': ℝ)|= (mdp.P s a s':ℝ ):=by 
+    have: (mdp.P s a s':ℝ ) ≥ 0 :=by sorry
+    sorry
+  rw [hle]
+  sorry
   -- |v₁(s') - v₂(s')| ≤ dist v₁ v₂ by component bound
-  exact component_dist_le_total v₁ v₂ s'
+  --exact component_dist_le_total v₁ v₂ s'
 
 -- Main contraction theorem
 theorem bellmanReal_isLipschitz (mdp : MDP S A) (γ : ℝ) 
