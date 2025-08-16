@@ -215,34 +215,28 @@ theorem bellmanReal_contracting (mdp : MDP S A) (γ : ℝ)
 -- ================================
 
 -- Casting function
-def castToReal (v : S → ℚ) : S → ℝ := fun s => (v s : ℝ)
+def castToReal {S : Type} (v : S → ℚ) : S → ℝ := fun s => ((v s) : ℝ)
 
 -- Operators commute with casting
-theorem bellman_operators_commute (mdp : MDP S A) (γ : ℚ) (v : S → ℚ) :
+theorem bellman_operators_commute {S A : Type} [Fintype S] [Fintype A] [Nonempty A]
+    (mdp : MDP S A) (γ : ℚ) (v : S → ℚ) :
     castToReal (bellmanOperatorRat mdp γ v) = 
     bellmanOperatorReal mdp (γ : ℝ) (castToReal v) := by
-  ext s
-  simp [castToReal, bellmanOperatorRat, bellmanOperatorReal]
-  
-  -- Key insight: Rat.cast preserves all finite operations
-  -- We need to show casting commutes with sup' and sum
-  
-  -- Cast of finite supremum = supremum of cast
-  have cast_sup : (Finset.univ.sup' Finset.univ_nonempty fun a =>
-    mdp.R s a + γ * Finset.univ.sum fun s' => mdp.P s a s' * v s' : ℝ) =
-    Finset.univ.sup' Finset.univ_nonempty fun a =>
-    (mdp.R s a : ℝ) + (γ : ℝ) * Finset.univ.sum fun s' => (mdp.P s a s' : ℝ) * (v s' : ℝ) := by
-    -- This follows from Rat.cast preserving order and operations
-    congr 1
-    ext a
-    simp only [Rat.cast_add, Rat.cast_mul]
-    congr 2
-    rw [Rat.cast_sum]
-    congr 1
-    ext s'
-    rw [Rat.cast_mul]
-  
-  exact cast_sup
+  -- Show equality of functions using funext
+  funext s
+  -- Unfold the definitions
+  simp only [castToReal, bellmanOperatorRat, bellmanOperatorReal]
+  -- Use the fact that casting commutes with sup'
+  rw [Finset.comp_sup'_eq_sup'_comp _ _ Rat.cast_max]
+  -- Now we need to show that casting commutes with the inner expression
+  congr 1
+  funext a
+  -- Expand the composition
+  simp only [Function.comp_apply]
+  -- Cast the addition, multiplication, and sum
+  rw [Rat.cast_add, Rat.cast_mul, Rat.cast_sum]
+  -- Show the sums are equal
+  simp only [Rat.cast_mul]
 
 -- Fixed points correspond
 theorem fixed_point_equivalence (mdp : MDP S A) (γ : ℚ) :
