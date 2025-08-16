@@ -1,3 +1,12 @@
+/-
+Value Iteration for Markov Decision Processes
+Using Rat (rational numbers) to ensure that the algorithm is computable
+Done by Sonnet 4 + Opus 4 on Claude Code + LeanExplore + LeanTool.
+Proved the Contraction property of the Bellman operator. 
+But for the convergence, we may want to use the Banach fixed point theorem, and therefore may need to do the convergence proof in the space of Real numbers.
+The full convergence proof is (ongoing) at ValueIterationComplete.lean
+-/
+
 import Mathlib
 
 -- Value Iteration Algorithm for Markov Decision Processes
