@@ -15,7 +15,7 @@ structure MDP (S : Type) (A : Type) [Fintype S] where
   P_nonneg : ∀ s a s', 0 ≤ P s a s'
   P_sum_one : ∀ s a, (Finset.univ : Finset S).sum (P s a) = 1
 
-variable {S A : Type} [Fintype S] [Fintype A] [Nonempty S] [Nonempty A]
+variable {S A : Type} [Fintype S] [Fintype A] [Nonempty S] [Nonempty A] [DecidableEq A]
 
 -- Rational Bellman operator
 def bellmanOperatorRat (mdp : MDP S A) (γ : ℚ) (v : S → ℚ) : S → ℚ :=
@@ -73,6 +73,52 @@ lemma probability_sum_bound (mdp : MDP S A) (γ : ℝ) (hγ : 0 ≤ γ)
     exact component_dist_le_total v₁ v₂ s'
   · -- (mdp.P s a s' : ℝ) ≥ 0
     exact Rat.cast_nonneg.mpr h_nonneg
+
+
+
+/-- The supremum function over finite sets is Lipschitz with constant 1 in the L∞ norm -/
+lemma sup_lipschitz (f g : A → ℝ) :
+    |Finset.univ.sup' Finset.univ_nonempty f - Finset.univ.sup' Finset.univ_nonempty g| ≤
+    Finset.univ.sup' Finset.univ_nonempty (fun a => |f a - g a|) := by
+  -- We prove this for all nonempty finsets by induction
+  suffices H : ∀ (s : Finset A) (hs : s.Nonempty), 
+    |s.sup' hs f - s.sup' hs g| ≤ s.sup' hs (fun a => |f a - g a|) by
+    exact H Finset.univ Finset.univ_nonempty
+  
+  intro s hs
+  -- Eliminate the dependency on hs by reverting it before induction
+  revert hs
+  -- Now proceed by induction on s
+  induction s using Finset.induction with
+  | empty => 
+    -- Base case: empty set
+    -- This case is vacuous since empty is not nonempty
+    intro hs
+    exact absurd hs Finset.not_nonempty_empty
+  | insert a s ha ih =>
+    -- Inductive case: insert a into s where a ∉ s
+    intro hs_insert
+    -- Case analysis on whether s is empty
+    by_cases h_s : s.Nonempty
+    · -- Case 1: s is nonempty
+      -- Apply the induction hypothesis to s
+      have ih_s := ih h_s
+      -- Use Finset.sup'_insert to decompose the supremum
+      rw [Finset.sup'_insert, Finset.sup'_insert, Finset.sup'_insert]
+      -- The supremum over insert a s is max(f(a), sup(s, f))
+      -- Apply the key lemma: |max(x₁, y₁) - max(x₂, y₂)| ≤ max(|x₁ - x₂|, |y₁ - y₂|)
+      calc |f a ⊔ s.sup' h_s f - (g a ⊔ s.sup' h_s g)|
+        _ ≤ max |f a - g a| |s.sup' h_s f - s.sup' h_s g| := 
+          abs_max_sub_max_le_max (f a) (s.sup' h_s f) (g a) (s.sup' h_s g)
+        _ ≤ max |f a - g a| (s.sup' h_s (fun b => |f b - g b|)) := 
+          max_le_max (le_refl _) ih_s
+        _ = |f a - g a| ⊔ s.sup' h_s (fun b => |f b - g b|) := 
+          rfl  -- max and ⊔ are the same for ℝ
+    · -- Case 2: s is empty
+      -- Then insert a s = {a}, so the supremum is just f(a) or g(a)
+      have s_empty : s = ∅ := Finset.not_nonempty_iff_eq_empty.mp h_s
+      simp [s_empty, Finset.sup'_singleton]
+
 
 -- Main contraction theorem
 theorem bellmanReal_isLipschitz (mdp : MDP S A) (γ : ℝ) 
