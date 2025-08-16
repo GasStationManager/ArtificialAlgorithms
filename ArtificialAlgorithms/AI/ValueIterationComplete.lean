@@ -120,58 +120,89 @@ lemma sup_lipschitz (f g : A → ℝ) :
       simp [s_empty, Finset.sup'_singleton]
 
 
+
 -- Main contraction theorem
-theorem bellmanReal_isLipschitz (mdp : MDP S A) (γ : ℝ) 
+theorem bellmanReal_isLipschitz (mdp : MDP S A) (γ : ℝ)
     (hγ_nonneg : 0 ≤ γ) (hγ_lt : γ < 1) :
     LipschitzWith ⟨γ, hγ_nonneg⟩ (bellmanOperatorReal mdp γ) := by
+  -- Use the dist characterization to avoid `edist`/`ENNReal` juggling
+  refine (lipschitzWith_iff_dist_le_mul).2 ?_
   intro v₁ v₂
-  -- We need: dist (T v₁) (T v₂) ≤ γ * dist v₁ v₂
-  
-  -- Use Pi distance characterization
-  rw [dist_pi_le_iff (mul_nonneg hγ_nonneg dist_nonneg)]
-  intro s
-  
-  -- Show: |T(v₁)(s) - T(v₂)(s)| ≤ γ * dist v₁ v₂
-  simp only [bellmanOperatorReal]
-  
-  -- Key: |sup f - sup g| ≤ sup |f - g| for finite suprema
-  -- This holds by the property that supremum is 1-Lipschitz
-  have sup_lipschitz : ∀ (f g : A → ℝ),
-    |Finset.univ.sup' Finset.univ_nonempty f - Finset.univ.sup' Finset.univ_nonempty g| ≤
-    Finset.univ.sup' Finset.univ_nonempty (fun a => |f a - g a|) := by
-    intros f g
-    -- Use the standard approach: find elements where suprema are achieved
-    
-    -- Get the elements that achieve the suprema
-    obtain ⟨a_f, ha_f_mem, ha_f_eq⟩ := Finset.exists_mem_eq_sup' Finset.univ_nonempty f
-    obtain ⟨a_g, ha_g_mem, ha_g_eq⟩ := Finset.exists_mem_eq_sup' Finset.univ_nonempty g
-    
-    rw [← ha_f_eq, ← ha_g_eq]
-    
-    -- Use the triangle inequality: |f(a_f) - g(a_g)| ≤ |f(a_f) - g(a_f)| + |g(a_f) - g(a_g)|
-    have triangle : |f a_f - g a_g| ≤ |f a_f - g a_f| + |g a_f - g a_g| := by
-      rw [← add_sub_cancel (f a_f) (g a_f)]
-      exact abs_add (f a_f - g a_f) (g a_f - g a_g)
-    
-    apply le_trans triangle
-    apply add_le_add
-    · -- |f(a_f) - g(a_f)| ≤ sup |f - g|
-      exact Finset.le_sup' (fun a => |f a - g a|) ha_f_mem
-    · -- |g(a_f) - g(a_g)| ≤ sup |f - g| (this needs more work)
-      -- Since g(a_g) = sup g ≥ g(a_f), we have |g(a_f) - g(a_g)| = g(a_g) - g(a_f)
-      -- But we want this ≤ sup |f - g|, which is not immediate.
-      -- Let's try a different approach: use symmetry and prove both directions
-      sorry -- This direction is tricky
-  
-  apply le_trans (sup_lipschitz _ _)
-  apply Finset.sup'_le
-  intro a _
-  
-  -- For each action: |Q₁(s,a) - Q₂(s,a)| ≤ γ * dist v₁ v₂
-  simp only [add_sub_add_left_eq_sub]
-  rw [abs_mul hγ_nonneg]
-  apply mul_le_mul_of_nonneg_left _ hγ_nonneg
-  exact probability_sum_bound mdp γ hγ_nonneg v₁ v₂ s a
+  -- We show `dist (T v₁) (T v₂) ≤ γ * dist v₁ v₂`, then rewrite the constant
+  have hreal :
+      dist (bellmanOperatorReal mdp γ v₁) (bellmanOperatorReal mdp γ v₂) ≤
+        γ * dist v₁ v₂ := by
+    -- Prove the pointwise bound and then use the Pi distance characterization
+    apply (dist_pi_le_iff (mul_nonneg hγ_nonneg dist_nonneg)).2
+    intro s
+    simp only [bellmanOperatorReal]
+    -- Show: dist(T(v₁)(s), T(v₂)(s)) ≤ γ * dist v₁ v₂
+    --rw [Real.dist_eq]
+
+  -- First, establish the bound for each action
+    have action_bound : ∀ a ∈ Finset.univ,
+      |(mdp.R s a : ℝ) + γ * Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₁ s') -
+       ((mdp.R s a : ℝ) + γ * Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₂ s'))| ≤
+      γ * dist v₁ v₂ := by
+      intro a _
+      simp only [add_sub_add_left_eq_sub]
+      -- Factor γ
+      rw [← mul_sub]
+      -- Reduce to the bound on the difference of sums
+      rw [abs_mul, abs_of_nonneg hγ_nonneg]
+      apply mul_le_mul_of_nonneg_left _ hγ_nonneg
+      -- Rewrite the difference of sums into a single sum of differences
+      have hsum :
+          Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₁ s') -
+            Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₂ s')
+            = Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * (v₁ s' - v₂ s')) := by
+        calc
+          Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₁ s') -
+              Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₂ s')
+              = Finset.univ.sum (fun s' =>
+                  (mdp.P s a s' : ℝ) * v₁ s' - (mdp.P s a s' : ℝ) * v₂ s') := by
+                    simpa [Finset.sum_sub_distrib]
+          _ = Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * (v₁ s' - v₂ s')) := by
+                refine Finset.sum_congr rfl ?_;
+                intro s' _; simp [mul_sub]
+      -- Apply the core bound
+      simpa [hsum] using
+        (probability_sum_bound mdp γ hγ_nonneg v₁ v₂ s a)
+
+    -- Define action-value functions for cleaner notation
+    let f₁ : A → ℝ := fun a =>
+      (mdp.R s a : ℝ) + γ * Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₁ s')
+    let f₂ : A → ℝ := fun a =>
+      (mdp.R s a : ℝ) + γ * Finset.univ.sum (fun s' => (mdp.P s a s' : ℝ) * v₂ s')
+
+    -- Step 1: Use the key inequality |sup f₁ - sup f₂| ≤ sup |f₁ - f₂|
+    have h_sup_diff_bound :
+        |Finset.univ.sup' Finset.univ_nonempty f₁ - Finset.univ.sup' Finset.univ_nonempty f₂| ≤
+          Finset.univ.sup' Finset.univ_nonempty (fun a => |f₁ a - f₂ a|) := by
+      apply sup_lipschitz  
+
+    -- Step 2: Bound sup |f₁ - f₂| using our action_bound
+    have h_sup_abs_bound :
+        Finset.univ.sup' Finset.univ_nonempty (fun a => |f₁ a - f₂ a|) ≤ γ * dist v₁ v₂ := by
+      apply Finset.sup'_le_iff Finset.univ_nonempty _ |>.mpr
+      intro a ha
+      -- Unfold the definitions and apply action_bound
+      simp only [f₁, f₂]
+      exact action_bound a ha
+
+    -- Step 3: Combine the bounds
+    have h_final :
+        dist (Finset.univ.sup' Finset.univ_nonempty f₁) (Finset.univ.sup' Finset.univ_nonempty f₂) ≤
+          γ * dist v₁ v₂ := by
+      rw [Real.dist_eq]
+      exact le_trans h_sup_diff_bound h_sup_abs_bound
+
+    -- Step 4: Rewrite in terms of the original bellman operator
+    convert h_final
+    --· simp only [bellmanOperatorReal, f₁]
+    --· simp only [bellmanOperatorReal, f₂]
+  -- Replace the `ℝ≥0` Lipschitz constant with the real `γ`
+  simpa [NNReal.coe_mk] using hreal
 
 -- Package for Banach theorem
 theorem bellmanReal_contracting (mdp : MDP S A) (γ : ℝ) 
