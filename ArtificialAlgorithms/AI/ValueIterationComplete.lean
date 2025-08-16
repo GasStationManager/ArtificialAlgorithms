@@ -273,9 +273,30 @@ theorem value_iteration_banach_success (mdp : MDP S A) (γ : ℝ)
     
     constructor
     · exact h_fixed
-    · sorry
+    · -- Prove convergence and rate bounds for all starting points
+      intro v₀_arbitrary
+      constructor
+      · -- Convergence: Tendsto (fun n => T^[n] v₀_arbitrary) atTop (𝓝 v_star)
+        -- We need to show that v_star is the unique fixed point
+        have h_unique_fixed : v_star = h_contract.fixedPoint := by
+          exact h_contract.fixedPoint_unique h_fixed
+        rw [h_unique_fixed]
+        exact h_contract.tendsto_iterate_fixedPoint v₀_arbitrary
+      · -- Rate bounds: ∀ (v₀ : S → ℝ) (n : ℕ), dist (T^[n] v₀) v_star ≤ dist v₀ (T v₀) * γ^n / (1 - γ)
+        intro v₀_any n_nat
+        -- Use the general bound for contracting maps 
+        have h_unique_fixed : v_star = h_contract.fixedPoint := by
+          exact h_contract.fixedPoint_unique h_fixed
+        rw [h_unique_fixed]
+        -- Apply the general apriori bound (this gives us the rate we want)
+        exact h_contract.apriori_dist_iterate_fixedPoint_le v₀_any n_nat
   
-  · sorry
+  · -- Uniqueness of the fixed point
+    intro y hy
+    -- Use the uniqueness property of contracting maps
+    -- y satisfies the fixed point property, so y = v_star
+    have hy_fixed := hy.1
+    exact h_contract.fixedPoint_unique' hy_fixed h_fixed
 
 -- ================================
 -- FINAL CONVERGENCE THEOREM ✅
