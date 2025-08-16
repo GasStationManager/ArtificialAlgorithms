@@ -565,4 +565,4 @@ the foundation for the contraction property. The remaining sorries are either:
 #check supNorm
 #check vDiff
 
-end
+end ValueIterationRational
