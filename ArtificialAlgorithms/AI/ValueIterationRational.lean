@@ -9,6 +9,8 @@ The full convergence proof is (ongoing) at ValueIterationComplete.lean
 
 import Mathlib
 
+namespace ValueIterationRational
+
 -- Value Iteration Algorithm for Markov Decision Processes
 -- Using Rat (rational numbers) for computability and provability
 
@@ -104,6 +106,8 @@ def vDiff {S : Type} (v₁ v₂ : ValueFunction S) : ValueFunction S :=
 def convergesTo {S A : Type} (mdp : MDP S A) (seq : Nat → ValueFunction S) (limit : ValueFunction S) : Prop :=
   ∀ ε > 0, ∃ N, ∀ n ≥ N, ∀ s ∈ mdp.states, abs (seq n s - limit s) < ε
 
+
+/- Not Proved
 -- Main convergence theorem
 theorem valueIterationConverges {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ ∧ γ < 1) :
     ∃ v_star, isOptimalValueFunction mdp γ v_star ∧ 
@@ -127,8 +131,7 @@ theorem valueIterationConverges {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0
   -- The technical details require the full development of metric space theory
   sorry -- This requires the complete Banach fixed point theorem framework
 
-#check valueIterationConverges
-#print axioms valueIterationConverges
+-/
 
 -- Helper lemma for bounding listMax (moved here to fix scoping)
 lemma listMax_le_of_forall_le {l : List ℚ} {b : ℚ} (hb : 0 ≤ b) (h : ∀ x ∈ l, x ≤ b) : listMax l ≤ b := by
@@ -394,19 +397,17 @@ theorem bellmanContraction {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ 
 
 -- DUPLICATE REMOVED: supNorm_nonneg and le_listMax_of_mem already defined above
 
+/- Not Proved
 -- Helper lemma for max difference
 lemma abs_listMax_sub_le (b : ℚ) {l₁ l₂ : List ℚ} (h : l₁.length = l₂.length) 
     (hl : ∀ i, ∀ hi : i < l₁.length, abs (l₁.get ⟨i, hi⟩ - l₂.get ⟨i, h ▸ hi⟩) ≤ b) :
     abs (listMax l₁ - listMax l₂) ≤ b := by
   sorry  -- This is complex, let's focus on the main theorem
+-/
 
 -- DUPLICATE REMOVED: listMax_abs_diff_le already defined above
 
--- Key lemma: |max(as) - max(bs)| ≤ max(|as - bs|) for lists
-lemma listMax_abs_sub_le {l₁ l₂ : List ℚ} (h : l₁.length = l₂.length) :
-    abs (listMax l₁ - listMax l₂) ≤ 
-    listMax (List.zipWith (fun a b => abs (a - b)) l₁ l₂) := by
-  sorry
+
 
 -- DUPLICATE LEMMAS REMOVED: Already defined above
 
@@ -414,6 +415,7 @@ lemma listMax_abs_sub_le {l₁ l₂ : List ℚ} (h : l₁.length = l₂.length) 
 
 -- DUPLICATE REMOVED: bellmanContractionPointwise already defined above
 
+/- Not Proved
 -- Uniqueness of optimal value function
 theorem uniqueOptimalValue {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ ∧ γ < 1) :
     ∀ v₁ v₂, isOptimalValueFunction mdp γ v₁ → 
@@ -448,19 +450,24 @@ theorem uniqueOptimalValue {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ 
   -- The proof requires showing that optimal value functions are unique fixed points
   -- of the contraction mapping T. This follows directly from Banach's theorem
   -- but requires more advanced measure theory than we've developed here.
+-/
 
+/- Not Proved
 -- Error bound for finite iterations
 theorem valueIterationError {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ ∧ γ < 1) (n : Nat) :
     ∃ v_star, isOptimalValueFunction mdp γ v_star ∧ 
     supNorm mdp (vDiff (valueIteration mdp γ n) v_star) ≤ 
     (γ ^ n) / (1 - γ) * supNorm mdp (vDiff (valueIteration mdp γ 1) (valueIteration mdp γ 0)) := by
   sorry
+-/
 
+/- Not Proved
 -- Explicit convergence rate
 theorem convergenceRate {S A : Type} (mdp : MDP S A) (γ : ℚ) (hγ : 0 ≤ γ ∧ γ < 1) :
     ∀ n : Nat, supNorm mdp (vDiff (valueIteration mdp γ (n + 1)) (valueIteration mdp γ n)) ≤
     γ^n * supNorm mdp (vDiff (valueIteration mdp γ 1) (valueIteration mdp γ 0)) := by
   sorry
+-/
 
 -- Example: Simple 2-state, 2-action MDP
 section Example
@@ -557,3 +564,5 @@ the foundation for the contraction property. The remaining sorries are either:
 #check convergesTo
 #check supNorm
 #check vDiff
+
+end
