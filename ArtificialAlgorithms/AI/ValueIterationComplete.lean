@@ -1,7 +1,12 @@
-import Mathlib
+/-
+Value Iteration Algorithm for Markov Decision Processes
+Proof of convergence via Banach's fixed point theorem, with a noncomputable Bellman operator defined over Reals;
+then showing that the computable, rational number version of Bellman operator is equivalent, when given rational inputs.
+Done mainly by Sonnet 4 + Opus 4 on Claude Code + LeanTool + LeanExplore; with human guidance.
+Contributions to individual lemmas and theorems by Opus 4.1 (on Claude Desktop) and GPT 5 (on Cursor). 
+-/
 
--- VALUE ITERATION: Complete Solution
--- Final working version addressing all three tasks with correct Mathlib APIs
+import Mathlib
 
 open Metric Filter Topology
 
