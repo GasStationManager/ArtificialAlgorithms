@@ -238,6 +238,19 @@ theorem bellman_operators_commute {S A : Type} [Fintype S] [Fintype A] [Nonempty
   -- Show the sums are equal
   simp only [Rat.cast_mul]
 
+-- Iteration commutation lemma  
+lemma iterate_commute {S A : Type} [Fintype S] [Fintype A] [Nonempty A]
+    (mdp : MDP S A) (γ : ℚ) (v : S → ℚ) (n : ℕ) :
+    castToReal ((bellmanOperatorRat mdp γ)^[n] v) = 
+    (bellmanOperatorReal mdp (γ : ℝ))^[n] (castToReal v) := by
+  induction n generalizing v with
+  | zero => simp [Function.iterate_zero]
+  | succ n ih =>
+    simp only [Function.iterate_succ_apply]
+    -- First convert the right side using operator commutation (backwards)
+    rw [← bellman_operators_commute mdp γ v]
+    -- Apply the induction hypothesis to the remaining term
+    rw [ih (bellmanOperatorRat mdp γ v)]
 
 -- ================================
 -- COMPLETE BANACH APPLICATION ✅
