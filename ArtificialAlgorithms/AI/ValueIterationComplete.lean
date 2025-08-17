@@ -217,6 +217,14 @@ theorem bellmanReal_contracting (mdp : MDP S A) (γ : ℝ)
 -- Casting function
 def castToReal {S : Type} (v : S → ℚ) : S → ℝ := fun s => ((v s) : ℝ)
 
+-- Key lemma: casting preserves distances (ℚ → ℝ is an isometric embedding)
+lemma castToReal_preserves_dist {S : Type} [Fintype S] (f g : S → ℚ) :
+    dist (castToReal f) (castToReal g) = (dist f g : ℝ) := by
+  -- Use the definition of distance in Pi spaces
+  rw [dist_pi_def, dist_pi_def]
+  -- The supremums are equal by Rat.dist_cast
+  congr 1
+
 -- Operators commute with casting
 theorem bellman_operators_commute {S A : Type} [Fintype S] [Fintype A] [Nonempty A]
     (mdp : MDP S A) (γ : ℚ) (v : S → ℚ) :
@@ -252,6 +260,7 @@ lemma iterate_commute {S A : Type} [Fintype S] [Fintype A] [Nonempty A]
     -- Apply the induction hypothesis to the remaining term
     rw [ih (bellmanOperatorRat mdp γ v)]
 
+
 -- ================================
 -- COMPLETE BANACH APPLICATION ✅
 -- ================================
@@ -265,10 +274,11 @@ theorem value_iteration_banach_success (mdp : MDP S A) (γ : ℝ)
     -- Task 2: Unique fixed point with convergence
     (∃! v_star : S → ℝ, 
       bellmanOperatorReal mdp γ v_star = v_star ∧
-      ∀ v₀ : S → ℝ, Tendsto (fun n => (bellmanOperatorReal mdp γ)^[n] v₀) atTop (𝓝 v_star) ∧
-      ∀ v₀ : S → ℝ, ∀ n : ℕ, 
-        dist ((bellmanOperatorReal mdp γ)^[n] v₀) v_star ≤ 
-        dist v₀ (bellmanOperatorReal mdp γ v₀) * γ^n / (1 - γ))  := by
+      ∀ v₀ : S → ℝ, 
+        Tendsto (fun n => (bellmanOperatorReal mdp γ)^[n] v₀) atTop (𝓝 v_star) ∧
+        ∀ n : ℕ, 
+          dist ((bellmanOperatorReal mdp γ)^[n] v₀) v_star ≤ 
+          dist v₀ (bellmanOperatorReal mdp γ v₀) * γ^n / (1 - γ))  := by
   
   -- Get complete space and contraction instances
   let h_complete : CompleteSpace (S → ℝ) := inferInstance
@@ -295,14 +305,14 @@ theorem value_iteration_banach_success (mdp : MDP S A) (γ : ℝ)
           exact h_contract.fixedPoint_unique h_fixed
         rw [h_unique_fixed]
         exact h_contract.tendsto_iterate_fixedPoint v₀_arbitrary
-      · -- Rate bounds: ∀ (v₀ : S → ℝ) (n : ℕ), dist (T^[n] v₀) v_star ≤ dist v₀ (T v₀) * γ^n / (1 - γ)
-        intro v₀_any n_nat
+      · -- Rate bounds: ∀ n : ℕ, dist (T^[n] v₀_arbitrary) v_star ≤ dist v₀_arbitrary (T v₀_arbitrary) * γ^n / (1 - γ)
+        intro n
         -- Use the general bound for contracting maps 
         have h_unique_fixed : v_star = h_contract.fixedPoint := by
           exact h_contract.fixedPoint_unique h_fixed
         rw [h_unique_fixed]
         -- Apply the general apriori bound (this gives us the rate we want)
-        exact h_contract.apriori_dist_iterate_fixedPoint_le v₀_any n_nat
+        exact h_contract.apriori_dist_iterate_fixedPoint_le v₀_arbitrary n
   
   · -- Uniqueness of the fixed point
     intro y hy
@@ -318,7 +328,7 @@ theorem value_iteration_banach_success (mdp : MDP S A) (γ : ℝ)
 /-- **THE MAIN RESULT**: Value iteration converges with all guarantees -/
 theorem VALUE_ITERATION_CONVERGENCE_COMPLETE (mdp : MDP S A) (γ : Rat) 
     (hγ_nonneg : 0 ≤ γ) (hγ_lt : γ < 1) :
-    ∃! v_star : S → ℝ,
+    ∃ v_star : S → ℝ,
     -- 1. v_star is the optimal value function (Bellman equation)
     bellmanOperatorReal mdp γ v_star = v_star ∧
     -- 2. Value iteration converges to v_star from any starting point
@@ -326,5 +336,67 @@ theorem VALUE_ITERATION_CONVERGENCE_COMPLETE (mdp : MDP S A) (γ : Rat)
     -- 3. Geometric convergence with explicit rate
     (∀ v₀ : S → Rat, ∀ n : ℕ, 
       dist (castToReal ((bellmanOperatorRat mdp γ)^[n] v₀)) v_star ≤ 
-      dist v₀ (bellmanOperatorRat mdp γ v₀) * γ^n / (1 - γ))  := by sorry
+      dist v₀ (bellmanOperatorRat mdp γ v₀) * γ^n / (1 - γ)) ∧
+    -- 4. Uniqueness: any fixed point of the Bellman operator equals v_star
+    (∀ v' : S → ℝ, bellmanOperatorReal mdp γ v' = v' → v' = v_star) := by
+  -- Apply the main Banach result to the real version
+  have hγ_real_nonneg : (0 : ℝ) ≤ (γ : ℝ) := Rat.cast_nonneg.mpr hγ_nonneg
+  have hγ_real_lt : (γ : ℝ) < 1 := by
+    rw [← Rat.cast_one]
+    exact Rat.cast_lt.mpr hγ_lt
+  
+  -- Get the result from the real version
+  have h_result := value_iteration_banach_success mdp (γ : ℝ) hγ_real_nonneg hγ_real_lt
+  obtain ⟨h_complete, h_contract, h_exists_unique⟩ := h_result
+  obtain ⟨v_star, h_properties, h_unique⟩ := h_exists_unique
+  obtain ⟨h_fixed, h_conv_and_rate⟩ := h_properties
+  
+  use v_star
+  -- Prove all four properties
+  constructor
+  · exact h_fixed  -- v_star is a fixed point
+  · constructor  
+    · -- Convergence of rational iterations to real fixed point
+      intro v₀_rat
+      -- Use the iteration commutation lemma
+      have h_iterate_commute : ∀ n : ℕ, 
+          castToReal ((bellmanOperatorRat mdp γ)^[n] v₀_rat) = 
+          (bellmanOperatorReal mdp (γ : ℝ))^[n] (castToReal v₀_rat) := 
+        iterate_commute mdp γ v₀_rat
+      
+      -- Now use this to transfer convergence
+      rw [funext h_iterate_commute]
+      -- Apply the real convergence result
+      exact h_conv_and_rate (castToReal v₀_rat) |>.1
+    · constructor
+      · -- Geometric rate for rational iterations
+        intro v₀_rat n_iter
+        -- Use the iteration commutation lemma
+        have h_iterate_commute := iterate_commute mdp γ v₀_rat n_iter
+        
+        -- Rewrite using commutation property  
+        rw [h_iterate_commute]
+        
+        -- Apply the Banach rate bound directly to castToReal v₀_rat
+        have h_unique_fixed : v_star = h_contract.fixedPoint := by
+          exact h_contract.fixedPoint_unique h_fixed
+        rw [h_unique_fixed]
+        
+        have h_real_bound := h_contract.apriori_dist_iterate_fixedPoint_le (castToReal v₀_rat) n_iter
+        
+        -- Key insight: castToReal preserves distances
+        have h_distance_preserved : 
+            dist (castToReal v₀_rat) (bellmanOperatorReal mdp (γ : ℝ) (castToReal v₀_rat)) =
+            (dist v₀_rat (bellmanOperatorRat mdp γ v₀_rat) : ℝ) := by
+          -- Use operator commutation to rewrite the right side  
+          rw [← bellman_operators_commute mdp γ v₀_rat]
+          -- Now apply our distance preservation lemma
+          exact castToReal_preserves_dist v₀_rat (bellmanOperatorRat mdp γ v₀_rat)
+        
+        rw [h_distance_preserved] at h_real_bound
+        convert h_real_bound using 1
+      · -- Uniqueness: any fixed point equals v_star
+        intro v' hv'_fixed
+        -- Use the contraction uniqueness property
+        exact h_contract.fixedPoint_unique' hv'_fixed h_fixed
 
