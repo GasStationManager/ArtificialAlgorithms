@@ -12,4 +12,5 @@ import ArtificialAlgorithms.AI.AlphaBeta
 import ArtificialAlgorithms.AI.AlphaBetaClaude
 import ArtificialAlgorithms.AI.ValueIterationRational
 import ArtificialAlgorithms.AI.ValueIterationComplete
+import ArtificialAlgorithms.AI.ApproxValueIterationInt
 
