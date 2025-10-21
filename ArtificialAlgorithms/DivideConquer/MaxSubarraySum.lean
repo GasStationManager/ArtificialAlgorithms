@@ -28,8 +28,9 @@ of the divide-and-conquer maximum subarray sum algorithm using refined dependent
 -/
 
 -- MATHEMATICAL SPECIFICATIONS
+-- Use bounded Array.foldl, which directly exposes start/stop indices.
 def subarraySum (sub : Subarray Int) : Int :=
-  sub.foldl (· + ·) 0
+  sub.array.foldl (· + ·) 0 sub.start sub.stop
 
 def isValidSubarray (arr : Array Int) (sub : Subarray Int) : Prop :=
   sub.array = arr ∧ sub.start < sub.stop ∧ sub.stop ≤ arr.size
@@ -702,7 +703,7 @@ lemma max_is_one_of (a b : Int) : max a b = a ∨ max a b = b := by
   · right
     exact max_eq_right h
   · left
-    exact max_eq_left (le_of_not_le h)
+    exact max_eq_left (le_of_not_ge h)
 
 -- ✅ PROVEN: Existence proof for divide and conquer
 lemma divide_conquer_existence (arr : Array Int) (low high : Nat)
@@ -805,9 +806,11 @@ lemma divide_conquer_optimality (arr : Array Int) (low high : Nat)
     · exact h_j_le_high
 
 -- Helper lemma to relate Subarray.foldl to Array.foldl
-lemma subarray_foldl_eq (sub : Subarray Int) :
-  sub.foldl (· + ·) 0 = sub.array.foldl (· + ·) 0 sub.start sub.stop := by
-  rfl
+-- In Lean 4.23, Subarray.foldl is defined via Std.Slice and iterators.
+-- This lemma states that folding over a subarray is equivalent to folding
+-- over the underlying array with explicit start/stop indices.
+-- The old lemma relating Subarray.foldl to bounded Array.foldl is no longer needed
+-- because subarraySum is defined directly via bounded Array.foldl.
 
 -- ✅ PROVEN: Range to global conversion
 lemma range_to_global (arr : Array Int) (result : Int) (h : ¬arr.isEmpty) :
@@ -831,7 +834,6 @@ lemma range_to_global (arr : Array Int) (result : Int) (h : ¬arr.isEmpty) :
     intro sub h_valid
     obtain ⟨_, _, _, h_optimal⟩ := h_range
     unfold subarraySum
-    rw [subarray_foldl_eq]
     rw [h_valid.1]
     apply h_optimal
     · exact Nat.zero_le _

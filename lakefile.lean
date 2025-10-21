@@ -8,7 +8,7 @@ package "ArtificialAlgorithms" where
   ]
   -- add any additional package configuration options here
 
-require "leanprover-community" / "mathlib" @ git "v4.21.0"
+require "leanprover-community" / "mathlib" @ git "v4.23.0"
 
 @[default_target]
 lean_lib «ArtificialAlgorithms» where

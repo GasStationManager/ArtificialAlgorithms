@@ -781,14 +781,10 @@ decreasing_by
     exact Nat.lt_of_le_of_lt ‹greater.length ≤ ts.length› ‹ts.length < (p :: ts).length›
   -- Remaining goals with fresh variable l
   all_goals
-    -- The variable l appears to be greater in this context
-    -- We know l = greater from the structure of the proof
-    -- So we use the same reasoning as above
-    have : l.length ≤ ts.length := by 
-      -- Try grind first
-      grind
-    have : ts.length < (p :: ts).length := by simp [List.length_cons]
-    exact Nat.lt_of_le_of_lt ‹l.length ≤ ts.length› ‹ts.length < (p :: ts).length›
+    -- The variable l appears to be a filtered list in this context
+    -- Directly apply the transitivity of < using filter length bound
+    apply Nat.lt_of_le_of_lt (List.length_filter_le _ _)
+    simp [List.length_cons]
 
 
 
