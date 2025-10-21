@@ -1,3 +1,19 @@
+/-
+# Integer-rounded value iteration
+## Goals
+- Define an integer-rounded Bellman operator for finite MDPs that computes the 
+  rational Bellman operator and then rounds each state’s value to the nearest integer.
+- Prove an approximate convergence theorem analogous to the standard value iteration result:
+  - Convergence of the iterates (after casting to reals) to the true fixed point of the real Bellman operator up to a radius induced by rounding.
+  - An explicit geometric error bound: for discount `0 ≤ γ < 1`, the iterate error is bounded by `(γ^n) * initial_error + (1/2) / (1-γ)` in sup-norm (after casting to `ℝ`).
+  - Eventual inclusion in any ball of radius `ε > (1/2)/(1-γ)`.
+
+## Process
+- Mainly done by GPT-5 on Codex CLI, with compiler feedback (`lake build`)
+- Two lemmas were solved by Sonnet 4; one on Claude Desktop + LeanTool, another on Cursor + LeanTool
+
+-/
+
 import Mathlib
 import ArtificialAlgorithms.AI.ValueIterationComplete
 
