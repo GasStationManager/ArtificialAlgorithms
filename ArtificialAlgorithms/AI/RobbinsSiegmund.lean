@@ -1,3 +1,8 @@
+/-
+Robbins-Siegmund Theorem
+Done by GPT-5 on Codex CLI, and Claude Sonnet on Claude Code
+-/
+
 import Mathlib
 
 set_option linter.unnecessarySimpa false
