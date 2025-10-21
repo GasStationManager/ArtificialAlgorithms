@@ -1869,7 +1869,7 @@ lemma Scomp_trunc_stop_tendsto_scaledS
 
 
 
-/-- An earlier attempt at Robbins–Siegmund lemma (incomplete proof omitted). 
+/- An earlier attempt at Robbins–Siegmund lemma (incomplete proof omitted). 
 See below for a version with stronger assumptions and a complete proof. 
 
 Assumptions:
