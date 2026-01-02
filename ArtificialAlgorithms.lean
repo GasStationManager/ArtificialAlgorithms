@@ -14,3 +14,4 @@ import ArtificialAlgorithms.AI.ValueIterationRational
 import ArtificialAlgorithms.AI.ValueIterationComplete
 import ArtificialAlgorithms.AI.ApproxValueIterationInt
 import ArtificialAlgorithms.AI.RobbinsSiegmund
+import ArtificialAlgorithms.AI.SGD

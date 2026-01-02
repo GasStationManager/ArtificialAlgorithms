@@ -10,7 +10,7 @@ set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 0
 
 open MeasureTheory
-open scoped ProbabilityTheory BigOperators
+open scoped ProbabilityTheory BigOperators NNReal
 
 namespace QLS
 namespace Stoch
@@ -2745,3 +2745,1240 @@ theorem robbinsSiegmund_expBound
 end Classical
 end Stoch
 end QLS
+
+/-!
+## Strengthened Robbins-Siegmund Theorem
+
+The following theorem provides the full conclusions from the textbook statement,
+including the sup bound on expectations and L¹ integrability of the limit.
+-/
+
+namespace QLS.Stoch
+
+open MeasureTheory Filter
+
+variable {Ω : Type*} [MeasurableSpace Ω]
+
+/-- Algebraic identity: X = prodY · scaledS - cumW.
+
+This identity follows from the definition scaledS X Y W t ω = (X t ω + cumW W t ω) / prodY Y t ω.
+Multiplying by prodY and rearranging gives X = prodY · scaledS - cumW.
+
+The identity requires prodY ≠ 0, which holds when Y is non-negative since
+prodY Y t ω = ∏_{k < t} (1 + Y (k+1) ω) ≥ 1.
+-/
+lemma X_eq_prodY_mul_scaledS_sub_cumW
+    (X Y W : ℕ → Ω → ℝ)
+    (hY_nonneg : ∀ t ω, 0 ≤ Y t ω) :
+    ∀ t ω, X t ω = prodY Y t ω * scaledS X Y W t ω - cumW W t ω := by
+  intro t ω
+  have hpos : 0 < prodY Y t ω := prodY_pos (Y := Y) hY_nonneg t ω
+  simp only [scaledS]
+  rw [mul_div_cancel₀ _ (ne_of_gt hpos)]
+  ring
+
+/-- The supremum of expected values of the scaled process S_n is bounded.
+
+This is a key step in proving the Robbins-Siegmund theorem: since
+E[S_{n+1}] ≤ E[S_n] + E[β_{n+1}/P_{n+1}] ≤ E[S_n] + E[β_{n+1}], we get by induction:
+E[S_n] ≤ E[S_0] + Σ_{k<n} E[β_{k+1}] ≤ E[S_0] + Σ_k E[β_k] < ∞
+
+This provides the sup E[S_n] < ∞ bound needed for the L¹ convergence argument.
+-/
+lemma scaledS_sup_integral_bdd
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsFiniteMeasure μ]
+    (ℱ : Filtration ℕ m0)
+    (X Y Z W : ℕ → Ω → ℝ)
+    (adapted_X : Adapted ℱ X) (adapted_Y : Adapted ℱ Y)
+    (adapted_Z : Adapted ℱ Z) (adapted_W : Adapted ℱ W)
+    (predictable_Y : Adapted ℱ fun t => Y (t + 1))
+    (predictable_W : Adapted ℱ fun t => W (t + 1))
+    (hX_nonneg : ∀ t ω, 0 ≤ X t ω)
+    (hY_nonneg : ∀ t ω, 0 ≤ Y t ω)
+    (hZ_nonneg : ∀ t ω, 0 ≤ Z t ω)
+    (hW_nonneg : ∀ t ω, 0 ≤ W t ω)
+    (condexp_ineq : ∀ t,
+      μ[fun ω => X (t + 1) ω | ℱ t]
+        ≤ᵐ[μ] fun ω => (1 + Y (t + 1) ω) * X t ω + Z (t + 1) ω - W (t + 1) ω)
+    (integrable_X : ∀ t, Integrable (X t) μ)
+    (integrable_Z : ∀ t, Integrable (Z t) μ)
+    (integrable_W : ∀ t, Integrable (W t) μ)
+    (sumEZ : Summable (fun t => ∫ ω, Z t ω ∂μ))
+    : BddAbove (Set.range fun n => ∫ ω, scaledS X Y W n ω ∂μ) := by
+  classical
+  -- Step 1: Integrate the normalized drift inequality to get E[S_{t+1}] ≤ E[S_t] + E[Z_{t+1}]
+  have h_step_int : ∀ t,
+      (∫ ω, scaledS X Y W (t + 1) ω ∂μ)
+        ≤ (∫ ω, scaledS X Y W t ω ∂μ) + (∫ ω, Z (t + 1) ω ∂μ) := by
+    intro t
+    -- Use the conditional expectation step inequality for scaledS
+    have h := condexp_scaledS_step (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+        predictable_Y adapted_W predictable_W hY_nonneg hW_nonneg condexp_ineq integrable_X integrable_W t
+    -- Integrability facts
+    have hL_int : Integrable (μ[fun ω' => scaledS X Y W (t + 1) ω' | ℱ t]) μ :=
+      integrable_condExp (μ := μ) (m := ℱ t) (f := fun ω => scaledS X Y W (t + 1) ω)
+    have hZnext_meas : AEStronglyMeasurable (fun ω => Z (t + 1) ω / prodY Y (t + 1) ω) μ := by
+      have hsm : StronglyMeasurable[ℱ (t + 1)] (scaledZ_next Y Z t) :=
+        scaledZ_next_measurable (ℱ := ℱ) (Y := Y) (Z := Z) adapted_Y predictable_Y adapted_Z t
+      exact (hsm.mono (ℱ.le (t + 1))).aestronglyMeasurable
+    have hZnext_int : Integrable (fun ω => Z (t + 1) ω / prodY Y (t + 1) ω) μ := by
+      have hdom : Integrable (fun ω => |Z (t + 1) ω|) μ := (integrable_Z (t + 1)).abs
+      have hbound : ∀ᵐ ω ∂μ, ‖Z (t + 1) ω / prodY Y (t + 1) ω‖ ≤ ‖|Z (t + 1) ω|‖ := by
+        refine ae_of_all μ (fun ω => ?_)
+        have hge1 : 1 ≤ prodY Y (t + 1) ω := prodY_ge_one (Y := Y) hY_nonneg (t + 1) ω
+        have hpos : 0 < prodY Y (t + 1) ω := prodY_pos (Y := Y) hY_nonneg (t + 1) ω
+        have : |Z (t + 1) ω| / |prodY Y (t + 1) ω| ≤ |Z (t + 1) ω| := by
+          rw [abs_of_pos hpos]
+          have : |Z (t + 1) ω| ≤ |Z (t + 1) ω| * prodY Y (t + 1) ω := by
+            have hZnn : 0 ≤ |Z (t + 1) ω| := abs_nonneg _
+            simpa [one_mul] using mul_le_mul_of_nonneg_left hge1 hZnn
+          exact (div_le_iff₀ hpos).mpr this
+        simpa [Real.norm_eq_abs, abs_abs] using this
+      exact Integrable.mono hdom hZnext_meas hbound
+    have hR_int : Integrable (fun ω => scaledS X Y W t ω + Z (t + 1) ω / prodY Y (t + 1) ω) μ := by
+      have h1 := integrable_scaledS (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (W := W)
+          adapted_X adapted_Y adapted_W hY_nonneg hW_nonneg integrable_X integrable_W t
+      exact h1.add hZnext_int
+    -- Integrate both sides
+    have hint := MeasureTheory.integral_mono_ae (μ := μ)
+        (f := fun ω => μ[fun ω' => scaledS X Y W (t + 1) ω' | ℱ t] ω)
+        (g := fun ω => scaledS X Y W t ω + Z (t + 1) ω / prodY Y (t + 1) ω)
+        (hf := hL_int) (hg := hR_int) (h := h)
+    have hcond : ∫ ω, μ[fun ω' => scaledS X Y W (t + 1) ω' | ℱ t] ω ∂μ = ∫ ω, scaledS X Y W (t + 1) ω ∂μ := by
+      simpa using MeasureTheory.integral_condExp (μ := μ) (m := ℱ t) (hm := ℱ.le t)
+          (f := fun ω => scaledS X Y W (t + 1) ω)
+    -- Pointwise bound: Z/(P_{t+1}) ≤ Z since P_{t+1} ≥ 1
+    have hpt : ∀ ω, Z (t + 1) ω / prodY Y (t + 1) ω ≤ Z (t + 1) ω := by
+      intro ω
+      have hge1 : 1 ≤ prodY Y (t + 1) ω := prodY_ge_one (Y := Y) hY_nonneg (t + 1) ω
+      have hpos : 0 < prodY Y (t + 1) ω := prodY_pos (Y := Y) hY_nonneg (t + 1) ω
+      have hZnn : 0 ≤ Z (t + 1) ω := hZ_nonneg (t + 1) ω
+      have : Z (t + 1) ω ≤ Z (t + 1) ω * prodY Y (t + 1) ω := by
+        simpa [one_mul] using mul_le_mul_of_nonneg_left hge1 hZnn
+      exact (div_le_iff₀ hpos).mpr this
+    have hZint : (∫ ω, Z (t + 1) ω / prodY Y (t + 1) ω ∂μ) ≤ (∫ ω, Z (t + 1) ω ∂μ) := by
+      exact MeasureTheory.integral_mono_ae (μ := μ)
+          (f := fun ω => Z (t + 1) ω / prodY Y (t + 1) ω) (g := fun ω => Z (t + 1) ω)
+          (hf := hZnext_int) (hg := integrable_Z (t + 1)) (h := ae_of_all μ hpt)
+    -- Combine
+    have hsplit : ∫ ω, scaledS X Y W t ω + Z (t + 1) ω / prodY Y (t + 1) ω ∂μ
+        = (∫ ω, scaledS X Y W t ω ∂μ) + (∫ ω, Z (t + 1) ω / prodY Y (t + 1) ω ∂μ) := by
+      have h1 := integrable_scaledS (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (W := W)
+          adapted_X adapted_Y adapted_W hY_nonneg hW_nonneg integrable_X integrable_W t
+      exact MeasureTheory.integral_add h1 hZnext_int
+    calc
+      ∫ ω, scaledS X Y W (t + 1) ω ∂μ
+          = ∫ ω, μ[fun ω' => scaledS X Y W (t + 1) ω' | ℱ t] ω ∂μ := by rw [← hcond]
+      _ ≤ ∫ ω, scaledS X Y W t ω + Z (t + 1) ω / prodY Y (t + 1) ω ∂μ := hint
+      _ = (∫ ω, scaledS X Y W t ω ∂μ) + (∫ ω, Z (t + 1) ω / prodY Y (t + 1) ω ∂μ) := hsplit
+      _ ≤ (∫ ω, scaledS X Y W t ω ∂μ) + (∫ ω, Z (t + 1) ω ∂μ) := add_le_add le_rfl hZint
+  -- Step 2: bound E[scaledS t] by E[scaledS 0] + Σ_{k<t} E[Z_{k+1}]
+  have h_scaledS_bound : ∀ t,
+      (∫ ω, scaledS X Y W t ω ∂μ)
+        ≤ (∫ ω, scaledS X Y W 0 ω ∂μ) + Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
+    intro t
+    induction' t with n ih
+    · simp
+    · calc
+        (∫ ω, scaledS X Y W (n + 1) ω ∂μ)
+            ≤ (∫ ω, scaledS X Y W n ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := h_step_int n
+        _ ≤ (∫ ω, scaledS X Y W 0 ω ∂μ)
+              + Finset.sum (Finset.range n) (fun k => ∫ ω, Z (k + 1) ω ∂μ)
+              + (∫ ω, Z (n + 1) ω ∂μ) := add_le_add_right ih _
+        _ = (∫ ω, scaledS X Y W 0 ω ∂μ)
+              + Finset.sum (Finset.range (n + 1)) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
+              simp [Finset.sum_range_succ, add_comm, add_left_comm, add_assoc]
+  -- Step 3: partial sums bounded by the total tsum
+  let E0 : ℝ := ∫ ω, scaledS X Y W 0 ω ∂μ
+  let EZsum : ℝ := ∑' k, ∫ ω, Z k ω ∂μ
+  have hEZsum_nn : 0 ≤ EZsum := by
+    have hnn : ∀ k, 0 ≤ ∫ ω, Z k ω ∂μ := by
+      intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (fun ω => hZ_nonneg k ω))
+    exact tsum_nonneg hnn
+  have hsum_le_tsum : ∀ t,
+      Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) ≤ EZsum := by
+    intro t
+    let a : ℕ → ℝ := fun k => ∫ ω, Z k ω ∂μ
+    have h_nonneg : ∀ k, 0 ≤ a k := by
+      intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (fun ω => hZ_nonneg k ω))
+    have hsum_full : (Finset.range (t + 1)).sum a ≤ EZsum := by
+      have ha_sum : Summable a := sumEZ
+      simpa using ha_sum.sum_le_tsum (Finset.range (t + 1)) (by intro k _; exact h_nonneg k)
+    -- Σ_{k<t} a(k+1) ≤ a 0 + Σ_{k<t} a(k+1) = Σ_{u≤t} a u
+    have hsplit_n : ∀ n, (Finset.range (n + 1)).sum a = a 0 + (Finset.range n).sum (fun k => a (k + 1)) := by
+      intro n
+      induction' n with n ih
+      · simp [a]
+      · calc
+          (Finset.range (n + 2)).sum a
+              = (Finset.range (n + 1)).sum a + a (n + 1) := by simp [Finset.sum_range_succ]
+          _ = (a 0 + (Finset.range n).sum (fun k => a (k + 1))) + a (n + 1) := by simpa [ih]
+          _ = a 0 + ((Finset.range n).sum (fun k => a (k + 1)) + a (n + 1)) := by ring
+          _ = a 0 + (Finset.range (n + 1)).sum (fun k => a (k + 1)) := by simp [Finset.sum_range_succ]
+    have hsplit := hsplit_n t
+    have h_le_prefix : (Finset.range t).sum (fun k => a (k + 1)) ≤ (Finset.range (t + 1)).sum a := by
+      have h0 : 0 ≤ a 0 := h_nonneg 0
+      have : (Finset.range t).sum (fun k => a (k + 1)) ≤ a 0 + (Finset.range t).sum (fun k => a (k + 1)) :=
+        le_add_of_nonneg_left h0
+      simpa [hsplit] using this
+    exact h_le_prefix.trans hsum_full
+  -- Step 4: conclude BddAbove
+  have h_upper : ∀ t, (∫ ω, scaledS X Y W t ω ∂μ) ≤ E0 + EZsum := by
+    intro t
+    calc
+      ∫ ω, scaledS X Y W t ω ∂μ
+          ≤ E0 + Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := h_scaledS_bound t
+      _ ≤ E0 + EZsum := add_le_add_left (hsum_le_tsum t) E0
+  refine ⟨E0 + EZsum, ?_⟩
+  intro x ⟨t, ht⟩
+  simp only at ht
+  rw [← ht]
+  exact h_upper t
+
+/-- Almost sure convergence of the scaled process S_n.
+
+This is extracted from the proof of `robbinsSiegmund_expBound`. The approach is:
+1. Show `Mpred = scaledS - Zsum` is a supermartingale
+2. Use submartingale convergence theorem on `-Mpred` to get convergence
+3. Show `Zsum` converges (nonnegative summable increments give monotone bounded sequence)
+4. Combine: `scaledS = Mpred + Zsum` converges since both components converge
+-/
+lemma scaledS_converges_ae
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ]
+    (ℱ : Filtration ℕ m0)
+    (X Y Z W : ℕ → Ω → ℝ)
+    -- Adaptedness
+    (adapted_X : Adapted ℱ X) (adapted_Y : Adapted ℱ Y)
+    (adapted_Z : Adapted ℱ Z) (adapted_W : Adapted ℱ W)
+    -- Predictability
+    (predictable_Y : Adapted ℱ fun t => Y (t + 1))
+    (predictable_Z : Adapted ℱ fun t => Z (t + 1))
+    (predictable_W : Adapted ℱ fun t => W (t + 1))
+    -- Nonnegativity
+    (hX_nonneg : ∀ t ω, 0 ≤ X t ω)
+    (hY_nonneg : ∀ t ω, 0 ≤ Y t ω)
+    (hZ_nonneg : ∀ t ω, 0 ≤ Z t ω)
+    (hW_nonneg : ∀ t ω, 0 ≤ W t ω)
+    -- Integrability
+    (integrable_X : ∀ t, Integrable (X t) μ)
+    (integrable_Z : ∀ t, Integrable (Z t) μ)
+    (integrable_W : ∀ t, Integrable (W t) μ)
+    -- Product bound and Z summability
+    (prod_bound : ∃ C : ℝ, 0 < C ∧ ∀ t ω, prodY Y t ω ≤ C)
+    (sumEZ : Summable (fun t => ∫ ω, Z t ω ∂μ))
+    -- Drift inequality
+    (condexp_ineq : ∀ t,
+      μ[fun ω => X (t + 1) ω | ℱ t]
+        ≤ᵐ[μ] fun ω => (1 + Y (t + 1) ω) * X t ω + Z (t + 1) ω - W (t + 1) ω)
+    : ∃ S_inf : Ω → ℝ, ∀ᵐ ω ∂μ,
+      Tendsto (fun t => scaledS X Y W t ω) atTop (nhds (S_inf ω)) := by
+  classical
+  -- The proof follows the structure from robbinsSiegmund_expBound:
+  -- 1. Establish Mpred is a supermartingale and has uniform L^1 bounds
+  -- 2. Use submartingale convergence theorem on -Mpred
+  -- 3. Show Zsum converges (monotone bounded sequence from summable increments)
+  -- 4. Combine: scaledS = Mpred + Zsum converges since both components converge
+
+  -- Step 1: L^1 bound for the supermartingale via sup E[S] + sum E[Z]
+  let E0 : ℝ := ∫ ω, scaledS X Y W 0 ω ∂μ
+  let EZsum : ℝ := ∑' k, ∫ ω, Z k ω ∂μ
+
+  -- Nonnegativity of E0
+  have hE0_nn : 0 ≤ E0 := by
+    have hpt : ∀ ω, 0 ≤ scaledS X Y W 0 ω := by
+      intro ω
+      have hx := hX_nonneg 0 ω
+      have hw := cumW_nonneg (W := W) hW_nonneg 0 ω
+      have hden := (prodY_pos (Y := Y) hY_nonneg 0 ω).le
+      have hnum : 0 ≤ X 0 ω + cumW W 0 ω := add_nonneg hx hw
+      simpa [scaledS] using div_nonneg hnum hden
+    exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ hpt)
+
+  -- Nonnegativity of EZsum
+  have hEZsum_nn : 0 ≤ EZsum := by
+    have hnn : ∀ k, 0 ≤ ∫ ω, Z k ω ∂μ := by
+      intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (hZ_nonneg k))
+    exact tsum_nonneg hnn
+
+  -- The L^1 bound for -Mpred
+  have hR_nonneg : (0 : ℝ) ≤ E0 + 2 * EZsum + 1 := by linarith
+  let R : ℝ≥0 := Real.toNNReal (E0 + 2 * EZsum + 1)
+  have h_eLp_bound : ∀ t, eLpNorm (fun ω => -Mpred X Y Z W t ω) 1 μ ≤ R := by
+    intro t
+    -- Use triangle inequality: ‖-Mpred‖₁ ≤ ‖scaledS‖₁ + ‖Zsum‖₁
+    have hM_le := eLpNorm_Mpred_le (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+      adapted_X adapted_Y adapted_Z adapted_W predictable_Z hY_nonneg hW_nonneg t
+    -- ‖-f‖ = ‖f‖
+    have hneg : eLpNorm (fun ω => -Mpred X Y Z W t ω) 1 μ = eLpNorm (Mpred X Y Z W t) 1 μ := by
+      refine MeasureTheory.eLpNorm_neg (μ := μ) (p := 1) (f := Mpred X Y Z W t)
+    -- Bound scaledS L1 norm using nonnegativity
+    have hS_nonneg : ∀ ω, 0 ≤ scaledS X Y W t ω := by
+      intro ω
+      have hx := hX_nonneg t ω
+      have hw := cumW_nonneg (W := W) hW_nonneg t ω
+      have hden := (prodY_pos (Y := Y) hY_nonneg t ω).le
+      have hnum : 0 ≤ X t ω + cumW W t ω := add_nonneg hx hw
+      simpa [scaledS] using div_nonneg hnum hden
+    have hS_int := integrable_scaledS (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (W := W)
+      adapted_X adapted_Y adapted_W hY_nonneg hW_nonneg integrable_X integrable_W t
+    have hS_eLp : eLpNorm (scaledS X Y W t) 1 μ = ENNReal.ofReal (∫ ω, scaledS X Y W t ω ∂μ) := by
+      rw [eLpNorm_one_eq_lintegral_enorm]
+      have h_enorm : ∫⁻ x, ‖scaledS X Y W t x‖ₑ ∂μ = ∫⁻ x, ENNReal.ofReal (scaledS X Y W t x) ∂μ := by
+        refine MeasureTheory.lintegral_congr_ae ?_
+        filter_upwards with x
+        have hnn := hS_nonneg x
+        rw [Real.enorm_eq_ofReal hnn]
+      rw [h_enorm]
+      exact (MeasureTheory.ofReal_integral_eq_lintegral_ofReal hS_int (ae_of_all μ hS_nonneg)).symm
+    -- Similar bound for Zsum using nonnegativity
+    have hZsum_nonneg : ∀ ω, 0 ≤ Zsum Y Z t ω := by
+      intro ω
+      simp only [Zsum]
+      apply Finset.sum_nonneg
+      intro k _
+      exact scaledZ_nonneg (Y := Y) (Z := Z) hY_nonneg hZ_nonneg k ω
+    have hZsum_int := integrable_Zsum (μ := μ) (ℱ := ℱ) (Y := Y) (Z := Z)
+      adapted_Y predictable_Z adapted_Z hY_nonneg hZ_nonneg integrable_Z t
+    have hZsum_eLp : eLpNorm (Zsum Y Z t) 1 μ = ENNReal.ofReal (∫ ω, Zsum Y Z t ω ∂μ) := by
+      rw [eLpNorm_one_eq_lintegral_enorm]
+      have h_enorm : ∫⁻ x, ‖Zsum Y Z t x‖ₑ ∂μ = ∫⁻ x, ENNReal.ofReal (Zsum Y Z t x) ∂μ := by
+        refine MeasureTheory.lintegral_congr_ae ?_
+        filter_upwards with x
+        have hnn := hZsum_nonneg x
+        rw [Real.enorm_eq_ofReal hnn]
+      rw [h_enorm]
+      exact (MeasureTheory.ofReal_integral_eq_lintegral_ofReal hZsum_int (ae_of_all μ hZsum_nonneg)).symm
+    -- Now use the bounds from scaledS_sup_integral_bdd
+    have hS_sup := scaledS_sup_integral_bdd (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+      adapted_X adapted_Y adapted_Z adapted_W predictable_Y predictable_W
+      hX_nonneg hY_nonneg hZ_nonneg hW_nonneg condexp_ineq integrable_X integrable_Z integrable_W sumEZ
+    -- The integral of scaledS t is bounded by E0 + EZsum
+    have hS_int_le : ∫ ω, scaledS X Y W t ω ∂μ ≤ E0 + EZsum := by
+      rcases hS_sup with ⟨M, hM⟩
+      -- From the proof of scaledS_sup_integral_bdd, we know M = E0 + EZsum works
+      -- We prove this directly using the step inequality
+      have h_step_int : ∀ s,
+          (∫ ω, scaledS X Y W (s + 1) ω ∂μ) ≤ (∫ ω, scaledS X Y W s ω ∂μ) + (∫ ω, Z (s + 1) ω ∂μ) := by
+        intro s
+        have h := condexp_scaledS_step (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+          predictable_Y adapted_W predictable_W hY_nonneg hW_nonneg condexp_ineq integrable_X integrable_W s
+        have hL_int : Integrable (μ[fun ω' => scaledS X Y W (s + 1) ω' | ℱ s]) μ :=
+          integrable_condExp (μ := μ) (m := ℱ s) (f := fun ω => scaledS X Y W (s + 1) ω)
+        have hZnext_int : Integrable (fun ω => Z (s + 1) ω / prodY Y (s + 1) ω) μ := by
+          have hdom : Integrable (fun ω => |Z (s + 1) ω|) μ := (integrable_Z (s + 1)).abs
+          have hZnext_meas : AEStronglyMeasurable (fun ω => Z (s + 1) ω / prodY Y (s + 1) ω) μ := by
+            have hsm : StronglyMeasurable[ℱ (s + 1)] (scaledZ_next Y Z s) :=
+              scaledZ_next_measurable (ℱ := ℱ) (Y := Y) (Z := Z) adapted_Y predictable_Y adapted_Z s
+            exact (hsm.mono (ℱ.le (s + 1))).aestronglyMeasurable
+          have hbound : ∀ᵐ ω ∂μ, ‖Z (s + 1) ω / prodY Y (s + 1) ω‖ ≤ ‖|Z (s + 1) ω|‖ := by
+            refine ae_of_all μ (fun ω => ?_)
+            have hge1 : 1 ≤ prodY Y (s + 1) ω := prodY_ge_one (Y := Y) hY_nonneg (s + 1) ω
+            have hpos : 0 < prodY Y (s + 1) ω := prodY_pos (Y := Y) hY_nonneg (s + 1) ω
+            have : |Z (s + 1) ω| / |prodY Y (s + 1) ω| ≤ |Z (s + 1) ω| := by
+              rw [abs_of_pos hpos]
+              have : |Z (s + 1) ω| ≤ |Z (s + 1) ω| * prodY Y (s + 1) ω := by
+                have hZnn : 0 ≤ |Z (s + 1) ω| := abs_nonneg _
+                simpa [one_mul] using mul_le_mul_of_nonneg_left hge1 hZnn
+              exact (div_le_iff₀ hpos).mpr this
+            simpa [Real.norm_eq_abs, abs_abs] using this
+          exact Integrable.mono hdom hZnext_meas hbound
+        have hR_int : Integrable (fun ω => scaledS X Y W s ω + Z (s + 1) ω / prodY Y (s + 1) ω) μ := by
+          have h1 := integrable_scaledS (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (W := W)
+            adapted_X adapted_Y adapted_W hY_nonneg hW_nonneg integrable_X integrable_W s
+          exact h1.add hZnext_int
+        have hint := MeasureTheory.integral_mono_ae (μ := μ)
+          (f := fun ω => μ[fun ω' => scaledS X Y W (s + 1) ω' | ℱ s] ω)
+          (g := fun ω => scaledS X Y W s ω + Z (s + 1) ω / prodY Y (s + 1) ω)
+          (hf := hL_int) (hg := hR_int) (h := h)
+        have hcond : ∫ ω, μ[fun ω' => scaledS X Y W (s + 1) ω' | ℱ s] ω ∂μ = ∫ ω, scaledS X Y W (s + 1) ω ∂μ := by
+          simpa using MeasureTheory.integral_condExp (μ := μ) (m := ℱ s) (hm := ℱ.le s)
+            (f := fun ω => scaledS X Y W (s + 1) ω)
+        have hpt : ∀ ω, Z (s + 1) ω / prodY Y (s + 1) ω ≤ Z (s + 1) ω := by
+          intro ω
+          have hge1 : 1 ≤ prodY Y (s + 1) ω := prodY_ge_one (Y := Y) hY_nonneg (s + 1) ω
+          have hpos : 0 < prodY Y (s + 1) ω := prodY_pos (Y := Y) hY_nonneg (s + 1) ω
+          have hZnn : 0 ≤ Z (s + 1) ω := hZ_nonneg (s + 1) ω
+          have : Z (s + 1) ω ≤ Z (s + 1) ω * prodY Y (s + 1) ω := by
+            simpa [one_mul] using mul_le_mul_of_nonneg_left hge1 hZnn
+          exact (div_le_iff₀ hpos).mpr this
+        have hZint : (∫ ω, Z (s + 1) ω / prodY Y (s + 1) ω ∂μ) ≤ (∫ ω, Z (s + 1) ω ∂μ) := by
+          exact MeasureTheory.integral_mono_ae (μ := μ)
+            (f := fun ω => Z (s + 1) ω / prodY Y (s + 1) ω) (g := fun ω => Z (s + 1) ω)
+            (hf := hZnext_int) (hg := integrable_Z (s + 1)) (h := ae_of_all μ hpt)
+        have hsplit : ∫ ω, scaledS X Y W s ω + Z (s + 1) ω / prodY Y (s + 1) ω ∂μ
+            = (∫ ω, scaledS X Y W s ω ∂μ) + (∫ ω, Z (s + 1) ω / prodY Y (s + 1) ω ∂μ) := by
+          have h1 := integrable_scaledS (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (W := W)
+            adapted_X adapted_Y adapted_W hY_nonneg hW_nonneg integrable_X integrable_W s
+          exact MeasureTheory.integral_add h1 hZnext_int
+        calc ∫ ω, scaledS X Y W (s + 1) ω ∂μ
+            = ∫ ω, μ[fun ω' => scaledS X Y W (s + 1) ω' | ℱ s] ω ∂μ := by rw [← hcond]
+          _ ≤ ∫ ω, scaledS X Y W s ω + Z (s + 1) ω / prodY Y (s + 1) ω ∂μ := hint
+          _ = (∫ ω, scaledS X Y W s ω ∂μ) + (∫ ω, Z (s + 1) ω / prodY Y (s + 1) ω ∂μ) := hsplit
+          _ ≤ (∫ ω, scaledS X Y W s ω ∂μ) + (∫ ω, Z (s + 1) ω ∂μ) := add_le_add le_rfl hZint
+      -- Induction to get bound by E0 + partial sums
+      have h_scaledS_bound : ∀ s,
+          (∫ ω, scaledS X Y W s ω ∂μ) ≤ E0 + Finset.sum (Finset.range s) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
+        intro s
+        induction s with
+        | zero => simp [E0]
+        | succ n ih =>
+          calc (∫ ω, scaledS X Y W (n + 1) ω ∂μ)
+              ≤ (∫ ω, scaledS X Y W n ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := h_step_int n
+            _ ≤ E0 + Finset.sum (Finset.range n) (fun k => ∫ ω, Z (k + 1) ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := by
+                exact add_le_add_right ih _
+            _ = E0 + Finset.sum (Finset.range (n + 1)) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
+                simp [Finset.sum_range_succ, add_comm, add_left_comm, add_assoc]
+      -- Bound partial sums by tsum
+      have hsum_le_tsum : ∀ s,
+          Finset.sum (Finset.range s) (fun k => ∫ ω, Z (k + 1) ω ∂μ) ≤ EZsum := by
+        intro s
+        let a : ℕ → ℝ := fun k => ∫ ω, Z k ω ∂μ
+        have h_nonneg : ∀ k, 0 ≤ a k := by
+          intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (hZ_nonneg k))
+        have hsum_full : (Finset.range (s + 1)).sum a ≤ EZsum := by
+          have ha_sum : Summable a := sumEZ
+          simpa using ha_sum.sum_le_tsum (Finset.range (s + 1)) (by intro k _; exact h_nonneg k)
+        have hsplit_n : ∀ n, (Finset.range (n + 1)).sum a = a 0 + (Finset.range n).sum (fun k => a (k + 1)) := by
+          intro n
+          induction n with
+          | zero => simp [a]
+          | succ n ih =>
+            calc (Finset.range (n + 2)).sum a
+                = (Finset.range (n + 1)).sum a + a (n + 1) := by simp [Finset.sum_range_succ]
+              _ = (a 0 + (Finset.range n).sum (fun k => a (k + 1))) + a (n + 1) := by rw [ih]
+              _ = a 0 + ((Finset.range n).sum (fun k => a (k + 1)) + a (n + 1)) := by ring
+              _ = a 0 + (Finset.range (n + 1)).sum (fun k => a (k + 1)) := by simp [Finset.sum_range_succ]
+        have hsplit := hsplit_n s
+        have h_le_prefix : (Finset.range s).sum (fun k => a (k + 1)) ≤ (Finset.range (s + 1)).sum a := by
+          have h0 : 0 ≤ a 0 := h_nonneg 0
+          have : (Finset.range s).sum (fun k => a (k + 1)) ≤ a 0 + (Finset.range s).sum (fun k => a (k + 1)) :=
+            le_add_of_nonneg_left h0
+          simpa [hsplit] using this
+        exact h_le_prefix.trans hsum_full
+      calc ∫ ω, scaledS X Y W t ω ∂μ
+          ≤ E0 + Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := h_scaledS_bound t
+        _ ≤ E0 + EZsum := add_le_add_left (hsum_le_tsum t) E0
+    -- Bound for Zsum
+    have hZsum_int_le : ∫ ω, Zsum Y Z t ω ∂μ ≤ EZsum := by
+      have hsplit : ∫ ω, Zsum Y Z t ω ∂μ
+          = Finset.sum (Finset.range t) (fun k => ∫ ω, scaledZ Y Z k ω ∂μ) := by
+        have hint : ∀ i ∈ Finset.range t, Integrable (fun ω => scaledZ Y Z i ω) μ := by
+          intro i _
+          exact integrable_scaledZ (μ := μ) (ℱ := ℱ) (Y := Y) (Z := Z)
+            adapted_Y adapted_Z predictable_Z hY_nonneg hZ_nonneg integrable_Z i
+        simpa [Zsum] using MeasureTheory.integral_finset_sum (Finset.range t) hint
+      have hterm : ∀ k ∈ Finset.range t,
+          (∫ ω, scaledZ Y Z k ω ∂μ) ≤ (∫ ω, Z (k + 1) ω ∂μ) := by
+        intro k _
+        have hpt : ∀ ω, scaledZ Y Z k ω ≤ Z (k + 1) ω := by
+          intro ω
+          have hge1 : 1 ≤ prodY Y k ω := prodY_ge_one (Y := Y) hY_nonneg k ω
+          have hpos : 0 < prodY Y k ω := prodY_pos (Y := Y) hY_nonneg k ω
+          have hmul : Z (k + 1) ω ≤ Z (k + 1) ω * prodY Y k ω := by
+            simpa [one_mul] using mul_le_mul_of_nonneg_left hge1 (hZ_nonneg (k + 1) ω)
+          simpa [scaledZ] using (div_le_iff₀ hpos).mpr hmul
+        have hf : Integrable (scaledZ Y Z k) μ :=
+          integrable_scaledZ (μ := μ) (ℱ := ℱ) (Y := Y) (Z := Z)
+            adapted_Y adapted_Z predictable_Z hY_nonneg hZ_nonneg integrable_Z k
+        exact MeasureTheory.integral_mono_ae (μ := μ)
+          (f := scaledZ Y Z k) (g := Z (k + 1))
+          (hf := hf) (hg := integrable_Z (k + 1)) (h := ae_of_all μ hpt)
+      have h_le := Finset.sum_le_sum hterm
+      have hsum_le : Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) ≤ EZsum := by
+        let a : ℕ → ℝ := fun k => ∫ ω, Z k ω ∂μ
+        have h_nonneg : ∀ k, 0 ≤ a k := by
+          intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (hZ_nonneg k))
+        have hsum_full : (Finset.range (t + 1)).sum a ≤ EZsum := by
+          have ha_sum : Summable a := sumEZ
+          simpa using ha_sum.sum_le_tsum (Finset.range (t + 1)) (by intro k _; exact h_nonneg k)
+        have hsplit_n : ∀ n, (Finset.range (n + 1)).sum a = a 0 + (Finset.range n).sum (fun k => a (k + 1)) := by
+          intro n
+          induction n with
+          | zero => simp [a]
+          | succ n ih =>
+            calc (Finset.range (n + 2)).sum a
+                = (Finset.range (n + 1)).sum a + a (n + 1) := by simp [Finset.sum_range_succ]
+              _ = (a 0 + (Finset.range n).sum (fun k => a (k + 1))) + a (n + 1) := by rw [ih]
+              _ = a 0 + ((Finset.range n).sum (fun k => a (k + 1)) + a (n + 1)) := by ring
+              _ = a 0 + (Finset.range (n + 1)).sum (fun k => a (k + 1)) := by simp [Finset.sum_range_succ]
+        have hsplit' := hsplit_n t
+        have h_le_prefix : (Finset.range t).sum (fun k => a (k + 1)) ≤ (Finset.range (t + 1)).sum a := by
+          have h0 : 0 ≤ a 0 := h_nonneg 0
+          have : (Finset.range t).sum (fun k => a (k + 1)) ≤ a 0 + (Finset.range t).sum (fun k => a (k + 1)) :=
+            le_add_of_nonneg_left h0
+          simpa [hsplit'] using this
+        exact h_le_prefix.trans hsum_full
+      calc ∫ ω, Zsum Y Z t ω ∂μ
+          = Finset.sum (Finset.range t) (fun k => ∫ ω, scaledZ Y Z k ω ∂μ) := hsplit
+        _ ≤ Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := h_le
+        _ ≤ EZsum := hsum_le
+    -- Now combine: ‖Mpred‖ ≤ ‖scaledS‖ + ‖Zsum‖ ≤ (E0 + EZsum) + EZsum = E0 + 2*EZsum
+    calc eLpNorm (fun ω => -Mpred X Y Z W t ω) 1 μ
+        = eLpNorm (Mpred X Y Z W t) 1 μ := by exact MeasureTheory.eLpNorm_neg (μ := μ) (p := 1) (f := Mpred X Y Z W t)
+      _ ≤ eLpNorm (scaledS X Y W t) 1 μ + eLpNorm (Zsum Y Z t) 1 μ := hM_le
+      _ = ENNReal.ofReal (∫ ω, scaledS X Y W t ω ∂μ) + ENNReal.ofReal (∫ ω, Zsum Y Z t ω ∂μ) := by
+          rw [hS_eLp, hZsum_eLp]
+      _ ≤ ENNReal.ofReal (E0 + EZsum) + ENNReal.ofReal EZsum := by
+          exact add_le_add (ENNReal.ofReal_le_ofReal hS_int_le) (ENNReal.ofReal_le_ofReal hZsum_int_le)
+      _ = ENNReal.ofReal (E0 + EZsum + EZsum) := by
+          rw [← ENNReal.ofReal_add (by linarith) hEZsum_nn]
+      _ = ENNReal.ofReal (E0 + 2 * EZsum) := by ring_nf
+      _ ≤ R := by
+          have h_le : E0 + 2 * EZsum ≤ E0 + 2 * EZsum + 1 := by linarith
+          calc ENNReal.ofReal (E0 + 2 * EZsum)
+              ≤ ENNReal.ofReal (E0 + 2 * EZsum + 1) := ENNReal.ofReal_le_ofReal h_le
+            _ = ↑(Real.toNNReal (E0 + 2 * EZsum + 1)) := (ENNReal.ofNNReal_toNNReal _).symm
+            _ = R := rfl
+
+  -- Step 2: Submartingale convergence for -Mpred
+  have h_subm : Submartingale (fun t => -Mpred X Y Z W t) ℱ μ := by
+    have hsup := Mpred_supermartingale (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+      adapted_X adapted_Y adapted_Z adapted_W predictable_Y predictable_Z predictable_W
+      hY_nonneg hZ_nonneg hW_nonneg condexp_ineq integrable_X integrable_Z integrable_W
+    simpa using hsup.neg
+
+  have hM_tend : ∀ᵐ ω ∂μ,
+      Tendsto (fun t => -Mpred X Y Z W t ω) atTop
+        (nhds (Filtration.limitProcess (fun t ω => -Mpred X Y Z W t ω) ℱ μ ω)) := by
+    simpa using Submartingale.ae_tendsto_limitProcess (μ := μ) (ℱ := ℱ)
+      (f := fun t ω => -Mpred X Y Z W t ω) (R := R) h_subm h_eLp_bound
+
+  -- Step 3: Convergence of Zsum (monotone bounded sequence)
+  have hZsum_ae_conv : ∀ᵐ ω ∂μ, ∃ LZ : ℝ,
+      Tendsto (fun t => Zsum Y Z t ω) atTop (nhds LZ) := by
+    -- Reduce to a.e. summability of scaledZ
+    suffices hZsum_ae_sum : ∀ᵐ ω ∂μ, Summable (fun k => scaledZ Y Z k ω) by
+      refine hZsum_ae_sum.mono ?_
+      intro ω hsum
+      have h_tend : Tendsto (fun t => (Finset.range t).sum (fun k => scaledZ Y Z k ω))
+          atTop (nhds (∑' k, scaledZ Y Z k ω)) := by
+        simpa using hsum.hasSum.tendsto_sum_nat
+      exact ⟨∑' k, scaledZ Y Z k ω, by simpa [Zsum] using h_tend⟩
+    -- Use expectation summability to get a.e. summability
+    -- Define F_k := ofReal (scaledZ_k) in ENNReal
+    let F : ℕ → Ω → ENNReal := fun k ω => ENNReal.ofReal (scaledZ Y Z k ω)
+    have hF_meas : ∀ k, Measurable (F k) := by
+      intro k
+      have hsm : StronglyMeasurable[ℱ k] (scaledZ Y Z k) :=
+        scaledZ_measurable (ℱ := ℱ) (Y := Y) (Z := Z) adapted_Y predictable_Z k
+      have hm : Measurable (scaledZ Y Z k) := (hsm.mono (ℱ.le k)).measurable
+      simpa [F] using hm.ennreal_ofReal
+    let S : ℕ → Ω → ENNReal := fun t ω => (Finset.range t).sum (fun k => F k ω)
+    have hS_meas : ∀ t, Measurable (S t) := by
+      intro t
+      simpa [S] using Finset.measurable_sum (s := Finset.range t) (f := F)
+        (by intro k _; exact hF_meas k)
+    have hS_mono : ∀ ω, Monotone (fun t => S t ω) := by
+      intro ω t s hts
+      have hsplit :
+          (Finset.range s).sum (fun k => F k ω)
+            = (Finset.range t).sum (fun k => F k ω)
+              + (Finset.Ico t s).sum (fun k => F k ω) := by
+        simpa using (Finset.sum_range_add_sum_Ico (fun k => F k ω) hts).symm
+      have htail_nonneg : (0 : ENNReal) ≤ (Finset.Ico t s).sum (fun k => F k ω) :=
+        bot_le
+      have := add_le_add_left htail_nonneg ((Finset.range t).sum (fun k => F k ω))
+      simpa [S, hsplit, add_comm, add_left_comm, add_assoc] using this
+    -- Bound lintegral of partial sums
+    have hS_lint_le : ∀ t,
+        (∫⁻ ω, S t ω ∂μ) ≤ ENNReal.ofReal (Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ)) := by
+      intro t
+      have hsplit : (∫⁻ ω, S t ω ∂μ) = Finset.sum (Finset.range t) (fun k => ∫⁻ ω, F k ω ∂μ) := by
+        simpa [S] using MeasureTheory.lintegral_finset_sum (f := fun k ω => F k ω)
+          (s := Finset.range t) (hf := by intro k _; exact hF_meas k)
+      have hterm : ∀ k ∈ Finset.range t,
+          (∫⁻ ω, F k ω ∂μ) ≤ ENNReal.ofReal (∫ ω, Z (k + 1) ω ∂μ) := by
+        intro k _
+        have h_nonneg : 0 ≤ᵐ[μ] scaledZ Y Z k := by
+          refine ae_of_all μ (fun ω => ?_)
+          exact scaledZ_nonneg (Y := Y) (Z := Z) hY_nonneg hZ_nonneg k ω
+        have h_int_sZ : Integrable (scaledZ Y Z k) μ :=
+          integrable_scaledZ (μ := μ) (ℱ := ℱ) (Y := Y) (Z := Z)
+            adapted_Y adapted_Z predictable_Z hY_nonneg hZ_nonneg integrable_Z k
+        have h_eq : (∫⁻ ω, F k ω ∂μ) = ENNReal.ofReal (∫ ω, scaledZ Y Z k ω ∂μ) := by
+          simpa [F] using (ofReal_integral_eq_lintegral_ofReal (μ := μ) (f := scaledZ Y Z k)
+            h_int_sZ h_nonneg).symm
+        have hpt : ∀ ω, scaledZ Y Z k ω ≤ Z (k + 1) ω := by
+          intro ω
+          have hge1 : 1 ≤ prodY Y k ω := prodY_ge_one (Y := Y) hY_nonneg k ω
+          have hpos : 0 < prodY Y k ω := prodY_pos (Y := Y) hY_nonneg k ω
+          have hz : 0 ≤ Z (k + 1) ω := hZ_nonneg (k + 1) ω
+          have hmul : Z (k + 1) ω ≤ Z (k + 1) ω * prodY Y k ω := by
+            simpa [one_mul] using mul_le_mul_of_nonneg_left hge1 hz
+          simpa [scaledZ] using (div_le_iff₀ hpos).mpr hmul
+        have h_int_Z : Integrable (Z (k + 1)) μ := integrable_Z (k + 1)
+        have h_le_int : (∫ ω, scaledZ Y Z k ω ∂μ) ≤ (∫ ω, Z (k + 1) ω ∂μ) := by
+          exact MeasureTheory.integral_mono_ae (μ := μ) (f := scaledZ Y Z k) (g := Z (k + 1))
+            (hf := h_int_sZ) (hg := h_int_Z) (h := ae_of_all μ hpt)
+        simpa [h_eq] using ENNReal.ofReal_le_ofReal h_le_int
+      have hsum_le := Finset.sum_le_sum hterm
+      have hsum_ofReal_le :
+          Finset.sum (Finset.range t) (fun k => ENNReal.ofReal (∫ ω, Z (k + 1) ω ∂μ))
+            ≤ ENNReal.ofReal (Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ)) := by
+        let a : ℕ → ℝ := fun k => ∫ ω, Z (k + 1) ω ∂μ
+        have ha_nonneg : ∀ k, 0 ≤ a k := by
+          intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (hZ_nonneg (k + 1)))
+        refine Nat.rec (by simp) ?step t
+        intro n ih
+        have hsum_nn : 0 ≤ Finset.sum (Finset.range n) a := Finset.sum_nonneg (fun k _ => ha_nonneg k)
+        have hlast_nn : 0 ≤ a n := ha_nonneg n
+        have step1 :
+            Finset.sum (Finset.range n) (fun k => ENNReal.ofReal (a k)) + ENNReal.ofReal (a n)
+              ≤ ENNReal.ofReal (Finset.sum (Finset.range n) a) + ENNReal.ofReal (a n) :=
+          add_le_add_right ih _
+        have step2 :
+            ENNReal.ofReal (Finset.sum (Finset.range n) a) + ENNReal.ofReal (a n)
+              = ENNReal.ofReal (Finset.sum (Finset.range n) a + a n) := by
+          simpa [ENNReal.ofReal_add, hsum_nn, hlast_nn]
+        have step' := step1.trans (le_of_eq step2)
+        simpa [a, Finset.sum_range_succ] using step'
+      have hsum_le_ofReal := hsum_le.trans hsum_ofReal_le
+      simpa [hsplit] using hsum_le_ofReal
+    -- Pass to supremum
+    have h_lint_series : (∫⁻ ω, (⨆ t, S t ω) ∂μ) ≤ ENNReal.ofReal EZsum := by
+      have hmono_ae : ∀ᵐ ω ∂μ, Monotone (fun t => S t ω) := ae_of_all μ hS_mono
+      have h_eq : (∫⁻ ω, (⨆ t, S t ω) ∂μ) = ⨆ t, (∫⁻ ω, S t ω ∂μ) := by
+        simpa using MeasureTheory.lintegral_iSup' (μ := μ) (f := S)
+          (hf := fun t => (hS_meas t).aemeasurable) (h_mono := hmono_ae)
+      have hsum_le_EZsum : ∀ t, Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) ≤ EZsum := by
+        intro t
+        let a : ℕ → ℝ := fun k => ∫ ω, Z k ω ∂μ
+        have h_nonneg : ∀ k, 0 ≤ a k := by
+          intro k; exact MeasureTheory.integral_nonneg_of_ae (ae_of_all μ (hZ_nonneg k))
+        have hsum_full : (Finset.range (t + 1)).sum a ≤ EZsum := by
+          have ha_sum : Summable a := sumEZ
+          simpa using ha_sum.sum_le_tsum (Finset.range (t + 1)) (by intro k _; exact h_nonneg k)
+        have hsplit_n : ∀ n, (Finset.range (n + 1)).sum a = a 0 + (Finset.range n).sum (fun k => a (k + 1)) := by
+          intro n
+          induction n with
+          | zero => simp [a]
+          | succ n ih =>
+            calc (Finset.range (n + 2)).sum a
+                = (Finset.range (n + 1)).sum a + a (n + 1) := by simp [Finset.sum_range_succ]
+              _ = (a 0 + (Finset.range n).sum (fun k => a (k + 1))) + a (n + 1) := by rw [ih]
+              _ = a 0 + ((Finset.range n).sum (fun k => a (k + 1)) + a (n + 1)) := by ring
+              _ = a 0 + (Finset.range (n + 1)).sum (fun k => a (k + 1)) := by simp [Finset.sum_range_succ]
+        have hsplit' := hsplit_n t
+        have h_le_prefix : (Finset.range t).sum (fun k => a (k + 1)) ≤ (Finset.range (t + 1)).sum a := by
+          have h0 : 0 ≤ a 0 := h_nonneg 0
+          have : (Finset.range t).sum (fun k => a (k + 1)) ≤ a 0 + (Finset.range t).sum (fun k => a (k + 1)) :=
+            le_add_of_nonneg_left h0
+          simpa [hsplit'] using this
+        exact h_le_prefix.trans hsum_full
+      have hbound : (⨆ t, (∫⁻ ω, S t ω ∂μ)) ≤ ENNReal.ofReal EZsum := by
+        refine iSup_le (fun t => ?_)
+        exact (hS_lint_le t).trans (ENNReal.ofReal_le_ofReal (hsum_le_EZsum t))
+      simpa [h_eq] using hbound
+    -- Conclude finiteness a.e.
+    have h_fin_ae : ∀ᵐ ω ∂μ, (⨆ t, S t ω) < ⊤ := by
+      have h_meas_S : AEMeasurable (fun ω => (⨆ t, S t ω)) μ := by
+        have : ∀ t, AEMeasurable (S t) μ := fun t => (hS_meas t).aemeasurable
+        exact AEMeasurable.iSup this
+      have hlt : (∫⁻ ω, (⨆ t, S t ω) ∂μ) < ⊤ := lt_of_le_of_lt h_lint_series (by simp)
+      exact MeasureTheory.ae_lt_top' (μ := μ) (f := fun ω => (⨆ t, S t ω)) h_meas_S (ne_of_lt hlt)
+    -- Convert to Summable
+    have h_sum_scaledZ : ∀ᵐ ω ∂μ, Summable (fun k => scaledZ Y Z k ω) := by
+      suffices h_bound_real : ∀ᵐ ω ∂μ, ∃ B : ℝ, ∀ t, (Finset.range t).sum (fun k => scaledZ Y Z k ω) ≤ B by
+        suffices hconv : ∀ᵐ ω ∂μ, ∃ L : ℝ,
+            Tendsto (fun t => (Finset.range t).sum (fun k => scaledZ Y Z k ω)) atTop (nhds L) by
+          refine hconv.mono ?_
+          intro ω hω
+          rcases hω with ⟨L, hL⟩
+          have hsum : HasSum (fun k => scaledZ Y Z k ω) L := by
+            rw [hasSum_iff_tendsto_nat_of_nonneg]
+            · exact hL
+            · intro i
+              exact scaledZ_nonneg (Y := Y) (Z := Z) hY_nonneg hZ_nonneg i ω
+          exact hsum.summable
+        refine h_bound_real.mono ?_
+        intro ω hB
+        rcases hB with ⟨B, hBω⟩
+        have hmono : Monotone (fun t => (Finset.range t).sum (fun k => scaledZ Y Z k ω)) := by
+          intro t s hts
+          have hsplit :
+              (Finset.range s).sum (fun k => scaledZ Y Z k ω)
+                = (Finset.range t).sum (fun k => scaledZ Y Z k ω)
+                  + (Finset.Ico t s).sum (fun k => scaledZ Y Z k ω) := by
+            simpa using (Finset.sum_range_add_sum_Ico (fun k => scaledZ Y Z k ω) hts).symm
+          have htail_nonneg : 0 ≤ (Finset.Ico t s).sum (fun k => scaledZ Y Z k ω) := by
+            apply Finset.sum_nonneg
+            intro k _
+            exact scaledZ_nonneg (Y := Y) (Z := Z) hY_nonneg hZ_nonneg k ω
+          have := add_le_add_left htail_nonneg ((Finset.range t).sum (fun k => scaledZ Y Z k ω))
+          simpa [hsplit, add_comm, add_left_comm, add_assoc] using this
+        let L : ℝ := sSup (Set.range (fun t => (Finset.range t).sum (fun k => scaledZ Y Z k ω)))
+        exact ⟨L, by
+          have hbdd : BddAbove (Set.range (fun t => (Finset.range t).sum (fun k => scaledZ Y Z k ω))) := by
+            use B
+            intro x ⟨t, ht⟩
+            rw [← ht]
+            exact hBω t
+          exact tendsto_atTop_ciSup hmono hbdd⟩
+      refine h_fin_ae.mono ?_
+      intro ω hfin
+      let B : ℝ := (⨆ t, S t ω).toReal
+      have hsum_le : ∀ t, (Finset.range t).sum (fun k => scaledZ Y Z k ω) ≤ B := by
+        intro t
+        have h1 : ENNReal.ofReal ((Finset.range t).sum (fun k => scaledZ Y Z k ω)) ≤ S t ω := by
+          induction t with
+          | zero => simp [S, F]
+          | succ n ih =>
+            have hsum_nn : 0 ≤ (Finset.range n).sum (fun k => scaledZ Y Z k ω) := by
+              apply Finset.sum_nonneg; intro k _
+              exact scaledZ_nonneg (Y := Y) (Z := Z) hY_nonneg hZ_nonneg k ω
+            have hlast_nn : 0 ≤ scaledZ Y Z n ω :=
+              scaledZ_nonneg (Y := Y) (Z := Z) hY_nonneg hZ_nonneg n ω
+            calc ENNReal.ofReal ((Finset.range (n + 1)).sum (fun k => scaledZ Y Z k ω))
+                = ENNReal.ofReal ((Finset.range n).sum (fun k => scaledZ Y Z k ω) + scaledZ Y Z n ω) := by
+                  simp [Finset.sum_range_succ]
+              _ = ENNReal.ofReal ((Finset.range n).sum (fun k => scaledZ Y Z k ω))
+                    + ENNReal.ofReal (scaledZ Y Z n ω) := by
+                  simpa [ENNReal.ofReal_add, hsum_nn, hlast_nn]
+              _ ≤ S n ω + ENNReal.ofReal (scaledZ Y Z n ω) := add_le_add_right ih _
+              _ = S (n + 1) ω := by simp [S, F, Finset.sum_range_succ]
+        have h2 : S t ω ≤ ⨆ t, S t ω := le_iSup (fun t => S t ω) t
+        have hsup_ne : (⨆ t, S t ω) ≠ ⊤ := ne_of_lt hfin
+        have : (Finset.range t).sum (fun k => scaledZ Y Z k ω) ≤ (⨆ t, S t ω).toReal := by
+          have h_ofReal_le : ENNReal.ofReal ((Finset.range t).sum (fun k => scaledZ Y Z k ω)) ≤ ⨆ t, S t ω :=
+            h1.trans h2
+          exact (ENNReal.ofReal_le_iff_le_toReal hsup_ne).1 h_ofReal_le
+        simpa [B] using this
+      exact ⟨B, hsum_le⟩
+    exact h_sum_scaledZ
+
+  -- Step 4: Combine Mpred and Zsum convergence to get scaledS convergence
+  have hS_ae_conv : ∀ᵐ ω ∂μ, ∃ Sinf : ℝ, Tendsto (fun t => scaledS X Y W t ω) atTop (nhds Sinf) := by
+    have hMpred_lim : ∀ᵐ ω ∂μ,
+        Tendsto (fun t => Mpred X Y Z W t ω) atTop
+          (nhds (-Filtration.limitProcess (fun t ω => -Mpred X Y Z W t ω) ℱ μ ω)) := by
+      filter_upwards [hM_tend] with ω hω
+      have := hω.neg
+      simpa [neg_neg] using this
+    filter_upwards [hMpred_lim, hZsum_ae_conv] with ω hM hZ
+    rcases hZ with ⟨LZ, hZtend⟩
+    refine ⟨-Filtration.limitProcess (fun t ω => -Mpred X Y Z W t ω) ℱ μ ω + LZ, ?_⟩
+    have h_add := hM.add hZtend
+    simpa [Mpred, sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using h_add
+
+  -- Construct the limit function
+  -- Use Classical.choose to extract a witness
+  have hchoice : ∀ᵐ ω ∂μ, ∃ s : ℝ, Tendsto (fun t => scaledS X Y W t ω) atTop (nhds s) := hS_ae_conv
+  -- Define S_inf using the limit process
+  let S_inf : Ω → ℝ := fun ω =>
+    if h : ∃ s : ℝ, Tendsto (fun t => scaledS X Y W t ω) atTop (nhds s)
+    then Classical.choose h
+    else 0
+  use S_inf
+  filter_upwards [hS_ae_conv] with ω hω
+  rcases hω with ⟨s, hs⟩
+  have : S_inf ω = s := by
+    simp only [S_inf]
+    have hex : ∃ s : ℝ, Tendsto (fun t => scaledS X Y W t ω) atTop (nhds s) := ⟨s, hs⟩
+    simp [dif_pos hex]
+    exact tendsto_nhds_unique (Classical.choose_spec hex) hs
+  rw [this]
+  exact hs
+
+/-- Transfer the supremum bound from scaledS to V.
+
+Given that sup E[scaledS_n] < infinity and the product bound prodY <= C,
+we show sup E[V_n] < infinity using the algebraic identity V = prodY * scaledS - cumW.
+Since cumW >= 0 and V >= 0, we have V <= prodY * scaledS <= C * scaledS,
+which gives E[V] <= C * E[scaledS], and the sup bound transfers.
+-/
+lemma sup_EV_from_sup_ES
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsFiniteMeasure μ]
+    (ℱ : Filtration ℕ m0)
+    (V α U : ℕ → Ω → ℝ)
+    -- Adaptedness
+    (adapted_V : Adapted ℱ V)
+    (adapted_α : Adapted ℱ α)
+    (adapted_U : Adapted ℱ U)
+    (predictable_α : Adapted ℱ fun t => α (t + 1))
+    (predictable_U : Adapted ℱ fun t => U (t + 1))
+    -- Nonnegativity
+    (hV_nonneg : ∀ t ω, 0 ≤ V t ω)
+    (hα_nonneg : ∀ t ω, 0 ≤ α t ω)
+    (hU_nonneg : ∀ t ω, 0 ≤ U t ω)
+    -- Integrability
+    (integrable_V : ∀ t, Integrable (V t) μ)
+    (integrable_U : ∀ t, Integrable (U t) μ)
+    -- Product bound
+    (prod_bound : ∃ C : ℝ, 0 < C ∧ ∀ t ω, prodY α t ω ≤ C)
+    -- scaledS bound
+    (hS_bdd : BddAbove (Set.range fun n => ∫ ω, scaledS V α U n ω ∂μ))
+    : BddAbove (Set.range fun n => ∫ ω, V n ω ∂μ) := by
+  -- Get the bound C from prod_bound
+  obtain ⟨C, hC_pos, hC_bound⟩ := prod_bound
+  -- Get the supremum bound M from hS_bdd
+  obtain ⟨M, hM⟩ := hS_bdd
+  -- We'll show C * M is a bound for E[V_n]
+  use C * M
+  intro x hx
+  obtain ⟨n, rfl⟩ := hx
+  -- Key inequality: V_n(ω) ≤ prodY(α, n, ω) * scaledS(V, α, U, n, ω) for all ω
+  have h_pointwise : ∀ ω, V n ω ≤ prodY α n ω * scaledS V α U n ω := by
+    intro ω
+    have h_identity := X_eq_prodY_mul_scaledS_sub_cumW V α U hα_nonneg n ω
+    -- V = prodY * scaledS - cumW, and cumW >= 0
+    have h_cumW_nonneg : 0 ≤ cumW U n ω := cumW_nonneg (W := U) hU_nonneg n ω
+    linarith
+  -- Since prodY ≤ C and scaledS ≥ 0, we have V ≤ C * scaledS
+  have h_V_le_CS : ∀ ω, V n ω ≤ C * scaledS V α U n ω := by
+    intro ω
+    have hP_le_C := hC_bound n ω
+    have hS_nonneg : 0 ≤ scaledS V α U n ω := by
+      unfold scaledS
+      have hnum_nonneg : 0 ≤ V n ω + cumW U n ω := by
+        have hV := hV_nonneg n ω
+        have hcW := cumW_nonneg (W := U) hU_nonneg n ω
+        linarith
+      have hden_pos : 0 < prodY α n ω := prodY_pos (Y := α) hα_nonneg n ω
+      exact div_nonneg hnum_nonneg (le_of_lt hden_pos)
+    calc V n ω ≤ prodY α n ω * scaledS V α U n ω := h_pointwise ω
+      _ ≤ C * scaledS V α U n ω := by
+        apply mul_le_mul_of_nonneg_right hP_le_C hS_nonneg
+  -- Integrate the inequality
+  have hint_V_le : ∫ ω, V n ω ∂μ ≤ ∫ ω, C * scaledS V α U n ω ∂μ := by
+    apply MeasureTheory.integral_mono_ae
+    · exact integrable_V n
+    · have hS_int := integrable_scaledS (μ := μ) (ℱ := ℱ) (X := V) (Y := α) (W := U)
+          adapted_V adapted_α adapted_U hα_nonneg hU_nonneg integrable_V integrable_U n
+      exact hS_int.const_mul C
+    · exact ae_of_all μ h_V_le_CS
+  -- Simplify: ∫ C * scaledS = C * ∫ scaledS
+  have h_factor : ∫ ω, C * scaledS V α U n ω ∂μ = C * ∫ ω, scaledS V α U n ω ∂μ := by
+    exact MeasureTheory.integral_mul_left C _
+  rw [h_factor] at hint_V_le
+  -- Use the bound on E[scaledS_n]
+  have hS_bound : ∫ ω, scaledS V α U n ω ∂μ ≤ M := by
+    apply hM
+    exact Set.mem_range_self n
+  calc ∫ ω, V n ω ∂μ ≤ C * ∫ ω, scaledS V α U n ω ∂μ := hint_V_le
+    _ ≤ C * M := by
+      apply mul_le_mul_of_nonneg_left hS_bound
+      exact le_of_lt hC_pos
+
+/-- U summability almost surely.
+
+From scaledS convergence and the product bound, we derive that U is summable a.s.
+The proof follows the same pattern as W summability in `robbinsSiegmund_expBound`:
+
+1. From V = prodY * scaledS - cumU and V >= 0, we get cumU <= prodY * scaledS
+2. From the product bound prodY <= C, we get cumU <= C * scaledS
+3. scaledS converges, hence bounded above
+4. Therefore cumU is bounded, and since U >= 0, this implies Summable U
+-/
+lemma U_summability_ae
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ]
+    (ℱ : Filtration ℕ m0)
+    (V α U : ℕ → Ω → ℝ)
+    -- Nonnegativity
+    (hV_nonneg : ∀ t ω, 0 ≤ V t ω)
+    (hα_nonneg : ∀ t ω, 0 ≤ α t ω)
+    (hU_nonneg : ∀ t ω, 0 ≤ U t ω)
+    -- Product bound
+    (prod_bound : ∃ C : ℝ, 0 < C ∧ ∀ t ω, prodY α t ω ≤ C)
+    -- scaledS convergence
+    (hS_conv : ∃ S_inf : Ω → ℝ, ∀ᵐ ω ∂μ,
+      Tendsto (fun t => scaledS V α U t ω) atTop (nhds (S_inf ω)))
+    : ∀ᵐ ω ∂μ, Summable (fun t => U t ω) := by
+  -- Reduce to a.e. boundedness of partial sums via a single suffices.
+  -- With U >= 0, partial sums `cumW U t ω` are monotone; bounded + monotone => convergence;
+  -- then HasSum <-> Tendsto of partial sums (nonnegative R) gives Summable (U . ω).
+  suffices h_bound : ∀ᵐ ω ∂μ, ∃ B : ℝ, ∀ t, cumW U t ω ≤ B by
+    refine h_bound.mono ?_
+    intro ω hB
+    rcases hB with ⟨B, hBω⟩
+    -- Monotone bounded => convergence, then HasSum equivalence => Summable.
+    -- cumW is monotone in t because U >= 0
+    have hmono : Monotone (fun t => cumW U t ω) := by
+      intro t s hts
+      simp [cumW]
+      have hsplit : (Finset.range (s + 1)).sum (fun k => U k ω)
+          = (Finset.range (t + 1)).sum (fun k => U k ω)
+            + (Finset.Ico (t + 1) (s + 1)).sum (fun k => U k ω) := by
+        exact (Finset.sum_range_add_sum_Ico (fun k => U k ω) (Nat.add_le_add_right hts 1)).symm
+      have htail_nn : 0 ≤ (Finset.Ico (t + 1) (s + 1)).sum (fun k => U k ω) := by
+        apply Finset.sum_nonneg
+        intro k hk
+        exact hU_nonneg k ω
+      linarith
+    -- Monotone bounded sequences converge
+    have hconv : ∃ L, Tendsto (fun t => cumW U t ω) atTop (nhds L) := by
+      use sSup (Set.range (fun t => cumW U t ω))
+      have hbdd : BddAbove (Set.range (fun t => cumW U t ω)) := by
+        use B
+        intro x ⟨t, ht⟩
+        rw [← ht]
+        exact hBω t
+      exact tendsto_atTop_ciSup hmono hbdd
+    rcases hconv with ⟨L, hL⟩
+    -- Now use HasSum equivalence for nonnegative series
+    -- cumW U t = ∑ k ∈ range (t+1), U k ω
+    -- hasSum needs ∑ k ∈ range n, U k ω
+    -- Standard fact: these limits are the same (just shifted by 1)
+    have hL' : Tendsto (fun n => (Finset.range n).sum (fun k => U k ω)) atTop (nhds L) := by
+      -- cumW U t = ∑ k ∈ range (t+1), so hL is tendsto of f(t+1) where f(n) = ∑ k ∈ range n
+      -- Use tendsto_add_atTop_iff_nat to shift index
+      have : (fun t => cumW U t ω) = (fun t => (Finset.range (t+1)).sum (fun k => U k ω)) := by
+        ext t
+        rfl
+      rw [this] at hL
+      exact (tendsto_add_atTop_iff_nat 1).mp hL
+    have hsum : HasSum (fun t => U t ω) L := by
+      rw [hasSum_iff_tendsto_nat_of_nonneg]
+      · exact hL'
+      · intro i
+        exact hU_nonneg i ω
+    exact hsum.summable
+  -- Build h_bound from product bound and convergence of scaledS
+  -- Convergent sequences are bounded, and cumW <= C * scaledS
+  rcases prod_bound with ⟨C, hC_pos, hCbd⟩
+  rcases hS_conv with ⟨S_inf, hS_ae⟩
+  filter_upwards [hS_ae] with ω hStend
+  -- Convergent sequences are bounded - use simple eventual bound + initial segment
+  have hS_bdd : ∃ M : ℝ, ∀ t, scaledS V α U t ω ≤ M := by
+    -- Tendsto implies BddAbove on the range
+    have hbdd := hStend.bddAbove_range
+    -- Unwrap BddAbove to get explicit bound
+    rcases hbdd with ⟨M, hM⟩
+    use M
+    intro t
+    exact hM (Set.mem_range_self t)
+  rcases hS_bdd with ⟨M, hM⟩
+  -- Now use cumW <= prodY * scaledS <= C * M
+  use C * M
+  intro t
+  -- From V = prodY * scaledS - cumW and V >= 0, we get cumW <= prodY * scaledS
+  have hV_identity : V t ω = prodY α t ω * scaledS V α U t ω - cumW U t ω := by
+    -- This identity follows from scaledS = (V + cumW) / prodY
+    have hpos : 0 < prodY α t ω := prodY_pos (Y := α) hα_nonneg t ω
+    simp only [scaledS]
+    rw [mul_div_cancel₀ _ (ne_of_gt hpos)]
+    ring
+  have hV_nn := hV_nonneg t ω
+  have : cumW U t ω ≤ prodY α t ω * scaledS V α U t ω := by
+    linarith [hV_identity]
+  have hS_nn : 0 ≤ scaledS V α U t ω := by
+    -- scaledS = (V + cumW) / prodY, all parts nonnegative
+    have hnum : 0 ≤ V t ω + cumW U t ω := by
+      apply add_nonneg (hV_nonneg t ω)
+      simp [cumW]
+      apply Finset.sum_nonneg
+      intro k hk
+      exact hU_nonneg k ω
+    have hden := (prodY_pos (Y := α) hα_nonneg t ω).le
+    simpa [scaledS] using (div_nonneg hnum hden)
+  calc cumW U t ω
+    _ ≤ prodY α t ω * scaledS V α U t ω := this
+    _ ≤ C * scaledS V α U t ω := by
+      apply mul_le_mul_of_nonneg_right (hCbd t ω) hS_nn
+    _ ≤ C * M := by
+      apply mul_le_mul_of_nonneg_left (hM t) (le_of_lt hC_pos)
+
+/-- V converges almost surely.
+
+Given that scaledS converges a.s. and the product bound prodY <= C,
+we show V converges a.s. using the algebraic identity V = prodY * scaledS - cumW.
+
+The key insight is that V is expressed as a combination of three sequences that all converge:
+1. prodY converges (monotone and bounded by C)
+2. scaledS converges (given by hS_conv)
+3. cumW converges (W is summable, given by hU_sum)
+
+Since V = prodY * scaledS - cumW, V converges to P_inf * S_inf - cumW_inf.
+-/
+lemma V_converges_ae
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ]
+    (ℱ : Filtration ℕ m0)
+    (V α U : ℕ → Ω → ℝ)
+    -- Nonnegativity
+    (hα_nonneg : ∀ t ω, 0 ≤ α t ω)
+    (hU_nonneg : ∀ t ω, 0 ≤ U t ω)
+    -- Product bound
+    (prod_bound : ∃ C : ℝ, 0 < C ∧ ∀ t ω, prodY α t ω ≤ C)
+    -- scaledS convergence
+    (hS_conv : ∃ S_inf : Ω → ℝ, ∀ᵐ ω ∂μ,
+      Tendsto (fun t => scaledS V α U t ω) atTop (nhds (S_inf ω)))
+    -- U summability (needed for cumW convergence)
+    (hU_sum : ∀ᵐ ω ∂μ, Summable (fun t => U t ω))
+    : ∃ V_inf : Ω → ℝ, ∀ᵐ ω ∂μ,
+      Tendsto (fun t => V t ω) atTop (nhds (V_inf ω)) := by
+  classical
+  -- Extract the limit function for scaledS
+  rcases hS_conv with ⟨S_inf, hS_ae⟩
+  -- Extract product bound
+  rcases prod_bound with ⟨C, hCpos, hCbd⟩
+  -- First prove pointwise convergence a.e.
+  have hV_conv_ae : ∀ᵐ ω ∂μ, ∃ Vlim_ω, Tendsto (fun t => V t ω) atTop (nhds Vlim_ω) := by
+    filter_upwards [hS_ae, hU_sum] with ω hS hU
+    -- prodY is monotone and bounded, hence converges
+    have hP_conv : ∃ Pinf, Tendsto (fun t => prodY α t ω) atTop (nhds Pinf) := by
+      have hmono : Monotone (fun t => prodY α t ω) := by
+        intro t s hts
+        simp only [prodY]
+        rw [← Finset.prod_range_mul_prod_Ico _ hts]
+        have h_prod_t_nn : 0 ≤ ∏ k ∈ Finset.range t, (1 + α (k + 1) ω) := by
+          apply Finset.prod_nonneg
+          intro k _
+          have := hα_nonneg (k + 1) ω
+          linarith
+        suffices (Finset.range t).prod (fun k => 1 + α (k + 1) ω) * 1 ≤
+                 (Finset.range t).prod (fun k => 1 + α (k + 1) ω) *
+                 (Finset.Ico t s).prod (fun k => 1 + α (k + 1) ω) by
+          simpa [mul_one] using this
+        apply mul_le_mul_of_nonneg_left _ h_prod_t_nn
+        calc 1
+          _ = ∏ k ∈ Finset.Ico t s, (1 : ℝ) := by rw [Finset.prod_const_one]
+          _ ≤ ∏ k ∈ Finset.Ico t s, (1 + α (k + 1) ω) := by
+              apply Finset.prod_le_prod
+              · intro k _; norm_num
+              · intro k _
+                have : 0 ≤ α (k + 1) ω := hα_nonneg (k + 1) ω
+                linarith
+      have hbdd : BddAbove (Set.range (fun t => prodY α t ω)) := by
+        use C
+        intro x ⟨t, ht⟩
+        rw [← ht]
+        exact hCbd t ω
+      use sSup (Set.range (fun t => prodY α t ω))
+      exact tendsto_atTop_ciSup hmono hbdd
+    rcases hP_conv with ⟨Pinf, hPtend⟩
+    -- cumW converges since U is summable
+    have hCW_conv : ∃ CWinf, Tendsto (fun t => cumW U t ω) atTop (nhds CWinf) := by
+      use ∑' k, U k ω
+      simp only [cumW]
+      exact (tendsto_add_atTop_iff_nat 1).mpr hU.hasSum.tendsto_sum_nat
+    rcases hCW_conv with ⟨CWinf, hCWtend⟩
+    -- Now V = prodY * scaledS - cumW, so it converges to Pinf * S_inf - CWinf
+    use Pinf * S_inf ω - CWinf
+    have hV_eq : ∀ t, V t ω = prodY α t ω * scaledS V α U t ω - cumW U t ω := by
+      intro t
+      have hpos : 0 < prodY α t ω := prodY_pos (Y := α) hα_nonneg t ω
+      simp only [scaledS]
+      rw [mul_div_cancel₀ _ (ne_of_gt hpos)]
+      ring
+    have : (fun t => V t ω) = (fun t => prodY α t ω * scaledS V α U t ω - cumW U t ω) := by
+      ext t
+      exact hV_eq t
+    rw [this]
+    exact (hPtend.mul hS).sub hCWtend
+  -- Define Vlim pointwise using choice
+  let Vlim : Ω → ℝ := fun ω => if h : ∃ x, Tendsto (fun t => V t ω) atTop (nhds x) then h.choose else 0
+  have hV_tend : ∀ᵐ ω ∂μ, Tendsto (fun t => V t ω) atTop (nhds (Vlim ω)) := by
+    filter_upwards [hV_conv_ae] with ω h
+    simp only [Vlim]
+    have : ∃ x, Tendsto (fun t => V t ω) atTop (nhds x) := h
+    simp [dif_pos this]
+    exact this.choose_spec
+  exact ⟨Vlim, hV_tend⟩
+
+/-- V_inf is integrable.
+
+From the a.s. convergence V_n -> V_inf, the nonnegativity V_n >= 0, and the bound
+sup_n E[V_n] < infinity, we derive that V_inf is integrable using Fatou's lemma:
+
+  E[V_inf] = E[liminf V_n] <= liminf E[V_n] <= sup E[V_n] < infinity
+
+Combined with measurability of V_inf (as a pointwise a.e. limit), this gives integrability.
+-/
+lemma V_limit_integrable
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ]
+    (V : ℕ → Ω → ℝ)
+    (V_inf : Ω → ℝ)
+    -- Nonnegativity
+    (hV_nonneg : ∀ t ω, 0 ≤ V t ω)
+    -- Integrability of each V_t
+    (integrable_V : ∀ t, Integrable (V t) μ)
+    -- Measurability of V_inf
+    (hV_inf_meas : AEStronglyMeasurable V_inf μ)
+    -- Convergence a.s.
+    (hV_conv : ∀ᵐ ω ∂μ, Tendsto (fun t => V t ω) atTop (nhds (V_inf ω)))
+    -- Sup bound on expectations
+    (hV_sup : BddAbove (Set.range fun n => ∫ ω, V n ω ∂μ))
+    : Integrable V_inf μ := by
+  -- V_inf is nonnegative a.s.
+  have hV_inf_nonneg : 0 ≤ᵐ[μ] V_inf := by
+    filter_upwards [hV_conv] with ω hω
+    exact ge_of_tendsto hω (Eventually.of_forall (fun t => hV_nonneg t ω))
+  -- Get the sup bound as a concrete number M
+  rcases hV_sup with ⟨M, hM⟩
+  -- Integrable V_inf iff hasFiniteIntegral (since we have measurability)
+  refine ⟨hV_inf_meas, ?_⟩
+  -- For nonneg functions, HasFiniteIntegral iff lintegral of ofReal < infinity
+  rw [HasFiniteIntegral]
+  -- ‖V_inf ω‖ₑ = ofReal |V_inf ω| = ofReal (V_inf ω) when V_inf ω >= 0
+  have h_enorm_eq : ∀ᵐ ω ∂μ, ‖V_inf ω‖ₑ = ENNReal.ofReal (V_inf ω) := by
+    filter_upwards [hV_inf_nonneg] with ω hω
+    simp only [Real.enorm_eq_ofReal_abs, abs_of_nonneg hω]
+  calc ∫⁻ ω, ‖V_inf ω‖ₑ ∂μ
+    _ = ∫⁻ ω, ENNReal.ofReal (V_inf ω) ∂μ := lintegral_congr_ae h_enorm_eq
+    _ ≤ ENNReal.ofReal M := by
+        -- Use Fatou's lemma: ∫ liminf V_n <= liminf ∫ V_n <= sup ∫ V_n = M
+        -- Since V_n -> V_inf a.s., we have liminf V_n = V_inf a.s.
+        have h_liminf_eq : ∀ᵐ ω ∂μ, Filter.liminf (fun n => V n ω) atTop = V_inf ω := by
+          filter_upwards [hV_conv] with ω hω
+          exact hω.liminf_eq
+        -- First rewrite in terms of liminf
+        calc ∫⁻ ω, ENNReal.ofReal (V_inf ω) ∂μ
+          _ = ∫⁻ ω, ENNReal.ofReal (Filter.liminf (fun n => V n ω) atTop) ∂μ := by
+              apply lintegral_congr_ae
+              filter_upwards [h_liminf_eq] with ω hω
+              rw [hω]
+          _ ≤ ∫⁻ ω, Filter.liminf (fun n => ENNReal.ofReal (V n ω)) atTop ∂μ := by
+              -- ofReal is monotone and continuous, so ofReal(liminf) = liminf(ofReal)
+              -- This follows from Monotone.map_liminf_of_continuousAt
+              apply lintegral_mono_ae
+              filter_upwards [hV_conv] with ω hω
+              have h_mono : Monotone ENNReal.ofReal := ENNReal.ofReal_mono
+              have h_nonneg : ∀ n, 0 ≤ V n ω := fun n => hV_nonneg n ω
+              have h_cont : ContinuousAt ENNReal.ofReal (Filter.liminf (fun n => V n ω) atTop) :=
+                ENNReal.continuous_ofReal.continuousAt
+              -- Since V n ω converges, it's bounded
+              have h_bdd_above : BddAbove (Set.range fun n => V n ω) := hω.bddAbove_range
+              -- IsCoboundedUnder (>=) = ∃ b, ∀ a, (∀ᶠ x in map f, x >= a) → b >= a
+              -- For bounded sequence with upper bound B: if eventually V n >= a, then B >= a
+              have h_cobdd : Filter.IsCoboundedUnder (· ≥ ·) atTop (fun n => V n ω) := by
+                obtain ⟨B, hB⟩ := h_bdd_above
+                refine ⟨B, fun a ha => ?_⟩
+                -- ha: ∀ᶠ n in atTop, V n ω >= a
+                simp only [Filter.eventually_map, Filter.eventually_atTop, ge_iff_le] at ha
+                obtain ⟨N, hN⟩ := ha
+                calc a ≤ V N ω := hN N (le_refl N)
+                  _ ≤ B := hB (Set.mem_range_self N)
+              -- IsBoundedUnder (>=) means bounded below - V_n >= 0
+              have h_bdd : Filter.IsBoundedUnder (· ≥ ·) atTop (fun n => V n ω) := by
+                refine ⟨0, ?_⟩
+                simp only [Filter.eventually_map, Filter.eventually_atTop, ge_iff_le]
+                exact ⟨0, fun n _ => h_nonneg n⟩
+              have := h_mono.map_liminf_of_continuousAt (fun n => V n ω) h_cont h_cobdd h_bdd
+              simp only [Function.comp_def] at this
+              rw [this]
+          _ ≤ Filter.liminf (fun n => ∫⁻ ω, ENNReal.ofReal (V n ω) ∂μ) atTop := by
+              apply lintegral_liminf_le'
+              intro n
+              exact (integrable_V n).aemeasurable.ennreal_ofReal
+          _ = Filter.liminf (fun n => ENNReal.ofReal (∫ ω, V n ω ∂μ)) atTop := by
+              congr 1
+              ext n
+              rw [ofReal_integral_eq_lintegral_ofReal (integrable_V n)
+                  (Eventually.of_forall (fun ω => hV_nonneg n ω))]
+          _ ≤ ENNReal.ofReal M := by
+              -- liminf of bounded sequence is bounded by sup
+              -- Each term ofReal (∫ V n) <= ofReal M since ∫ V n <= M
+              apply Filter.liminf_le_of_le
+              · exact ⟨0, Eventually.of_forall (fun _ => zero_le _)⟩
+              · intro b hb
+                -- Need to show ofReal M is an upper bound for the liminf set
+                -- liminf_le_of_le says we need b in the liminf set implies b <= ofReal M
+                -- The liminf set consists of eventual lower bounds
+                -- Since all ofReal (∫ V n) <= ofReal M, any eventual lower bound b
+                -- satisfies b <= ofReal M
+                by_contra h_neg
+                push_neg at h_neg
+                -- h_neg: ofReal M < b
+                -- hb: Eventually (fun n => b <= ofReal (∫ V n))
+                -- But ofReal (∫ V n) <= ofReal M < b, contradiction
+                have hbound : ∀ n, ENNReal.ofReal (∫ ω, V n ω ∂μ) ≤ ENNReal.ofReal M := by
+                  intro n
+                  apply ENNReal.ofReal_le_ofReal
+                  exact hM (Set.mem_range_self n)
+                obtain ⟨n, hn⟩ := hb.exists
+                have : b ≤ ENNReal.ofReal M := le_trans hn (hbound n)
+                exact not_lt.mpr this h_neg
+    _ < ⊤ := ENNReal.ofReal_lt_top
+
+/-- Robbins-Siegmund Theorem (Full Version) - Theorem 2.3.5 from the textbook.
+
+**Assumptions:**
+Let (V_n), (U_n), (α_n), (β_n) be four sequences of non-negative integrable
+(F_n)-measurable random variables such that:
+- (i) (α_n), (U_n), (β_n) are (F_n)-predictable
+- (ii) sup_ω ∏_{n≥1} (1 + α_n(ω)) < +∞ and ∑_{n≥0} E[β_n] < +∞
+- (iii) E[V_{n+1} | F_n] ≤ V_n(1 + α_{n+1}) + β_{n+1} - U_{n+1}
+
+**Conclusions:**
+- (a) V_n → V_∞ ∈ L¹ almost surely, and sup_{n≥0} E[V_n] < +∞
+- (b) ∑_{n≥0} U_n < +∞ almost surely
+-/
+theorem robbinsSiegmund_full
+    {Ω : Type*} [m0 : MeasurableSpace Ω]
+    (μ : Measure Ω) [IsProbabilityMeasure μ]
+    (ℱ : Filtration ℕ m0)
+    (V U α β : ℕ → Ω → ℝ)
+    -- Adaptedness
+    (adapted_V : Adapted ℱ V)
+    (adapted_α : Adapted ℱ α)
+    (adapted_β : Adapted ℱ β)
+    (adapted_U : Adapted ℱ U)
+    -- Predictability (X_{n+1} is F_n-measurable)
+    (predictable_α : Adapted ℱ fun t => α (t + 1))
+    (predictable_β : Adapted ℱ fun t => β (t + 1))
+    (predictable_U : Adapted ℱ fun t => U (t + 1))
+    -- Nonnegativity
+    (hV_nonneg : ∀ t ω, 0 ≤ V t ω)
+    (hα_nonneg : ∀ t ω, 0 ≤ α t ω)
+    (hβ_nonneg : ∀ t ω, 0 ≤ β t ω)
+    (hU_nonneg : ∀ t ω, 0 ≤ U t ω)
+    -- Integrability
+    (integrable_V : ∀ t, Integrable (V t) μ)
+    (integrable_β : ∀ t, Integrable (β t) μ)
+    (integrable_U : ∀ t, Integrable (U t) μ)
+    -- (ii) Product bound and β summability
+    (prod_bound : ∃ C : ℝ, 0 < C ∧ ∀ t ω, prodY α t ω ≤ C)
+    (sum_Eβ : Summable (fun t => ∫ ω, β t ω ∂μ))
+    -- (iii) Drift inequality
+    (condexp_ineq : ∀ t,
+      μ[fun ω => V (t + 1) ω | ℱ t]
+        ≤ᵐ[μ] fun ω => (1 + α (t + 1) ω) * V t ω + β (t + 1) ω - U (t + 1) ω)
+  : -- Conclusions
+    -- (a) V_n → V_∞ a.s. with V_∞ ∈ L¹, and sup E[V_n] < ∞
+    (∃ Vlim : Ω → ℝ,
+      Integrable Vlim μ ∧
+      (∀ᵐ ω ∂μ, Tendsto (fun t => V t ω) atTop (nhds (Vlim ω)))) ∧
+    (BddAbove (Set.range fun n => ∫ ω, V n ω ∂μ)) ∧
+    -- (b) ∑ U_n < ∞ a.s.
+    (∀ᵐ ω ∂μ, Summable (fun t => U t ω)) := by
+  -- Step 1: Get scaledS convergence (using V, α, U, β as X, Y, W, Z)
+  have hS_conv := scaledS_converges_ae μ ℱ V α β U
+      adapted_V adapted_α adapted_β adapted_U
+      predictable_α predictable_β predictable_U
+      hV_nonneg hα_nonneg hβ_nonneg hU_nonneg
+      integrable_V integrable_β integrable_U
+      prod_bound sum_Eβ condexp_ineq
+  -- Step 2: Get sup E[S] bound
+  have hS_sup := scaledS_sup_integral_bdd μ ℱ V α β U
+      adapted_V adapted_α adapted_β adapted_U
+      predictable_α predictable_U
+      hV_nonneg hα_nonneg hβ_nonneg hU_nonneg
+      condexp_ineq integrable_V integrable_β integrable_U sum_Eβ
+  -- Step 3: Get U summability a.s.
+  have hU_sum := U_summability_ae μ ℱ V α U
+      hV_nonneg hα_nonneg hU_nonneg prod_bound hS_conv
+  -- Step 4: Get V convergence a.s.
+  have hV_conv := V_converges_ae μ ℱ V α U
+      hα_nonneg hU_nonneg prod_bound hS_conv hU_sum
+  -- Step 5: Get sup E[V] bound
+  have hV_sup := sup_EV_from_sup_ES μ ℱ V α U
+      adapted_V adapted_α adapted_U predictable_α predictable_U
+      hV_nonneg hα_nonneg hU_nonneg
+      integrable_V integrable_U prod_bound hS_sup
+  -- Step 6: Extract V_inf and show it's integrable
+  rcases hV_conv with ⟨V_inf, hV_tend⟩
+  -- V_inf is AEStronglyMeasurable (limit of adapted sequence)
+  have hV_inf_meas : AEStronglyMeasurable V_inf μ :=
+    aestronglyMeasurable_of_tendsto_ae (u := atTop)
+      (fun n => (integrable_V n).aestronglyMeasurable) hV_tend
+  have hV_int := V_limit_integrable μ V V_inf
+      hV_nonneg integrable_V hV_inf_meas hV_tend hV_sup
+  -- Combine all conclusions
+  exact ⟨⟨V_inf, hV_int, hV_tend⟩, hV_sup, hU_sum⟩
+
+end QLS.Stoch
