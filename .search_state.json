@@ -2350,6 +2350,18 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_eba8d6e1_bp_11"
+        },
+        {
+          "summary": "After 'by_cases hlEq : l = s.left': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef...",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {},
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_eba8d6e1_bp_12"
         }
       ],
       "current_path": [
@@ -2396,6 +2408,10 @@
         {
           "branch_index": 11,
           "action": "by_cases hlEq : l = s.left"
+        },
+        {
+          "branch_index": 12,
+          "action": null
         }
       ],
       "history": [
@@ -2453,6 +2469,11 @@
           9,
           "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }",
           11
+        ],
+        [
+          11,
+          "by_cases hlEq : l = s.left",
+          12
         ]
       ],
       "parent_map": {
@@ -2466,7 +2487,8 @@
         "8": 7,
         "9": 8,
         "10": 9,
-        "11": 9
+        "11": 9,
+        "12": 11
       },
       "edge_actions": {
         "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
@@ -2479,7 +2501,8 @@
         "7,8": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
         "8,9": "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
         "9,10": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }",
-        "9,11": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }"
+        "9,11": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }",
+        "11,12": "by_cases hlEq : l = s.left"
       },
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
