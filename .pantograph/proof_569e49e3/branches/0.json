@@ -1,0 +1,22 @@
+{
+  "initial_expr": "\u2200 (a : Array Nat) (k : Nat) (s : SlidingWindow.WindowState a k) (l : Nat) (hlLower : s.left \u2264 l) (hlUpper : l < s.shrinkUntilValid.val.left), SlidingWindow.subarraySum a l s.shrinkUntilValid.val.right > k",
+  "initial_sketch": null,
+  "initial_imports": [
+    "Mathlib",
+    "ArtificialAlgorithms.SlidingWindow.MaxLengthSumAtMostK"
+  ],
+  "proof_steps": [],
+  "tactic_history": [],
+  "goals": [
+    {
+      "id": "_uniq.56",
+      "target": "\u2200 (a : Array Nat) (k : Nat) (s : SlidingWindow.WindowState a k) (l : Nat) (hlLower : s.left \u2264 l) (hlUpper : l < s.shrinkUntilValid.val.left), SlidingWindow.subarraySum a l s.shrinkUntilValid.val.right > k",
+      "variables": [],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_569e49e3",
+  "branch_id": "0"
+}
