@@ -188,12 +188,26 @@ termination_by s.right - s.left
 theorem shrinkUntilValid_minimal (s : WindowState a k) (l : Nat)
     (hlLower : s.left ≤ l) (hlUpper : l < s.shrinkUntilValid.val.left) :
     subarraySum a l s.shrinkUntilValid.val.right > k := by
-  -- The proof structure:
-  -- 1. If s.sum ≤ k, then result.left = s.left, so no l satisfies the preconditions
-  -- 2. If s.sum > k and shrunk, for l = s.left, sum = s.sum > k
-  --    For l > s.left, use induction on the recursive structure
-  -- The technical difficulty is the dependent type structure of shrinkUntilValid
-  sorry
+  -- Strong induction on window size
+  induction s.right - s.left using Nat.strongRecOn generalizing s l with
+  | ind n ih =>
+    -- Unfold and case split on the three branches of shrinkUntilValid
+    unfold shrinkUntilValid
+    split_ifs with hValid hEmpty
+    · -- Case 1: s.sum ≤ k, so result = s, meaning result.left = s.left
+      -- But hlUpper says l < s.left while hlLower says s.left ≤ l, contradiction
+      simp only [shrinkUntilValid, hValid, ↓reduceDIte] at hlUpper
+      omega
+    · -- Case 2: s.sum > k and s.left = s.right (empty window), result = s
+      -- Same contradiction as Case 1
+      simp only [shrinkUntilValid, hValid, hEmpty, ↓reduceDIte] at hlUpper
+      omega
+    · -- Case 3: s.sum > k and s.left < s.right, recursive call
+      -- Need to show: subarraySum a l result.right > k
+      -- where result comes from shrinkUntilValid on the shrunk state s'
+      -- Technical difficulty: the Subtype pattern matching makes it hard to
+      -- connect result.right = s.right and use s.sum > k
+      sorry
 
 /-- For non-negative arrays, extending window left (decreasing left index) only increases sum.
     This is the key monotonicity property. -/
