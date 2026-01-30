@@ -2390,7 +2390,12 @@
             "Subgoal 1: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
             "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "AND",
           "node_status": null,
           "git_branch": null,
@@ -2452,7 +2457,7 @@
         },
         {
           "branch_index": 14,
-          "action": null
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt..."
         }
       ],
       "history": [
