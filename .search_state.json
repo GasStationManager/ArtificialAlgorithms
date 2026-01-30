@@ -2179,7 +2179,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "split_ifs with hValid hEmpty": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2197,7 +2202,7 @@
         },
         {
           "branch_index": 2,
-          "action": null
+          "action": "split_ifs with hValid hEmpty"
         }
       ],
       "history": [
@@ -2226,7 +2231,8 @@
         "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_": "search_proof_eba8d6e1_0_6449af1c",
         "have hn : n = s.right - s.left := by rfl": "search_proof_eba8d6e1_1_751a73a3",
         "rw [WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_1797e9c9",
-        "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_c6930772"
+        "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_c6930772",
+        "split_ifs with hValid hEmpty": "search_proof_eba8d6e1_2_85fb3fd6"
       },
       "tree_type": "and_or",
       "metadata": {
