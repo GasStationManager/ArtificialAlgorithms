@@ -848,6 +848,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_13"
+        },
+        {
+          "summary": "After 'subst hl; rw [\u2190 s.hSum]; omega'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_14"
         }
       ],
       "current_path": [
@@ -906,6 +920,10 @@
         {
           "branch_index": 13,
           "action": "subst hl; rw [\u2190 s.hSum]; omega"
+        },
+        {
+          "branch_index": 14,
+          "action": null
         }
       ],
       "history": [
@@ -973,6 +991,11 @@
           12,
           "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k...",
           13
+        ],
+        [
+          13,
+          "subst hl; rw [\u2190 s.hSum]; omega",
+          14
         ]
       ],
       "parent_map": {
@@ -988,7 +1011,8 @@
         "10": 9,
         "11": 10,
         "12": 11,
-        "13": 12
+        "13": 12,
+        "14": 13
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -1003,7 +1027,8 @@
         "9,10": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
         "10,11": "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
         "11,12": "by_cases hl : l = s.left",
-        "12,13": "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k..."
+        "12,13": "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k...",
+        "13,14": "subst hl; rw [\u2190 s.hSum]; omega"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
