@@ -1081,7 +1081,7 @@
         },
         {
           "branch_index": 19,
-          "action": "specialize ih (s'.right - s'.left)"
+          "action": null
         }
       ],
       "history": [
