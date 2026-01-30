@@ -1,7 +1,587 @@
 {
-  "active_tree_id": "shrinkUntilValid_minimal",
+  "active_tree_id": "proof_569e49e3",
   "trees": {
     "shrinkUntilValid_minimal": {
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: shrinkUntilValid_minimal: SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "draft: by\n  induction s.right - s.left using Nat.strongRe...": {
+              "result": false,
+              "note": null
+            },
+            "induction s.right - s.left using Nat.strongRecOn generalizing s l": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_0"
+        },
+        {
+          "summary": "After 'induction s.right - s.left using Nat.strongRecOn generalizing s l'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "unfold SlidingWindow.WindowState.shrinkUntilValid": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_1"
+        },
+        {
+          "summary": "After 'unfold SlidingWindow.WindowState.shrinkUntilValid'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "split_ifs with hValid hEmpty": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_2"
+        },
+        {
+          "summary": "After 'split_ifs with hValid hEmpty': 3 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+            "Subgoal 2: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+            "Subgoal 3: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_3"
+        },
+        {
+          "summary": "Goal 0: s.sum \u2264 k case, need to show contradiction",
+          "possible_actions": [
+            "omega",
+            "exfalso; omega"
+          ],
+          "taken_actions": {
+            "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, \u2193reduceDIte] at hlUpper": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_4"
+        },
+        {
+          "summary": "After 'simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, \u2193reduceDIte] at hlUpper': 3 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_5"
+        },
+        {
+          "summary": "Goal 0: empty window case (hEmpty: s.left = s.right)",
+          "possible_actions": [
+            "omega",
+            "exfalso; omega"
+          ],
+          "taken_actions": {
+            "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, hEmpty, \u2193reduceDIte] at hlUpper": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_6"
+        },
+        {
+          "summary": "After 'simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, hEmpty, \u2193reduceDIte] at hlUpper'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "by_cases hl : l = s.left": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_7"
+        },
+        {
+          "summary": "After 'by_cases hl : l = s.left': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef...",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef...": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_8"
+        },
+        {
+          "summary": "Case l = s.left: use s.sum > k",
+          "possible_actions": [
+            "simp only [s.hSum] at hValid",
+            "rw [hl]"
+          ],
+          "taken_actions": {
+            "subst hl": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_9"
+        },
+        {
+          "summary": "After 'subst hl': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_10"
+        },
+        {
+          "summary": "Show subarraySum at s.left exceeds k",
+          "possible_actions": [
+            "simp only [\u2190 s.hSum]",
+            "convert Nat.lt_of_not_le hValid using 1"
+          ],
+          "taken_actions": {
+            "have hRight : (s.shrinkUntilValid).val.right = s.right := s.shrinkUntilValid.property.2": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_11"
+        },
+        {
+          "summary": "After 'have hRight : (s.shrinkUntilValid).val.right = s.right := s.shrinkUntilValid.property.2': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_12"
+        },
+        {
+          "summary": "Simplify goal using hRight and s.hSum",
+          "possible_actions": [
+            "simp only [\u2190 SlidingWindow.WindowState.shrinkUntilValid, hRight, \u2190 s.hSum]",
+            "rw [hRight, \u2190 s.hSum]"
+          ],
+          "taken_actions": {
+            "convert Nat.lt_of_not_le hValid": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_13"
+        },
+        {
+          "summary": "After 'convert Nat.lt_of_not_le hValid': 4 subgoals",
+          "possible_actions": [
+            "Subgoal 1: @GT.gt = @LT.lt...",
+            "Subgoal 2: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+            "Subgoal 3: k = s.sum...",
+            "Subgoal 4: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {},
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_14"
+        },
+        {
+          "summary": "Try simp to fold shrinkUntilValid and use hRight",
+          "possible_actions": [
+            "rw [show (\u2191(have hLt : s.left < s.right := _; _)).right = s.right from hRight]",
+            "exact Nat.lt_of_not_le hValid"
+          ],
+          "taken_actions": {
+            "simp only [\u2190 SlidingWindow.WindowState.shrinkUntilValid, hRight, \u2190 s.hSum]": {
+              "result": false,
+              "note": null
+            },
+            "simp only [hRight]": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_15"
+        },
+        {
+          "summary": "After 'simp only [hRight]': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a s.left\n    (\u2191(Subtype....",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(Subtype....": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_16"
+        },
+        {
+          "summary": "Show result.right = s.right and reduce to s.sum > k",
+          "possible_actions": [
+            "have h : ({ left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := Nat.lt_of_le_of_ne s.hLeftBound hEmpty, hRightBound := s.hRightBound, hSum := by simp [SlidingWindow.subarraySum_shrink_left] } : SlidingWindow.WindowState a k).shrinkUntilValid.val.right = s.right := by exact ({ left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := Nat.lt_of_le_of_ne s.hLeftBound hEmpty, hRightBound := s.hRightBound, hSum := by simp [SlidingWindow.subarraySum_shrink_left] } : SlidingWindow.WindowState a k).shrinkUntilValid.property.2",
+            "simp only [s.hSum] at hValid \u22a2; push_neg at hValid; omega"
+          ],
+          "taken_actions": {
+            "show SlidingWindow.subarraySum a s.left s.right > k": {
+              "result": false,
+              "note": null
+            },
+            "suffices h : SlidingWindow.subarraySum a s.left s.right > k by simp only [hRight] at h; exact h": {
+              "result": false,
+              "note": null
+            },
+            "conv => arg 1; arg 2; rfl": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_17"
+        },
+        {
+          "summary": "After 'conv => arg 1; arg 2; rfl': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: SlidingWindow.subarraySum a s.left\n    (\u2191(Subtype....",
+            "Subgoal 2: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+          ],
+          "taken_actions": {},
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_shrinkUntilValid_minimal_bp_18"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": "induction s.right - s.left using Nat.strongRecOn generalizing s l"
+        },
+        {
+          "branch_index": 1,
+          "action": "unfold SlidingWindow.WindowState.shrinkUntilValid"
+        },
+        {
+          "branch_index": 2,
+          "action": "split_ifs with hValid hEmpty"
+        },
+        {
+          "branch_index": 3,
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k..."
+        },
+        {
+          "branch_index": 4,
+          "action": "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, \u2193reduceDIte] at hlUpper"
+        },
+        {
+          "branch_index": 5,
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k..."
+        },
+        {
+          "branch_index": 6,
+          "action": "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, hEmpty, \u2193reduceDIte] at hlUpper"
+        },
+        {
+          "branch_index": 7,
+          "action": "by_cases hl : l = s.left"
+        },
+        {
+          "branch_index": 8,
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef..."
+        },
+        {
+          "branch_index": 9,
+          "action": "subst hl"
+        },
+        {
+          "branch_index": 10,
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt..."
+        },
+        {
+          "branch_index": 11,
+          "action": "have hRight : (s.shrinkUntilValid).val.right = s.right := s.shrinkUntilValid.property.2"
+        },
+        {
+          "branch_index": 12,
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt..."
+        },
+        {
+          "branch_index": 13,
+          "action": "convert Nat.lt_of_not_le hValid"
+        },
+        {
+          "branch_index": 15,
+          "action": "simp only [hRight]"
+        },
+        {
+          "branch_index": 16,
+          "action": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(Subtype...."
+        },
+        {
+          "branch_index": 17,
+          "action": "conv => arg 1; arg 2; rfl"
+        },
+        {
+          "branch_index": 18,
+          "action": null
+        }
+      ],
+      "history": [
+        [
+          0,
+          "induction s.right - s.left using Nat.strongRecOn generalizing s l",
+          1
+        ],
+        [
+          1,
+          "unfold SlidingWindow.WindowState.shrinkUntilValid",
+          2
+        ],
+        [
+          2,
+          "split_ifs with hValid hEmpty",
+          3
+        ],
+        [
+          3,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+          4
+        ],
+        [
+          4,
+          "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, \u2193reduceDIte] at hlUpper",
+          5
+        ],
+        [
+          5,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+          6
+        ],
+        [
+          6,
+          "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, hEmpty, \u2193reduceDIte] at hlUpper",
+          7
+        ],
+        [
+          7,
+          "by_cases hl : l = s.left",
+          8
+        ],
+        [
+          8,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef...",
+          9
+        ],
+        [
+          9,
+          "subst hl",
+          10
+        ],
+        [
+          10,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+          11
+        ],
+        [
+          11,
+          "have hRight : (s.shrinkUntilValid).val.right = s.right := s.shrinkUntilValid.property.2",
+          12
+        ],
+        [
+          12,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+          13
+        ],
+        [
+          13,
+          "convert Nat.lt_of_not_le hValid",
+          14
+        ],
+        [
+          13,
+          "convert Nat.lt_of_not_le hValid",
+          15
+        ],
+        [
+          15,
+          "simp only [hRight]",
+          16
+        ],
+        [
+          16,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(Subtype....",
+          17
+        ],
+        [
+          17,
+          "conv => arg 1; arg 2; rfl",
+          18
+        ]
+      ],
+      "parent_map": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 6,
+        "8": 7,
+        "9": 8,
+        "10": 9,
+        "11": 10,
+        "12": 11,
+        "13": 12,
+        "14": 13,
+        "15": 13,
+        "16": 15,
+        "17": 16,
+        "18": 17
+      },
+      "edge_actions": {
+        "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l",
+        "1,2": "unfold SlidingWindow.WindowState.shrinkUntilValid",
+        "2,3": "split_ifs with hValid hEmpty",
+        "3,4": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+        "4,5": "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, \u2193reduceDIte] at hlUpper",
+        "5,6": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
+        "6,7": "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, hEmpty, \u2193reduceDIte] at hlUpper",
+        "7,8": "by_cases hl : l = s.left",
+        "8,9": "Focus on subgoal 0: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef...",
+        "9,10": "subst hl",
+        "10,11": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+        "11,12": "have hRight : (s.shrinkUntilValid).val.right = s.right := s.shrinkUntilValid.property.2",
+        "12,13": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
+        "13,14": "convert Nat.lt_of_not_le hValid",
+        "13,15": "convert Nat.lt_of_not_le hValid",
+        "15,16": "simp only [hRight]",
+        "16,17": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(Subtype....",
+        "17,18": "conv => arg 1; arg 2; rfl"
+      },
+      "root_branch": "v4.26.0",
+      "search_id": "shrinkUntilValid_minimal",
+      "git_action_branches": {
+        "draft: by\n  induction s.right - s.left using Nat.strongRe...": "search_shrinkUntilValid_minimal_0_40a22d70",
+        "induction s.right - s.left using Nat.strongRecOn generalizing s l": "search_shrinkUntilValid_minimal_0_79d93271",
+        "unfold SlidingWindow.WindowState.shrinkUntilValid": "search_shrinkUntilValid_minimal_1_233ebd93",
+        "split_ifs with hValid hEmpty": "search_shrinkUntilValid_minimal_2_85fb3fd6",
+        "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, \u2193reduceDIte] at hlUpper": "search_shrinkUntilValid_minimal_4_65f05661",
+        "simp only [SlidingWindow.WindowState.shrinkUntilValid, hValid, hEmpty, \u2193reduceDIte] at hlUpper": "search_shrinkUntilValid_minimal_6_0d74c289",
+        "by_cases hl : l = s.left": "search_shrinkUntilValid_minimal_7_46c607cb",
+        "subst hl": "search_shrinkUntilValid_minimal_9_2d9ac9b3",
+        "have hRight : (s.shrinkUntilValid).val.right = s.right := s.shrinkUntilValid.property.2": "search_shrinkUntilValid_minimal_11_6230f895",
+        "convert Nat.lt_of_not_le hValid": "search_shrinkUntilValid_minimal_13_3fb86e73",
+        "simp only [\u2190 SlidingWindow.WindowState.shrinkUntilValid, hRight, \u2190 s.hSum]": "search_shrinkUntilValid_minimal_15_62a5c2fe",
+        "simp only [hRight]": "search_shrinkUntilValid_minimal_15_c1e43014",
+        "show SlidingWindow.subarraySum a s.left s.right > k": "search_shrinkUntilValid_minimal_17_fbea79a2",
+        "suffices h : SlidingWindow.subarraySum a s.left s.right > k by simp only [hRight] at h; exact h": "search_shrinkUntilValid_minimal_17_5fea7793",
+        "conv => arg 1; arg 2; rfl": "search_shrinkUntilValid_minimal_17_a6fe9f46"
+      },
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/shrinkUntilValid_minimal/META.md\nPantograph proof search for: shrinkUntilValid_minimal: SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+      }
+    },
+    "proof_569e49e3": {
       "active": false,
       "nodes": [],
       "current_path": [],
@@ -9,7 +589,7 @@
       "parent_map": {},
       "edge_actions": {},
       "root_branch": "v4.26.0",
-      "search_id": "shrinkUntilValid_minimal",
+      "search_id": "proof_569e49e3",
       "git_action_branches": {},
       "tree_type": "and_or",
       "metadata": {
@@ -19,7 +599,7 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/shrinkUntilValid_minimal/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_569e49e3/META.md"
       }
     }
   }
