@@ -592,7 +592,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "intro a k s l hlLower hlUpper": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -602,7 +607,7 @@
       "current_path": [
         {
           "branch_index": 0,
-          "action": null
+          "action": "intro a k s l hlLower hlUpper"
         }
       ],
       "history": [],
@@ -610,7 +615,9 @@
       "edge_actions": {},
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
-      "git_action_branches": {},
+      "git_action_branches": {
+        "intro a k s l hlLower hlUpper": "search_proof_569e49e3_0_52d8f83b"
+      },
       "tree_type": "and_or",
       "metadata": {
         "show_path": false,
