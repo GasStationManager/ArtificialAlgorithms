@@ -2425,14 +2425,28 @@
           ],
           "taken_actions": {
             "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191{ left :=...": {
-              "result": null,
+              "result": false,
               "note": null
             }
           },
           "node_type": "AND",
-          "node_status": null,
+          "node_status": false,
           "git_branch": null,
           "branch_point_branch": "search_proof_eba8d6e1_bp_16"
+        },
+        {
+          "summary": "Define s' and use property",
+          "possible_actions": [],
+          "taken_actions": {
+            "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }; have hRight : s'.shrinkUntilValid.val.right = s.right := s'.shrinkUntilValid.property.2; simp only [hRight, \u2190 s.hSum]; push_neg at hValid; exact hValid": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": false,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_eba8d6e1_bp_17"
         }
       ],
       "current_path": [
@@ -2581,6 +2595,11 @@
           15,
           "simp only",
           16
+        ],
+        [
+          16,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191{ left :=...",
+          17
         ]
       ],
       "parent_map": {
@@ -2599,7 +2618,8 @@
         "13": 12,
         "14": 13,
         "15": 14,
-        "16": 15
+        "16": 15,
+        "17": 16
       },
       "edge_actions": {
         "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
@@ -2617,7 +2637,8 @@
         "12,13": "Focus on subgoal 0: SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef...",
         "13,14": "subst hlEq",
         "14,15": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191(have hLt...",
-        "15,16": "simp only"
+        "15,16": "simp only",
+        "16,17": "Focus on subgoal 0: SlidingWindow.subarraySum a s.left\n    (\u2191{ left :=..."
       },
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
@@ -2636,7 +2657,8 @@
         "have hSameResult : s.shrinkUntilValid = s'.shrinkUntilValid := by rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_neg hEmpty]; rfl": "search_proof_eba8d6e1_10_ed9341ec",
         "by_cases hlEq : l = s.left": "search_proof_eba8d6e1_11_004e59bb",
         "subst hlEq": "search_proof_eba8d6e1_13_bbd3e901",
-        "simp only": "search_proof_eba8d6e1_15_e10d0797"
+        "simp only": "search_proof_eba8d6e1_15_e10d0797",
+        "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }; have hRight : s'.shrinkUntilValid.val.right = s.right := s'.shrinkUntilValid.property.2; simp only [hRight, \u2190 s.hSum]; push_neg at hValid; exact hValid": "search_proof_eba8d6e1_17_837d1f20"
       },
       "tree_type": "and_or",
       "metadata": {
