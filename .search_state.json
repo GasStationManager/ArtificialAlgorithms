@@ -697,6 +697,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_5"
+        },
+        {
+          "summary": "After 'subst hRes'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_6"
         }
       ],
       "current_path": [
@@ -723,6 +737,10 @@
         {
           "branch_index": 5,
           "action": "subst hRes"
+        },
+        {
+          "branch_index": 6,
+          "action": null
         }
       ],
       "history": [
@@ -750,6 +768,11 @@
           4,
           "rw [hResRight]",
           5
+        ],
+        [
+          5,
+          "subst hRes",
+          6
         ]
       ],
       "parent_map": {
@@ -757,14 +780,16 @@
         "2": 1,
         "3": 2,
         "4": 3,
-        "5": 4
+        "5": 4,
+        "6": 5
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
         "1,2": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_",
         "2,3": "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2",
         "3,4": "have hResRight : res.val.right = s.right := res.property.2",
-        "4,5": "rw [hResRight]"
+        "4,5": "rw [hResRight]",
+        "5,6": "subst hRes"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
