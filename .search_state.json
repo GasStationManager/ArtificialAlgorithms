@@ -1078,7 +1078,12 @@
             "Subgoal 1: s'.shrinkUntilValid =\n  Subtype.casesOn\n    { left...",
             "Subgoal 2: s'.right - s'.left < n..."
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "Focus on subgoal 0: s'.shrinkUntilValid =\n  Subtype.casesOn\n    { left...": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "AND",
           "node_status": null,
           "git_branch": null,
@@ -1184,7 +1189,7 @@
         },
         {
           "branch_index": 25,
-          "action": null
+          "action": "Focus on subgoal 0: s'.shrinkUntilValid =\n  Subtype.casesOn\n    { left..."
         }
       ],
       "history": [
