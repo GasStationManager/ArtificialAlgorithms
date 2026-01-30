@@ -2373,7 +2373,12 @@
           "possible_actions": [
             "subst hlEq; have hResultRight : (have hLt := Nat.lt_of_le_of_ne s.hLeftBound hEmpty; have hLeftValid := Nat.lt_of_lt_of_le hLt s.hRightBound; let elem := a[s.left]; let newSum := s.sum - elem; let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := newSum, hLeftBound := hLt, hRightBound := s.hRightBound, hSum := _ }; have hDec : s'.right - s'.left < s.right - s.left := by simp [s']; omega; s'.shrinkUntilValid).val.right = s.right := by simp only [SlidingWindow.WindowState.shrinkUntilValid]; exact s'.shrinkUntilValid.property.2; rw [hResultRight, s.hSum]; push_neg at hValid; exact hValid"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "subst hlEq": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2431,7 +2436,7 @@
         },
         {
           "branch_index": 13,
-          "action": null
+          "action": "subst hlEq"
         }
       ],
       "history": [
@@ -2546,7 +2551,8 @@
         "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_eba8d6e1_8_bd06a749",
         "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }": "search_proof_eba8d6e1_9_0a7d0afa",
         "have hSameResult : s.shrinkUntilValid = s'.shrinkUntilValid := by rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_neg hEmpty]; rfl": "search_proof_eba8d6e1_10_ed9341ec",
-        "by_cases hlEq : l = s.left": "search_proof_eba8d6e1_11_004e59bb"
+        "by_cases hlEq : l = s.left": "search_proof_eba8d6e1_11_004e59bb",
+        "subst hlEq": "search_proof_eba8d6e1_13_bbd3e901"
       },
       "tree_type": "and_or",
       "metadata": {
