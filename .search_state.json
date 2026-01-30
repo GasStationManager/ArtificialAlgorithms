@@ -2133,7 +2133,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2143,7 +2148,7 @@
       "current_path": [
         {
           "branch_index": 0,
-          "action": null
+          "action": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_"
         }
       ],
       "history": [],
@@ -2151,7 +2156,9 @@
       "edge_actions": {},
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
-      "git_action_branches": {},
+      "git_action_branches": {
+        "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_": "search_proof_eba8d6e1_0_6449af1c"
+      },
       "tree_type": "and_or",
       "metadata": {
         "show_path": false,
