@@ -2211,10 +2211,14 @@
         {
           "summary": "Case 1: s.sum \u2264 k, need contradiction",
           "possible_actions": [
-            "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega",
             "exfalso; simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2284,7 +2288,8 @@
         "have hn : n = s.right - s.left := by rfl": "search_proof_eba8d6e1_1_751a73a3",
         "rw [WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_1797e9c9",
         "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_c6930772",
-        "split_ifs with hValid hEmpty": "search_proof_eba8d6e1_2_85fb3fd6"
+        "split_ifs with hValid hEmpty": "search_proof_eba8d6e1_2_85fb3fd6",
+        "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": "search_proof_eba8d6e1_4_a1674097"
       },
       "tree_type": "and_or",
       "metadata": {
