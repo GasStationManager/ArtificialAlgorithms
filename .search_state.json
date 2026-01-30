@@ -2170,6 +2170,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_eba8d6e1_bp_1"
+        },
+        {
+          "summary": "After 'rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_eba8d6e1_bp_2"
         }
       ],
       "current_path": [
@@ -2180,6 +2194,10 @@
         {
           "branch_index": 1,
           "action": "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]"
+        },
+        {
+          "branch_index": 2,
+          "action": null
         }
       ],
       "history": [
@@ -2187,13 +2205,20 @@
           0,
           "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
           1
+        ],
+        [
+          1,
+          "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]",
+          2
         ]
       ],
       "parent_map": {
-        "1": 0
+        "1": 0,
+        "2": 1
       },
       "edge_actions": {
-        "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_"
+        "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
+        "1,2": "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]"
       },
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
