@@ -836,10 +836,14 @@
         {
           "summary": "Subgoal 0: l = s.left case",
           "possible_actions": [
-            "subst hl; rw [\u2190 s.hSum]; omega",
             "subst hl; simp only [s.hSum]; omega"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "subst hl; rw [\u2190 s.hSum]; omega": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -901,7 +905,7 @@
         },
         {
           "branch_index": 13,
-          "action": null
+          "action": "subst hl; rw [\u2190 s.hSum]; omega"
         }
       ],
       "history": [
@@ -1016,7 +1020,8 @@
         "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_569e49e3_9_9d0cfdef",
         "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_569e49e3_10_92b5f080",
         "set s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt \u25b8 s.hSum \u25b8 rfl } with hs'": "search_proof_569e49e3_11_0f4f02f3",
-        "by_cases hl : l = s.left": "search_proof_569e49e3_11_46c607cb"
+        "by_cases hl : l = s.left": "search_proof_569e49e3_11_46c607cb",
+        "subst hl; rw [\u2190 s.hSum]; omega": "search_proof_569e49e3_13_09006cb8"
       },
       "tree_type": "and_or",
       "metadata": {
