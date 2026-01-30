@@ -972,6 +972,10 @@
             "have hMeasure : s'.right - s'.left < n := by rw [hS'Right, hS'LeftVal]; omega": {
               "result": false,
               "note": null
+            },
+            "have hn : n = s.right - s.left := by rfl": {
+              "result": false,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -1227,7 +1231,8 @@
         "have hMeasure : s'.right - s'.left < n := by show s.right - (s.left + 1) < s.right - s.left; omega": "search_proof_569e49e3_17_25abf065",
         "have hS'Right : s'.right = s.right := rfl": "search_proof_569e49e3_17_3b5ea903",
         "have hS'LeftVal : s'.left = s.left + 1 := rfl": "search_proof_569e49e3_18_b24da86a",
-        "have hMeasure : s'.right - s'.left < n := by rw [hS'Right, hS'LeftVal]; omega": "search_proof_569e49e3_19_e1848dfb"
+        "have hMeasure : s'.right - s'.left < n := by rw [hS'Right, hS'LeftVal]; omega": "search_proof_569e49e3_19_e1848dfb",
+        "have hn : n = s.right - s.left := by rfl": "search_proof_569e49e3_19_751a73a3"
       },
       "tree_type": "and_or",
       "metadata": {
