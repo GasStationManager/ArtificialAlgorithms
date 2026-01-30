@@ -2217,6 +2217,10 @@
             "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": {
               "result": false,
               "note": null
+            },
+            "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega": {
+              "result": null,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -2244,7 +2248,7 @@
         },
         {
           "branch_index": 4,
-          "action": null
+          "action": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega"
         }
       ],
       "history": [
@@ -2289,7 +2293,8 @@
         "rw [WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_1797e9c9",
         "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_c6930772",
         "split_ifs with hValid hEmpty": "search_proof_eba8d6e1_2_85fb3fd6",
-        "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": "search_proof_eba8d6e1_4_a1674097"
+        "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": "search_proof_eba8d6e1_4_a1674097",
+        "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_4_c45f2532"
       },
       "tree_type": "and_or",
       "metadata": {
