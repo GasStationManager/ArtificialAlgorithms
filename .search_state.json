@@ -940,6 +940,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_17"
+        },
+        {
+          "summary": "After 'have hS'Right : s'.right = s.right := rfl'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_18"
         }
       ],
       "current_path": [
@@ -1014,6 +1028,10 @@
         {
           "branch_index": 17,
           "action": "have hS'Right : s'.right = s.right := rfl"
+        },
+        {
+          "branch_index": 18,
+          "action": null
         }
       ],
       "history": [
@@ -1101,6 +1119,11 @@
           16,
           "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }",
           17
+        ],
+        [
+          17,
+          "have hS'Right : s'.right = s.right := rfl",
+          18
         ]
       ],
       "parent_map": {
@@ -1120,7 +1143,8 @@
         "14": 13,
         "15": 14,
         "16": 15,
-        "17": 16
+        "17": 16,
+        "18": 17
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -1139,7 +1163,8 @@
         "13,14": "subst hl; rw [\u2190 s.hSum]; omega",
         "14,15": "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)",
         "15,16": "have hS'Left : s.left + 1 \u2264 l := hlGt",
-        "16,17": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }"
+        "16,17": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }",
+        "17,18": "have hS'Right : s'.right = s.right := rfl"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
