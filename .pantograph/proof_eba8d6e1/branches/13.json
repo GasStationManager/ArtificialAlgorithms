@@ -1,0 +1,220 @@
+{
+  "initial_expr": "SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k",
+  "initial_sketch": "/-\nVerified Sliding Window: Maximum Length Subarray with Sum at Most K\n\nThis file demonstrates the proof-friendly O(n) sliding window pattern for arrays.\n\n**Problem**: Given an array of non-negative integers and a target K, find the maximum\nlength of a contiguous subarray with sum \u2264 K.\n\n**Key insight**: Sliding window CAN be O(n) and provable if we:\n1. Use **pure recursion with state**, not imperative loops\n2. Carry invariants **explicitly in types**\n3. Structure shrinking as a separate recursive function with termination proof\n\nAuthored with Claude (Opus 4.5) and human collaboration.\n-/\n\n\nset_option linter.unusedVariables false\n\nnamespace SlidingWindow\n\n/-! ## Specification\n\nWe first define what the problem is asking for mathematically. -/\n\n/-- Sum of a subarray from index `left` (inclusive) to `right` (exclusive).\n    Uses List representation for cleaner specifications. -/\ndef subarraySum (a : Array Nat) (left right : Nat) : Nat :=\n  (a.toList.drop left |>.take (right - left)).sum\n\n/-- A valid window has valid bounds and sum at most K. -/\ndef isValidWindow (a : Array Nat) (k : Nat) (left right : Nat) : Prop :=\n  left \u2264 right \u2227 right \u2264 a.size \u2227 subarraySum a left right \u2264 k\n\n/-- The length of a window. -/\ndef windowLength (left right : Nat) : Nat := right - left\n\n/-- A result is optimal if it's the maximum window length among all valid windows. -/\ndef isOptimalResult (a : Array Nat) (k : Nat) (result : Nat) : Prop :=\n  -- The result is achievable by some valid window\n  (\u2203 left right, isValidWindow a k left right \u2227 windowLength left right = result) \u2227\n  -- The result is at least as good as any valid window\n  (\u2200 left right, isValidWindow a k left right \u2192 windowLength left right \u2264 result)\n\n/-! ## Helper Lemmas for Subarray Sums\n\nThese are the key lemmas that enable incremental sum updates.\nThe proofs require careful reasoning about List operations. -/\n\n/-- Sum of an empty range is 0. -/\n@[simp]\ntheorem subarraySum_empty (a : Array Nat) (i : Nat) : subarraySum a i i = 0 := by\n  simp [subarraySum]\n\n/-- Adding one element to the right increases the sum by that element.\n    This is the key lemma for O(1) window extension. -/\ntheorem subarraySum_extend_right (a : Array Nat) (left right : Nat)\n    (hlr : left \u2264 right) (h : right < a.size) :\n    subarraySum a left (right + 1) = subarraySum a left right + a[right] := by\n  simp only [subarraySum]\n  -- Let l = a.toList.drop left\n  set l := a.toList.drop left with hl\n  -- We need: (l.take (right + 1 - left)).sum = (l.take (right - left)).sum + a[right]\n  have hlen : right - left < l.length := by\n    simp only [hl, List.length_drop, Array.length_toList]\n    omega\n  have heq : right + 1 - left = right - left + 1 := by omega\n  rw [heq]\n  -- Use List.take_succ: take (n+1) l = take n l ++ l[n]?.toList\n  rw [List.take_succ]\n  -- l[right - left]? = some l[right - left] since right - left < l.length\n  have hget : l[right - left]? = some l[right - left] := List.getElem?_eq_getElem hlen\n  rw [hget]\n  simp only [Option.toList_some, List.sum_append, List.sum_singleton]\n  -- Now need to show l[right - left] = a[right]\n  congr 1\n  simp only [hl, List.getElem_drop, Array.getElem_toList]\n  congr 1\n  omega\n\n/-- Removing one element from the left decreases the sum by that element.\n    This is the key lemma for O(1) window shrinking. -/\ntheorem subarraySum_shrink_left (a : Array Nat) (left right : Nat)\n    (hleft : left < a.size) (hle : left < right) :\n    subarraySum a (left + 1) right = subarraySum a left right - a[left] := by\n  simp only [subarraySum]\n  set l := a.toList with hl\n  have hlenl : left < l.length := by simp only [hl, Array.length_toList]; exact hleft\n  -- Key: drop left l = l[left] :: drop (left + 1) l\n  have hdrop : l.drop left = l[left] :: l.drop (left + 1) := List.drop_eq_getElem_cons hlenl\n  -- Now work with the sums\n  -- LHS: (l.drop (left + 1)).take (right - (left + 1)).sum\n  -- RHS: ((l.drop left).take (right - left)).sum - a[left]\n  -- Since right - (left + 1) = right - left - 1:\n  have heq : right - (left + 1) = right - left - 1 := by omega\n  rw [heq, hdrop]\n  -- (l[left] :: l.drop (left + 1)).take (right - left) = l[left] :: (l.drop (left+1)).take (right - left - 1)\n  have hpos : 0 < right - left := by omega\n  rw [List.take_cons hpos, List.sum_cons]\n  simp only [hl, Array.getElem_toList]\n  omega\n\n/-! ## Window State with Carried Invariants\n\nThe key to proof-friendly sliding window is carrying all invariants in the state type. -/\n\n/-- Window state carrying its invariants.\n\nThe state tracks:\n- `left`, `right`: current window bounds\n- `sum`: cached sum of current window (for O(1) updates)\n- Proofs that the cached sum is correct and bounds are valid -/\nstructure WindowState (a : Array Nat) (k : Nat) where\n  left : Nat\n  right : Nat\n  sum : Nat\n  hLeftBound : left \u2264 right\n  hRightBound : right \u2264 a.size\n  hSum : sum = subarraySum a left right\n\nnamespace WindowState\n\nvariable {a : Array Nat} {k : Nat}\n\n/-- Initial state: empty window at position 0. -/\ndef init (a : Array Nat) (k : Nat) : WindowState a k where\n  left := 0\n  right := 0\n  sum := 0\n  hLeftBound := le_refl 0\n  hRightBound := Nat.zero_le _\n  hSum := by simp [subarraySum]\n\n/-- Check if the current window is valid (sum \u2264 k). -/\ndef isValid (s : WindowState a k) : Bool := s.sum \u2264 k\n\n/-- Proof that a valid state corresponds to a valid window. -/\ntheorem valid_iff_isValidWindow (s : WindowState a k) :\n    s.isValid \u2194 isValidWindow a k s.left s.right := by\n  simp only [isValid, isValidWindow, decide_eq_true_eq]\n  constructor\n  \u00b7 intro h\n    exact \u27e8s.hLeftBound, s.hRightBound, by rw [\u2190 s.hSum]; exact h\u27e9\n  \u00b7 intro \u27e8_, _, h\u27e9\n    rw [s.hSum]; exact h\n\n/-! ### Shrinking the Window from the Left\n\nWhen the window sum exceeds K, we shrink from the left until it's valid again.\nThis is a separate recursive function with its own termination proof. -/\n\n/-- Shrink the window from the left until sum \u2264 k or window is empty.\n\nReturns the new state with invariant that either:\n1. The new window is valid (sum \u2264 k), or\n2. The window is empty (left = right) -/\ndef shrinkUntilValid (s : WindowState a k) :\n    {s' : WindowState a k // (s'.sum \u2264 k \u2228 s'.left = s'.right) \u2227 s'.right = s.right} :=\n  if hValid : s.sum \u2264 k then\n    \u27e8s, Or.inl hValid, rfl\u27e9\n  else if hEmpty : s.left = s.right then\n    \u27e8s, Or.inr hEmpty, rfl\u27e9\n  else\n    -- Window is non-empty and invalid: shrink from left\n    have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty\n    have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound\n    let elem := a[s.left]\n    let newSum := s.sum - elem\n    let s' : WindowState a k := {\n      left := s.left + 1\n      right := s.right\n      sum := newSum\n      hLeftBound := hLt\n      hRightBound := s.hRightBound\n      hSum := by\n        show newSum = subarraySum a (s.left + 1) s.right\n        unfold newSum elem\n        rw [s.hSum, subarraySum_shrink_left a s.left s.right hLeftValid hLt]\n    }\n    have hDec : s'.right - s'.left < s.right - s.left := by simp [s']; omega\n    shrinkUntilValid s'\ntermination_by s.right - s.left\n\n/-- Key property: shrinkUntilValid returns a minimal left index.\n    For any l in [initial.left, result.left), the sum is > k.\n    We use sorry here as the full proof requires careful handling of dependent types. -/\ntheorem shrinkUntilValid_minimal (s : WindowState a k) (l : Nat)\n    (hlLower : s.left \u2264 l) (hlUpper : l < s.shrinkUntilValid.val.left) :\n    subarraySum a l s.shrinkUntilValid.val.right > k := by\n  /-\n  PROOF SKETCH (informal argument is correct, formalization blocked by dependent types):\n\n  Strong induction on window size (s.right - s.left).\n\n  Case 1: s.sum \u2264 k \u2192 returns s immediately, contradiction with hlUpper/hlLower via omega.\n  Case 2: s.sum > k, s.left = s.right \u2192 same contradiction.\n  Case 3: s.sum > k, s.left < s.right \u2192 recursive call with s'.left = s.left + 1.\n    - Sub-case l = s.left: use s.sum > k and result.right = s.right\n    - Sub-case l > s.left: apply IH with s'\n\n  TECHNICAL BARRIER: After unfolding shrinkUntilValid.eq_def, the recursive case has a match\n  expression that re-wraps the Subtype. The `.val` is the same definitionally, but Lean's\n  dependent rewriting fails because the proof terms differ. Multiple approaches tried:\n  - simp/dsimp: don't reduce the match\n  - generalize+obtain: gives resultVal but match remains in goal\n  - conv with rfl: proves .val = resultVal but rewrite fails (motive not type correct)\n\n  Would require restructuring shrinkUntilValid to avoid Subtype re-wrapping.\n  -/\n  sorry\nend WindowState\nend SlidingWindow",
+  "initial_imports": [
+    "Mathlib"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "split_ifs with hValid hEmpty",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.148458",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.149507",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "by_cases hlEq : l = s.left",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.150190",
+      "focused_goal_index": 0
+    }
+  ],
+  "tactic_history": [
+    "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
+    "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]",
+    "split_ifs with hValid hEmpty",
+    "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega",
+    "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega",
+    "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
+    "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
+    "by_cases hlEq : l = s.left"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.150190",
+      "target": "SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef;\n        have hLeftValid := \u22ef;\n        let elem := a[s.left];\n        let newSum := s.sum - elem;\n        let s' :=\n          { left := s.left + 1, right := s.right, sum := newSum, hLeftBound := hLt, hRightBound := \u22ef, hSum := \u22ef };\n        have hDec := \u22ef;\n        s'.shrinkUntilValid)).right >\n  k",
+      "variables": [
+        {
+          "name": "a",
+          "type": "Array \u2115"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "n",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 m < n,\n  \u2200 (s : SlidingWindow.WindowState a k) (l : \u2115),\n    s.left \u2264 l \u2192 l < (\u2191s.shrinkUntilValid).left \u2192 SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+        },
+        {
+          "name": "s",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "l",
+          "type": "\u2115"
+        },
+        {
+          "name": "hlLower",
+          "type": "s.left \u2264 l"
+        },
+        {
+          "name": "hlUpper",
+          "type": "l < (\u2191s.shrinkUntilValid).left"
+        },
+        {
+          "name": "hValid",
+          "type": "\u00acs.sum \u2264 k"
+        },
+        {
+          "name": "hEmpty",
+          "type": "\u00acs.left = s.right"
+        },
+        {
+          "name": "hLt",
+          "type": "s.left < s.right"
+        },
+        {
+          "name": "hLeftValid",
+          "type": "s.left < a.size"
+        },
+        {
+          "name": "hlEq",
+          "type": "l = s.left"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.150197",
+      "target": "SlidingWindow.subarraySum a l\n    (\u2191(have hLt := \u22ef;\n        have hLeftValid := \u22ef;\n        let elem := a[s.left];\n        let newSum := s.sum - elem;\n        let s' :=\n          { left := s.left + 1, right := s.right, sum := newSum, hLeftBound := hLt, hRightBound := \u22ef, hSum := \u22ef };\n        have hDec := \u22ef;\n        s'.shrinkUntilValid)).right >\n  k",
+      "variables": [
+        {
+          "name": "a",
+          "type": "Array \u2115"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "n",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 m < n,\n  \u2200 (s : SlidingWindow.WindowState a k) (l : \u2115),\n    s.left \u2264 l \u2192 l < (\u2191s.shrinkUntilValid).left \u2192 SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+        },
+        {
+          "name": "s",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "l",
+          "type": "\u2115"
+        },
+        {
+          "name": "hlLower",
+          "type": "s.left \u2264 l"
+        },
+        {
+          "name": "hlUpper",
+          "type": "l < (\u2191s.shrinkUntilValid).left"
+        },
+        {
+          "name": "hValid",
+          "type": "\u00acs.sum \u2264 k"
+        },
+        {
+          "name": "hEmpty",
+          "type": "\u00acs.left = s.right"
+        },
+        {
+          "name": "hLt",
+          "type": "s.left < s.right"
+        },
+        {
+          "name": "hLeftValid",
+          "type": "s.left < a.size"
+        },
+        {
+          "name": "hlEq",
+          "type": "\u00acl = s.left"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": 0,
+  "search_tree_id": "proof_eba8d6e1",
+  "branch_id": "13"
+}
