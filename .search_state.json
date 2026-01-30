@@ -2286,7 +2286,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2328,7 +2333,7 @@
         },
         {
           "branch_index": 8,
-          "action": null
+          "action": "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound"
         }
       ],
       "history": [
@@ -2404,7 +2409,8 @@
         "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": "search_proof_eba8d6e1_4_a1674097",
         "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_4_c45f2532",
         "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_6_43d42565",
-        "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_eba8d6e1_7_9d0cfdef"
+        "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_eba8d6e1_7_9d0cfdef",
+        "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_eba8d6e1_8_bd06a749"
       },
       "tree_type": "and_or",
       "metadata": {
