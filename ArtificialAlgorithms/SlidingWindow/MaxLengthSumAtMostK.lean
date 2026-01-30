@@ -178,8 +178,8 @@ def shrinkUntilValid (s : WindowState a k) :
         unfold newSum elem
         rw [s.hSum, subarraySum_shrink_left a s.left s.right hLeftValid hLt]
     }
-    let ⟨result, hResult, hRight⟩ := shrinkUntilValid s'
-    ⟨result, hResult, hRight⟩
+    have hDec : s'.right - s'.left < s.right - s.left := by simp [s']; omega
+    shrinkUntilValid s'
 termination_by s.right - s.left
 
 /-- Key property: shrinkUntilValid returns a minimal left index.
@@ -188,26 +188,27 @@ termination_by s.right - s.left
 theorem shrinkUntilValid_minimal (s : WindowState a k) (l : Nat)
     (hlLower : s.left ≤ l) (hlUpper : l < s.shrinkUntilValid.val.left) :
     subarraySum a l s.shrinkUntilValid.val.right > k := by
-  -- Strong induction on window size
-  induction s.right - s.left using Nat.strongRecOn generalizing s l with
-  | ind n ih =>
-    -- Unfold and case split on the three branches of shrinkUntilValid
-    unfold shrinkUntilValid
-    split_ifs with hValid hEmpty
-    · -- Case 1: s.sum ≤ k, so result = s, meaning result.left = s.left
-      -- But hlUpper says l < s.left while hlLower says s.left ≤ l, contradiction
-      simp only [shrinkUntilValid, hValid, ↓reduceDIte] at hlUpper
-      omega
-    · -- Case 2: s.sum > k and s.left = s.right (empty window), result = s
-      -- Same contradiction as Case 1
-      simp only [shrinkUntilValid, hValid, hEmpty, ↓reduceDIte] at hlUpper
-      omega
-    · -- Case 3: s.sum > k and s.left < s.right, recursive call
-      -- Need to show: subarraySum a l result.right > k
-      -- where result comes from shrinkUntilValid on the shrunk state s'
-      -- Technical difficulty: the Subtype pattern matching makes it hard to
-      -- connect result.right = s.right and use s.sum > k
-      sorry
+  /-
+  PROOF SKETCH (informal argument is correct, formalization blocked by dependent types):
+
+  Strong induction on window size (s.right - s.left).
+
+  Case 1: s.sum ≤ k → returns s immediately, contradiction with hlUpper/hlLower via omega.
+  Case 2: s.sum > k, s.left = s.right → same contradiction.
+  Case 3: s.sum > k, s.left < s.right → recursive call with s'.left = s.left + 1.
+    - Sub-case l = s.left: use s.sum > k and result.right = s.right
+    - Sub-case l > s.left: apply IH with s'
+
+  TECHNICAL BARRIER: After unfolding shrinkUntilValid.eq_def, the recursive case has a match
+  expression that re-wraps the Subtype. The `.val` is the same definitionally, but Lean's
+  dependent rewriting fails because the proof terms differ. Multiple approaches tried:
+  - simp/dsimp: don't reduce the match
+  - generalize+obtain: gives resultVal but match remains in goal
+  - conv with rfl: proves .val = resultVal but rewrite fails (motive not type correct)
+
+  Would require restructuring shrinkUntilValid to avoid Subtype re-wrapping.
+  -/
+  sorry
 
 /-- For non-negative arrays, extending window left (decreasing left index) only increases sum.
     This is the key monotonicity property. -/
@@ -303,7 +304,10 @@ def init (a : Array Nat) (k : Nat) : LoopState a k where
 /-- Step the loop: extend right, shrink if needed, update best. -/
 def step (s : LoopState a k) (hRight : s.right < a.size) : LoopState a k :=
   let extended := s.toWindowState.extendRight hRight
-  let ⟨shrunk, hShrunk, hShrunkRight⟩ := extended.shrinkUntilValid
+  let shrunkResult := extended.shrinkUntilValid
+  let shrunk := shrunkResult.val
+  let hShrunk := shrunkResult.property.1
+  let hShrunkRight := shrunkResult.property.2
   -- After shrinking, if window is valid, update best
   if hValid : shrunk.sum ≤ k then
     let newLen := windowLength shrunk.left shrunk.right
