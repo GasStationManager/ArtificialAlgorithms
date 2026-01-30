@@ -895,7 +895,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -969,7 +974,7 @@
         },
         {
           "branch_index": 16,
-          "action": null
+          "action": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }"
         }
       ],
       "history": [
@@ -1108,7 +1113,8 @@
         "by_cases hl : l = s.left": "search_proof_569e49e3_11_46c607cb",
         "subst hl; rw [\u2190 s.hSum]; omega": "search_proof_569e49e3_13_09006cb8",
         "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)": "search_proof_569e49e3_14_9815359c",
-        "have hS'Left : s.left + 1 \u2264 l := hlGt": "search_proof_569e49e3_15_918607bc"
+        "have hS'Left : s.left + 1 \u2264 l := hlGt": "search_proof_569e49e3_15_918607bc",
+        "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }": "search_proof_569e49e3_16_6f89944d"
       },
       "tree_type": "and_or",
       "metadata": {
