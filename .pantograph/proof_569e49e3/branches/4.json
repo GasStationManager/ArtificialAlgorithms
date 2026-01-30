@@ -1,0 +1,101 @@
+{
+  "initial_expr": "\u2200 (a : Array Nat) (k : Nat) (s : SlidingWindow.WindowState a k) (l : Nat) (hlLower : s.left \u2264 l) (hlUpper : l < s.shrinkUntilValid.val.left), SlidingWindow.subarraySum a l s.shrinkUntilValid.val.right > k",
+  "initial_sketch": null,
+  "initial_imports": [
+    "Mathlib",
+    "ArtificialAlgorithms.SlidingWindow.MaxLengthSumAtMostK"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro a k s l hlLower hlUpper",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hResRight : res.val.right = s.right := res.property.2",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro a k s l hlLower hlUpper",
+    "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_",
+    "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2",
+    "have hResRight : res.val.right = s.right := res.property.2"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.192",
+      "target": "SlidingWindow.subarraySum a l (\u2191res).right > k",
+      "variables": [
+        {
+          "name": "a",
+          "type": "Array \u2115"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "n",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 m < n,\n  \u2200 (s : SlidingWindow.WindowState a k) (l : \u2115),\n    s.left \u2264 l \u2192 l < (\u2191s.shrinkUntilValid).left \u2192 SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+        },
+        {
+          "name": "s",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "l",
+          "type": "\u2115"
+        },
+        {
+          "name": "hlLower",
+          "type": "s.left \u2264 l"
+        },
+        {
+          "name": "res",
+          "type": "{ s' // (s'.sum \u2264 k \u2228 s'.left = s'.right) \u2227 s'.right = s.right }"
+        },
+        {
+          "name": "hRes",
+          "type": "s.shrinkUntilValid = res"
+        },
+        {
+          "name": "hlUpper",
+          "type": "l < (\u2191res).left"
+        },
+        {
+          "name": "hResRight",
+          "type": "(\u2191res).right = s.right"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_569e49e3",
+  "branch_id": "4"
+}
