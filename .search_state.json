@@ -1054,6 +1054,19 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_23"
+        },
+        {
+          "summary": "Convert hlUpper to goal",
+          "possible_actions": [
+            "convert hlUpper using 3",
+            "exact hlUpper",
+            "simp only at hlUpper \u22a2; exact hlUpper"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_24"
         }
       ],
       "current_path": [
@@ -1148,6 +1161,10 @@
         {
           "branch_index": 23,
           "action": "Focus on subgoal 0: l < (\u2191s'.shrinkUntilValid).left..."
+        },
+        {
+          "branch_index": 24,
+          "action": null
         }
       ],
       "history": [
@@ -1265,6 +1282,11 @@
           22,
           "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult",
           23
+        ],
+        [
+          23,
+          "Focus on subgoal 0: l < (\u2191s'.shrinkUntilValid).left...",
+          24
         ]
       ],
       "parent_map": {
@@ -1290,7 +1312,8 @@
         "20": 19,
         "21": 19,
         "22": 21,
-        "23": 22
+        "23": 22,
+        "24": 23
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -1315,7 +1338,8 @@
         "19,20": "specialize ih (s'.right - s'.left)",
         "19,21": "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left",
         "21,22": "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k...",
-        "22,23": "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult"
+        "22,23": "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult",
+        "23,24": "Focus on subgoal 0: l < (\u2191s'.shrinkUntilValid).left..."
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
