@@ -602,17 +602,45 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_0"
+        },
+        {
+          "summary": "After 'intro a k s l hlLower hlUpper'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_1"
         }
       ],
       "current_path": [
         {
           "branch_index": 0,
           "action": "intro a k s l hlLower hlUpper"
+        },
+        {
+          "branch_index": 1,
+          "action": null
         }
       ],
-      "history": [],
-      "parent_map": {},
-      "edge_actions": {},
+      "history": [
+        [
+          0,
+          "intro a k s l hlLower hlUpper",
+          1
+        ]
+      ],
+      "parent_map": {
+        "1": 0
+      },
+      "edge_actions": {
+        "0,1": "intro a k s l hlLower hlUpper"
+      },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
       "git_action_branches": {
