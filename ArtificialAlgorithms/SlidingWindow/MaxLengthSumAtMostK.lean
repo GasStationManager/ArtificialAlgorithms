@@ -184,31 +184,74 @@ termination_by s.right - s.left
 
 /-- Key property: shrinkUntilValid returns a minimal left index.
     For any l in [initial.left, result.left), the sum is > k.
-    We use sorry here as the full proof requires careful handling of dependent types. -/
+    Proved by strong induction on window size. -/
 theorem shrinkUntilValid_minimal (s : WindowState a k) (l : Nat)
     (hlLower : s.left ≤ l) (hlUpper : l < s.shrinkUntilValid.val.left) :
     subarraySum a l s.shrinkUntilValid.val.right > k := by
-  /-
-  PROOF SKETCH (informal argument is correct, formalization blocked by dependent types):
-
-  Strong induction on window size (s.right - s.left).
-
-  Case 1: s.sum ≤ k → returns s immediately, contradiction with hlUpper/hlLower via omega.
-  Case 2: s.sum > k, s.left = s.right → same contradiction.
-  Case 3: s.sum > k, s.left < s.right → recursive call with s'.left = s.left + 1.
-    - Sub-case l = s.left: use s.sum > k and result.right = s.right
-    - Sub-case l > s.left: apply IH with s'
-
-  TECHNICAL BARRIER: After unfolding shrinkUntilValid.eq_def, the recursive case has a match
-  expression that re-wraps the Subtype. The `.val` is the same definitionally, but Lean's
-  dependent rewriting fails because the proof terms differ. Multiple approaches tried:
-  - simp/dsimp: don't reduce the match
-  - generalize+obtain: gives resultVal but match remains in goal
-  - conv with rfl: proves .val = resultVal but rewrite fails (motive not type correct)
-
-  Would require restructuring shrinkUntilValid to avoid Subtype re-wrapping.
-  -/
-  sorry
+  -- Strong induction on window size, using well-founded recursion directly
+  have h : ∀ n (s : WindowState a k) (l : Nat),
+      n = s.right - s.left →
+      s.left ≤ l →
+      l < s.shrinkUntilValid.val.left →
+      subarraySum a l s.shrinkUntilValid.val.right > k := by
+    intro n
+    induction n using Nat.strongRecOn with
+    | _ n ih =>
+      intro s l hn hlLower hlUpper
+      -- Unfold shrinkUntilValid and split on cases
+      rw [shrinkUntilValid.eq_def]
+      split_ifs with hValid hEmpty
+      · -- Case 1: s.sum ≤ k, returns immediately, contradicts hlUpper
+        exfalso
+        rw [shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper
+        simp only at hlUpper
+        omega
+      · -- Case 2: s.sum > k and s.left = s.right, contradicts hlUpper
+        exfalso
+        rw [shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper
+        simp only at hlUpper
+        omega
+      · -- Case 3: s.sum > k and s.left < s.right, recursive case
+        have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty
+        have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound
+        -- Simplify the let expressions in the goal
+        simp only
+        -- Define s' for clarity
+        let s' : WindowState a k := {
+          left := s.left + 1
+          right := s.right
+          sum := s.sum - a[s.left]
+          hLeftBound := hLt
+          hRightBound := s.hRightBound
+          hSum := by simp only [s.hSum, subarraySum_shrink_left a s.left s.right hLeftValid hLt]
+        }
+        -- The result's right equals s.right (and thus s'.right)
+        have hResultRight : s'.shrinkUntilValid.val.right = s.right :=
+          s'.shrinkUntilValid.property.2
+        -- Case split on l = s.left vs l > s.left
+        by_cases hlEq : l = s.left
+        · -- Subcase l = s.left: use s.sum > k
+          subst hlEq
+          rw [hResultRight, ← s.hSum]
+          push_neg at hValid
+          exact hValid
+        · -- Subcase l > s.left: use IH with s'
+          have hlGt : s.left + 1 ≤ l := Nat.succ_le_of_lt (Nat.lt_of_le_of_ne hlLower (Ne.symm hlEq))
+          -- Need hlUpper for s'
+          have hlUpper' : l < s'.shrinkUntilValid.val.left := by
+            simp only [s']
+            rw [shrinkUntilValid.eq_def, dif_neg hValid, dif_neg hEmpty] at hlUpper
+            simp only at hlUpper
+            exact hlUpper
+          -- Apply IH: s'.right - s'.left < n
+          have hDec : s'.right - s'.left < n := by
+            simp only [s', hn]
+            omega
+          have result := ih (s'.right - s'.left) hDec s' l rfl hlGt hlUpper'
+          rw [hResultRight]
+          convert result using 2
+          exact hResultRight.symm
+  exact h (s.right - s.left) s l rfl hlLower hlUpper
 
 /-- For non-negative arrays, extending window left (decreasing left index) only increases sum.
     This is the key monotonicity property. -/
@@ -455,11 +498,10 @@ def step (s : LoopState a k) (hRight : s.right < a.size) : LoopState a k :=
             have hNewLen : newLen = shrunk.right - shrunk.left := rfl
             rw [hNewLen] at hContra
             have hlLtShrunk : l < shrunk.left := by omega
-            -- l is in [s.left, shrunk.left), so by shrinkUntilValid, sum > k
-            -- This uses shrinkUntilValid_minimal, but there's a type barrier due to pattern matching
-            -- The proof would be: WindowState.shrinkUntilValid_minimal extended l hlSLeft hlLtShrunk
-            -- But Lean doesn't unify shrunk with extended.shrinkUntilValid.val
-            sorry
+            -- l is in [s.left, shrunk.left), so by shrinkUntilValid_minimal, sum > k
+            -- Now shrunk = extended.shrinkUntilValid.val definitionally
+            have hSumGtK := WindowState.shrinkUntilValid_minimal extended l hlSLeft hlLtShrunk
+            exact absurd hValidLR.2.2 (Nat.not_le.mpr hSumGtK)
       hLeftMinimal := by
         intro l hl
         -- Need: subarraySum a l shrunk.right > k
@@ -472,10 +514,10 @@ def step (s : LoopState a k) (hRight : s.right < a.size) : LoopState a k :=
           have hExtend := subarraySum_extend_right a l s.right hlLeRight hRight
           rw [hShrunkRightEq, hExtend]
           omega
-        · -- s.left ≤ l < shrunk.left: by shrinkUntilValid property
+        · -- s.left ≤ l < shrunk.left: by shrinkUntilValid_minimal
           push_neg at hlSLeft
-          -- Uses shrinkUntilValid_minimal but with pattern matching type barrier
-          sorry
+          -- Now shrunk = extended.shrinkUntilValid.val definitionally
+          exact WindowState.shrinkUntilValid_minimal extended l hlSLeft hl
     }
   else
     {
@@ -514,8 +556,8 @@ def step (s : LoopState a k) (hRight : s.right < a.size) : LoopState a k :=
           rw [hShrunkRightEq, hExtend]
           omega
         · push_neg at hlSLeft
-          -- Uses shrinkUntilValid_minimal but with pattern matching type barrier
-          sorry
+          -- Now shrunk = extended.shrinkUntilValid.val definitionally
+          exact WindowState.shrinkUntilValid_minimal extended l hlSLeft hl
     }
 
 /-- The step function always advances right by 1. -/
