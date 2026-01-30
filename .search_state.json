@@ -1058,11 +1058,15 @@
         {
           "summary": "Convert hlUpper to goal",
           "possible_actions": [
-            "convert hlUpper using 3",
             "exact hlUpper",
             "simp only at hlUpper \u22a2; exact hlUpper"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "convert hlUpper using 3": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -1164,7 +1168,7 @@
         },
         {
           "branch_index": 24,
-          "action": null
+          "action": "convert hlUpper using 3"
         }
       ],
       "history": [
@@ -1371,7 +1375,8 @@
         "have hn : n = s.right - s.left := by rfl": "search_proof_569e49e3_19_751a73a3",
         "specialize ih (s'.right - s'.left)": "search_proof_569e49e3_19_bb63d2a3",
         "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left": "search_proof_569e49e3_19_0315b787",
-        "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult": "search_proof_569e49e3_22_97bffc29"
+        "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult": "search_proof_569e49e3_22_97bffc29",
+        "convert hlUpper using 3": "search_proof_569e49e3_24_6199f5ea"
       },
       "tree_type": "and_or",
       "metadata": {
