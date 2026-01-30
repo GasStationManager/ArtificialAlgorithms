@@ -926,6 +926,10 @@
             "have hMeasure : s'.right - s'.left < n := by simp only; omega": {
               "result": false,
               "note": null
+            },
+            "have hMeasure : s'.right - s'.left < n := by show s.right - (s.left + 1) < s.right - s.left; omega": {
+              "result": false,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -1155,7 +1159,8 @@
         "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }": "search_proof_569e49e3_16_6f89944d",
         "have hlUpper' : l < s'.shrinkUntilValid.val.left := by simp only [hlUpper]; rfl": "search_proof_569e49e3_17_64b8d603",
         "have hlUpper' : l < s'.shrinkUntilValid.val.left := by convert hlUpper using 4": "search_proof_569e49e3_17_a634edcf",
-        "have hMeasure : s'.right - s'.left < n := by simp only; omega": "search_proof_569e49e3_17_43a8ffc1"
+        "have hMeasure : s'.right - s'.left < n := by simp only; omega": "search_proof_569e49e3_17_43a8ffc1",
+        "have hMeasure : s'.right - s'.left < n := by show s.right - (s.left + 1) < s.right - s.left; omega": "search_proof_569e49e3_17_25abf065"
       },
       "tree_type": "and_or",
       "metadata": {
