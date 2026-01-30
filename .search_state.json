@@ -1025,10 +1025,14 @@
         {
           "summary": "Apply hResult to main goal",
           "possible_actions": [
-            "have hS'ResRight : s'.shrinkUntilValid.val.right = s'.right := s'.shrinkUntilValid.property.2",
-            "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult"
+            "have hS'ResRight : s'.shrinkUntilValid.val.right = s'.right := s'.shrinkUntilValid.property.2"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -1122,7 +1126,7 @@
         },
         {
           "branch_index": 22,
-          "action": null
+          "action": "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult"
         }
       ],
       "history": [
@@ -1314,7 +1318,8 @@
         "have hMeasure : s'.right - s'.left < n := by rw [hS'Right, hS'LeftVal]; omega": "search_proof_569e49e3_19_e1848dfb",
         "have hn : n = s.right - s.left := by rfl": "search_proof_569e49e3_19_751a73a3",
         "specialize ih (s'.right - s'.left)": "search_proof_569e49e3_19_bb63d2a3",
-        "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left": "search_proof_569e49e3_19_0315b787"
+        "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left": "search_proof_569e49e3_19_0315b787",
+        "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult": "search_proof_569e49e3_22_97bffc29"
       },
       "tree_type": "and_or",
       "metadata": {
