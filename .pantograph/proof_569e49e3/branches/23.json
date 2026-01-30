@@ -1,0 +1,378 @@
+{
+  "initial_expr": "\u2200 (a : Array Nat) (k : Nat) (s : SlidingWindow.WindowState a k) (l : Nat) (hlLower : s.left \u2264 l) (hlUpper : l < s.shrinkUntilValid.val.left), SlidingWindow.subarraySum a l s.shrinkUntilValid.val.right > k",
+  "initial_sketch": null,
+  "initial_imports": [
+    "Mathlib",
+    "ArtificialAlgorithms.SlidingWindow.MaxLengthSumAtMostK"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro a k s l hlLower hlUpper",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hResRight : res.val.right = s.right := res.property.2",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "rw [hResRight]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "subst hRes",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "split_ifs at hlUpper with hValid hEmpty",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "grind",
+      "goal_id": "_uniq.899",
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "grind",
+      "goal_id": "_uniq.1995",
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "simp only at hlUpper",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "by_cases hl : l = s.left",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.8769",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "subst hl; rw [\u2190 s.hSum]; omega",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hS'Left : s.left + 1 \u2264 l := hlGt",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hS'Right : s'.right = s.right := rfl",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hS'LeftVal : s'.left = s.left + 1 := rfl",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.9346",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro a k s l hlLower hlUpper",
+    "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_",
+    "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2",
+    "have hResRight : res.val.right = s.right := res.property.2",
+    "rw [hResRight]",
+    "subst hRes",
+    "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper",
+    "split_ifs at hlUpper with hValid hEmpty",
+    "grind",
+    "grind",
+    "simp only at hlUpper",
+    "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
+    "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
+    "by_cases hl : l = s.left",
+    "subst hl; rw [\u2190 s.hSum]; omega",
+    "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)",
+    "have hS'Left : s.left + 1 \u2264 l := hlGt",
+    "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by rw [s.hSum]; exact (SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt).symm }",
+    "have hS'Right : s'.right = s.right := rfl",
+    "have hS'LeftVal : s'.left = s.left + 1 := rfl",
+    "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left",
+    "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.9373",
+      "target": "l < (\u2191s'.shrinkUntilValid).left",
+      "variables": [
+        {
+          "name": "a",
+          "type": "Array \u2115"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "n",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 m < n,\n  \u2200 (s : SlidingWindow.WindowState a k) (l : \u2115),\n    s.left \u2264 l \u2192 l < (\u2191s.shrinkUntilValid).left \u2192 SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+        },
+        {
+          "name": "s",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "l",
+          "type": "\u2115"
+        },
+        {
+          "name": "hlLower",
+          "type": "s.left \u2264 l"
+        },
+        {
+          "name": "hResRight",
+          "type": "(\u2191s.shrinkUntilValid).right = s.right"
+        },
+        {
+          "name": "hValid",
+          "type": "\u00acs.sum \u2264 k"
+        },
+        {
+          "name": "hEmpty",
+          "type": "\u00acs.left = s.right"
+        },
+        {
+          "name": "hlUpper",
+          "type": "l <\n  (\u2191(Subtype.casesOn\n        { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := \u22ef, hRightBound := \u22ef,\n            hSum := \u22ef }.shrinkUntilValid\n        fun val property =>\n        And.casesOn property fun left right => (fun result hResult hRight => \u27e8result, \u22ef\u27e9) val left right)).left"
+        },
+        {
+          "name": "hLt",
+          "type": "s.left < s.right"
+        },
+        {
+          "name": "hLeftSize",
+          "type": "s.left < a.size"
+        },
+        {
+          "name": "hl",
+          "type": "\u00acl = s.left"
+        },
+        {
+          "name": "hlGt",
+          "type": "s.left < l"
+        },
+        {
+          "name": "hS'Left",
+          "type": "s.left + 1 \u2264 l"
+        },
+        {
+          "name": "s'",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "hS'Right",
+          "type": "s'.right = s.right"
+        },
+        {
+          "name": "hS'LeftVal",
+          "type": "s'.left = s.left + 1"
+        },
+        {
+          "name": "hResult",
+          "type": "l < (\u2191s'.shrinkUntilValid).left \u2192 SlidingWindow.subarraySum a l (\u2191s'.shrinkUntilValid).right > k"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.9340",
+      "target": "s'.right - s'.left < n",
+      "variables": [
+        {
+          "name": "a",
+          "type": "Array \u2115"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "n",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 m < n,\n  \u2200 (s : SlidingWindow.WindowState a k) (l : \u2115),\n    s.left \u2264 l \u2192 l < (\u2191s.shrinkUntilValid).left \u2192 SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+        },
+        {
+          "name": "s",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "l",
+          "type": "\u2115"
+        },
+        {
+          "name": "hlLower",
+          "type": "s.left \u2264 l"
+        },
+        {
+          "name": "hResRight",
+          "type": "(\u2191s.shrinkUntilValid).right = s.right"
+        },
+        {
+          "name": "hValid",
+          "type": "\u00acs.sum \u2264 k"
+        },
+        {
+          "name": "hEmpty",
+          "type": "\u00acs.left = s.right"
+        },
+        {
+          "name": "hlUpper",
+          "type": "l <\n  (\u2191(Subtype.casesOn\n        { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := \u22ef, hRightBound := \u22ef,\n            hSum := \u22ef }.shrinkUntilValid\n        fun val property =>\n        And.casesOn property fun left right => (fun result hResult hRight => \u27e8result, \u22ef\u27e9) val left right)).left"
+        },
+        {
+          "name": "hLt",
+          "type": "s.left < s.right"
+        },
+        {
+          "name": "hLeftSize",
+          "type": "s.left < a.size"
+        },
+        {
+          "name": "hl",
+          "type": "\u00acl = s.left"
+        },
+        {
+          "name": "hlGt",
+          "type": "s.left < l"
+        },
+        {
+          "name": "hS'Left",
+          "type": "s.left + 1 \u2264 l"
+        },
+        {
+          "name": "s'",
+          "type": "SlidingWindow.WindowState a k"
+        },
+        {
+          "name": "hS'Right",
+          "type": "s'.right = s.right"
+        },
+        {
+          "name": "hS'LeftVal",
+          "type": "s'.left = s.left + 1"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": 0,
+  "search_tree_id": "proof_569e49e3",
+  "branch_id": "23"
+}
