@@ -2305,11 +2305,35 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_eba8d6e1_bp_9"
+        },
+        {
+          "summary": "After 'let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "have hSameResult : s.shrinkUntilValid = s'.shrinkUntilValid := by rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_neg hEmpty]; rfl": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_eba8d6e1_bp_10"
         }
       ],
       "current_path": [
@@ -2351,7 +2375,7 @@
         },
         {
           "branch_index": 9,
-          "action": null
+          "action": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }"
         }
       ],
       "history": [
@@ -2399,6 +2423,11 @@
           8,
           "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
           9
+        ],
+        [
+          9,
+          "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }",
+          10
         ]
       ],
       "parent_map": {
@@ -2410,7 +2439,8 @@
         "6": 5,
         "7": 6,
         "8": 7,
-        "9": 8
+        "9": 8,
+        "10": 9
       },
       "edge_actions": {
         "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
@@ -2421,7 +2451,8 @@
         "5,6": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
         "6,7": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega",
         "7,8": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
-        "8,9": "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound"
+        "8,9": "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
+        "9,10": "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }"
       },
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
@@ -2435,7 +2466,9 @@
         "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_4_c45f2532",
         "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_6_43d42565",
         "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_eba8d6e1_7_9d0cfdef",
-        "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_eba8d6e1_8_bd06a749"
+        "have hLeftValid : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_eba8d6e1_8_bd06a749",
+        "let s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := by simp only [s.hSum, SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftValid hLt] }": "search_proof_eba8d6e1_9_0a7d0afa",
+        "have hSameResult : s.shrinkUntilValid = s'.shrinkUntilValid := by rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_neg hEmpty]; rfl": "search_proof_eba8d6e1_10_ed9341ec"
       },
       "tree_type": "and_or",
       "metadata": {
