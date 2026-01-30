@@ -621,6 +621,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_1"
+        },
+        {
+          "summary": "After 'induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_2"
         }
       ],
       "current_path": [
@@ -631,6 +645,10 @@
         {
           "branch_index": 1,
           "action": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_"
+        },
+        {
+          "branch_index": 2,
+          "action": null
         }
       ],
       "history": [
@@ -638,13 +656,20 @@
           0,
           "intro a k s l hlLower hlUpper",
           1
+        ],
+        [
+          1,
+          "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_",
+          2
         ]
       ],
       "parent_map": {
-        "1": 0
+        "1": 0,
+        "2": 1
       },
       "edge_actions": {
-        "0,1": "intro a k s l hlLower hlUpper"
+        "0,1": "intro a k s l hlLower hlUpper",
+        "1,2": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
