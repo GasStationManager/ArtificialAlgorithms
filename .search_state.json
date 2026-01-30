@@ -886,6 +886,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_15"
+        },
+        {
+          "summary": "After 'have hS'Left : s.left + 1 \u2264 l := hlGt'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_16"
         }
       ],
       "current_path": [
@@ -952,6 +966,10 @@
         {
           "branch_index": 15,
           "action": "have hS'Left : s.left + 1 \u2264 l := hlGt"
+        },
+        {
+          "branch_index": 16,
+          "action": null
         }
       ],
       "history": [
@@ -1029,6 +1047,11 @@
           14,
           "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)",
           15
+        ],
+        [
+          15,
+          "have hS'Left : s.left + 1 \u2264 l := hlGt",
+          16
         ]
       ],
       "parent_map": {
@@ -1046,7 +1069,8 @@
         "12": 11,
         "13": 12,
         "14": 13,
-        "15": 14
+        "15": 14,
+        "16": 15
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -1063,7 +1087,8 @@
         "11,12": "by_cases hl : l = s.left",
         "12,13": "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k...",
         "13,14": "subst hl; rw [\u2190 s.hSum]; omega",
-        "14,15": "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)"
+        "14,15": "have hlGt : s.left < l := Nat.lt_of_le_of_ne hlLower (Ne.symm hl)",
+        "15,16": "have hS'Left : s.left + 1 \u2264 l := hlGt"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
