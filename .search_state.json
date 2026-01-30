@@ -1,0 +1,26 @@
+{
+  "active_tree_id": "shrinkUntilValid_minimal",
+  "trees": {
+    "shrinkUntilValid_minimal": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "v4.26.0",
+      "search_id": "shrinkUntilValid_minimal",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/shrinkUntilValid_minimal/META.md"
+      }
+    }
+  }
+}
