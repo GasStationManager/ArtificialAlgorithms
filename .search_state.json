@@ -744,7 +744,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "simp only at hlUpper": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -786,7 +791,7 @@
         },
         {
           "branch_index": 8,
-          "action": null
+          "action": "simp only at hlUpper"
         }
       ],
       "history": [
@@ -861,7 +866,8 @@
         "rw [hResRight]": "search_proof_569e49e3_4_3b8c6b80",
         "subst hRes": "search_proof_569e49e3_5_f82e1600",
         "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper": "search_proof_569e49e3_6_bb0286f0",
-        "split_ifs at hlUpper with hValid hEmpty": "search_proof_569e49e3_7_51f50890"
+        "split_ifs at hlUpper with hValid hEmpty": "search_proof_569e49e3_7_51f50890",
+        "simp only at hlUpper": "search_proof_569e49e3_8_8c72a00d"
       },
       "tree_type": "and_or",
       "metadata": {
