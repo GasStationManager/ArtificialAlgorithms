@@ -2143,17 +2143,45 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_eba8d6e1_bp_0"
+        },
+        {
+          "summary": "After 'induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_eba8d6e1_bp_1"
         }
       ],
       "current_path": [
         {
           "branch_index": 0,
           "action": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_"
+        },
+        {
+          "branch_index": 1,
+          "action": null
         }
       ],
-      "history": [],
-      "parent_map": {},
-      "edge_actions": {},
+      "history": [
+        [
+          0,
+          "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
+          1
+        ]
+      ],
+      "parent_map": {
+        "1": 0
+      },
+      "edge_actions": {
+        "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_"
+      },
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
       "git_action_branches": {
