@@ -930,6 +930,10 @@
             "have hMeasure : s'.right - s'.left < n := by show s.right - (s.left + 1) < s.right - s.left; omega": {
               "result": false,
               "note": null
+            },
+            "have hS'Right : s'.right = s.right := rfl": {
+              "result": null,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -1009,7 +1013,7 @@
         },
         {
           "branch_index": 17,
-          "action": null
+          "action": "have hS'Right : s'.right = s.right := rfl"
         }
       ],
       "history": [
@@ -1160,7 +1164,8 @@
         "have hlUpper' : l < s'.shrinkUntilValid.val.left := by simp only [hlUpper]; rfl": "search_proof_569e49e3_17_64b8d603",
         "have hlUpper' : l < s'.shrinkUntilValid.val.left := by convert hlUpper using 4": "search_proof_569e49e3_17_a634edcf",
         "have hMeasure : s'.right - s'.left < n := by simp only; omega": "search_proof_569e49e3_17_43a8ffc1",
-        "have hMeasure : s'.right - s'.left < n := by show s.right - (s.left + 1) < s.right - s.left; omega": "search_proof_569e49e3_17_25abf065"
+        "have hMeasure : s'.right - s'.left < n := by show s.right - (s.left + 1) < s.right - s.left; omega": "search_proof_569e49e3_17_25abf065",
+        "have hS'Right : s'.right = s.right := rfl": "search_proof_569e49e3_17_3b5ea903"
       },
       "tree_type": "and_or",
       "metadata": {
