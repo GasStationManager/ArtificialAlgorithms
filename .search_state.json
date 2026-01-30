@@ -2277,6 +2277,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_eba8d6e1_bp_7"
+        },
+        {
+          "summary": "After 'have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_eba8d6e1_bp_8"
         }
       ],
       "current_path": [
@@ -2311,6 +2325,10 @@
         {
           "branch_index": 7,
           "action": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty"
+        },
+        {
+          "branch_index": 8,
+          "action": null
         }
       ],
       "history": [
@@ -2348,6 +2366,11 @@
           6,
           "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega",
           7
+        ],
+        [
+          7,
+          "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
+          8
         ]
       ],
       "parent_map": {
@@ -2357,7 +2380,8 @@
         "4": 3,
         "5": 4,
         "6": 5,
-        "7": 6
+        "7": 6,
+        "8": 7
       },
       "edge_actions": {
         "0,1": "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_",
@@ -2366,7 +2390,8 @@
         "3,4": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
         "4,5": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega",
         "5,6": "Focus on subgoal 0: SlidingWindow.subarraySum a l (\u2191\u27e8s, \u22ef\u27e9).right > k...",
-        "6,7": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega"
+        "6,7": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega",
+        "7,8": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty"
       },
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
