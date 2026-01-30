@@ -735,6 +735,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_7"
+        },
+        {
+          "summary": "After 'split_ifs at hlUpper with hValid hEmpty'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_8"
         }
       ],
       "current_path": [
@@ -769,6 +783,10 @@
         {
           "branch_index": 7,
           "action": "split_ifs at hlUpper with hValid hEmpty"
+        },
+        {
+          "branch_index": 8,
+          "action": null
         }
       ],
       "history": [
@@ -806,6 +824,11 @@
           6,
           "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper",
           7
+        ],
+        [
+          7,
+          "split_ifs at hlUpper with hValid hEmpty",
+          8
         ]
       ],
       "parent_map": {
@@ -815,7 +838,8 @@
         "4": 3,
         "5": 4,
         "6": 5,
-        "7": 6
+        "7": 6,
+        "8": 7
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -824,7 +848,8 @@
         "3,4": "have hResRight : res.val.right = s.right := res.property.2",
         "4,5": "rw [hResRight]",
         "5,6": "subst hRes",
-        "6,7": "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper"
+        "6,7": "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper",
+        "7,8": "split_ifs at hlUpper with hValid hEmpty"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
