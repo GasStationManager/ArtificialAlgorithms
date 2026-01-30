@@ -1021,6 +1021,18 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_21"
+        },
+        {
+          "summary": "Apply hResult to main goal",
+          "possible_actions": [
+            "have hS'ResRight : s'.shrinkUntilValid.val.right = s'.right := s'.shrinkUntilValid.property.2",
+            "rw [\u2190 hS'Right, \u2190 s'.shrinkUntilValid.property.2]; apply hResult"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_22"
         }
       ],
       "current_path": [
@@ -1107,6 +1119,10 @@
         {
           "branch_index": 21,
           "action": "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k..."
+        },
+        {
+          "branch_index": 22,
+          "action": null
         }
       ],
       "history": [
@@ -1214,6 +1230,11 @@
           19,
           "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left",
           21
+        ],
+        [
+          21,
+          "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k...",
+          22
         ]
       ],
       "parent_map": {
@@ -1237,7 +1258,8 @@
         "18": 17,
         "19": 18,
         "20": 19,
-        "21": 19
+        "21": 19,
+        "22": 21
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -1260,7 +1282,8 @@
         "17,18": "have hS'Right : s'.right = s.right := rfl",
         "18,19": "have hS'LeftVal : s'.left = s.left + 1 := rfl",
         "19,20": "specialize ih (s'.right - s'.left)",
-        "19,21": "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left"
+        "19,21": "have hResult := ih (s'.right - s'.left) ?_ s' l hS'Left",
+        "21,22": "Focus on subgoal 0: SlidingWindow.subarraySum a l s.right > k..."
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
