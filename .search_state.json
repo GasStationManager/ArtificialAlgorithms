@@ -2247,10 +2247,13 @@
         },
         {
           "summary": "Case 2: \u00acs.sum \u2264 k and s.left = s.right",
-          "possible_actions": [
-            "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2284,7 +2287,7 @@
         },
         {
           "branch_index": 6,
-          "action": null
+          "action": "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega"
         }
       ],
       "history": [
@@ -2344,7 +2347,8 @@
         "rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def]": "search_proof_eba8d6e1_1_c6930772",
         "split_ifs with hValid hEmpty": "search_proof_eba8d6e1_2_85fb3fd6",
         "simp only [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; omega": "search_proof_eba8d6e1_4_a1674097",
-        "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_4_c45f2532"
+        "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_pos hValid] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_4_c45f2532",
+        "exfalso; rw [SlidingWindow.WindowState.shrinkUntilValid.eq_def, dif_neg hValid, dif_pos hEmpty] at hlUpper; simp only at hlUpper; omega": "search_proof_eba8d6e1_6_43d42565"
       },
       "tree_type": "and_or",
       "metadata": {
