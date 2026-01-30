@@ -754,6 +754,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_8"
+        },
+        {
+          "summary": "After 'simp only at hlUpper'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_9"
         }
       ],
       "current_path": [
@@ -792,6 +806,10 @@
         {
           "branch_index": 8,
           "action": "simp only at hlUpper"
+        },
+        {
+          "branch_index": 9,
+          "action": null
         }
       ],
       "history": [
@@ -834,6 +852,11 @@
           7,
           "split_ifs at hlUpper with hValid hEmpty",
           8
+        ],
+        [
+          8,
+          "simp only at hlUpper",
+          9
         ]
       ],
       "parent_map": {
@@ -844,7 +867,8 @@
         "5": 4,
         "6": 5,
         "7": 6,
-        "8": 7
+        "8": 7,
+        "9": 8
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -854,7 +878,8 @@
         "4,5": "rw [hResRight]",
         "5,6": "subst hRes",
         "6,7": "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper",
-        "7,8": "split_ifs at hlUpper with hValid hEmpty"
+        "7,8": "split_ifs at hlUpper with hValid hEmpty",
+        "8,9": "simp only at hlUpper"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
