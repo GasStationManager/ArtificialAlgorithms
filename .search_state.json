@@ -792,6 +792,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_569e49e3_bp_10"
+        },
+        {
+          "summary": "After 'have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_569e49e3_bp_11"
         }
       ],
       "current_path": [
@@ -838,6 +852,10 @@
         {
           "branch_index": 10,
           "action": "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound"
+        },
+        {
+          "branch_index": 11,
+          "action": null
         }
       ],
       "history": [
@@ -890,6 +908,11 @@
           9,
           "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
           10
+        ],
+        [
+          10,
+          "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound",
+          11
         ]
       ],
       "parent_map": {
@@ -902,7 +925,8 @@
         "7": 6,
         "8": 7,
         "9": 8,
-        "10": 9
+        "10": 9,
+        "11": 10
       },
       "edge_actions": {
         "0,1": "intro a k s l hlLower hlUpper",
@@ -914,7 +938,8 @@
         "6,7": "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper",
         "7,8": "split_ifs at hlUpper with hValid hEmpty",
         "8,9": "simp only at hlUpper",
-        "9,10": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty"
+        "9,10": "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty",
+        "10,11": "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_569e49e3",
