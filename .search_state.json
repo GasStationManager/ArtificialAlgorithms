@@ -649,7 +649,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have hResRight : res.val.right = s.right := res.property.2": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -671,7 +676,7 @@
         },
         {
           "branch_index": 3,
-          "action": null
+          "action": "have hResRight : res.val.right = s.right := res.property.2"
         }
       ],
       "history": [
@@ -706,7 +711,8 @@
       "git_action_branches": {
         "intro a k s l hlLower hlUpper": "search_proof_569e49e3_0_52d8f83b",
         "induction s.right - s.left using Nat.strongRecOn generalizing s l with | ind n ih => ?_": "search_proof_569e49e3_1_903a6905",
-        "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2": "search_proof_569e49e3_2_bec576dd"
+        "generalize hRes : s.shrinkUntilValid = res at hlUpper \u22a2": "search_proof_569e49e3_2_bec576dd",
+        "have hResRight : res.val.right = s.right := res.property.2": "search_proof_569e49e3_3_830d219f"
       },
       "tree_type": "and_or",
       "metadata": {
