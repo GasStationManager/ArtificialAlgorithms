@@ -805,6 +805,10 @@
             "set s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt \u25b8 s.hSum \u25b8 rfl } with hs'": {
               "result": false,
               "note": null
+            },
+            "by_cases hl : l = s.left": {
+              "result": null,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -860,7 +864,7 @@
         },
         {
           "branch_index": 11,
-          "action": null
+          "action": "by_cases hl : l = s.left"
         }
       ],
       "history": [
@@ -960,7 +964,8 @@
         "simp only at hlUpper": "search_proof_569e49e3_8_8c72a00d",
         "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_569e49e3_9_9d0cfdef",
         "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_569e49e3_10_92b5f080",
-        "set s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt \u25b8 s.hSum \u25b8 rfl } with hs'": "search_proof_569e49e3_11_0f4f02f3"
+        "set s' : SlidingWindow.WindowState a k := { left := s.left + 1, right := s.right, sum := s.sum - a[s.left], hLeftBound := hLt, hRightBound := s.hRightBound, hSum := SlidingWindow.subarraySum_shrink_left a s.left s.right hLeftSize hLt \u25b8 s.hSum \u25b8 rfl } with hs'": "search_proof_569e49e3_11_0f4f02f3",
+        "by_cases hl : l = s.left": "search_proof_569e49e3_11_46c607cb"
       },
       "tree_type": "and_or",
       "metadata": {
