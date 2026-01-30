@@ -782,7 +782,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -832,7 +837,7 @@
         },
         {
           "branch_index": 10,
-          "action": null
+          "action": "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound"
         }
       ],
       "history": [
@@ -923,7 +928,8 @@
         "unfold SlidingWindow.WindowState.shrinkUntilValid at hlUpper": "search_proof_569e49e3_6_bb0286f0",
         "split_ifs at hlUpper with hValid hEmpty": "search_proof_569e49e3_7_51f50890",
         "simp only at hlUpper": "search_proof_569e49e3_8_8c72a00d",
-        "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_569e49e3_9_9d0cfdef"
+        "have hLt : s.left < s.right := Nat.lt_of_le_of_ne s.hLeftBound hEmpty": "search_proof_569e49e3_9_9d0cfdef",
+        "have hLeftSize : s.left < a.size := Nat.lt_of_lt_of_le hLt s.hRightBound": "search_proof_569e49e3_10_92b5f080"
       },
       "tree_type": "and_or",
       "metadata": {
