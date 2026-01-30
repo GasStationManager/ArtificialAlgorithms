@@ -2152,7 +2152,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have hn : n = s.right - s.left := by rfl": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -2185,7 +2190,8 @@
       "root_branch": "search_shrink-minimal-proof_0_b38293db",
       "search_id": "proof_eba8d6e1",
       "git_action_branches": {
-        "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_": "search_proof_eba8d6e1_0_6449af1c"
+        "induction s.right - s.left using Nat.strongRecOn generalizing s l with | _ n ih => ?_": "search_proof_eba8d6e1_0_6449af1c",
+        "have hn : n = s.right - s.left := by rfl": "search_proof_eba8d6e1_1_751a73a3"
       },
       "tree_type": "and_or",
       "metadata": {
