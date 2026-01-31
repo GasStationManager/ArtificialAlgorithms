@@ -187,15 +187,71 @@ theorem lcsLength_cons_cons (x y : Char) (xs ys : List Char) :
       else max (lcsLength xs (y :: ys)) (lcsLength (x :: xs) ys) := by
   simp [lcsLength]
 
+/-- Helper: lcsLength of a singleton list against a snoc list. -/
+private theorem lcsLength_singleton_snoc (x y : Char) (ys : List Char) :
+    lcsLength [x] (ys ++ [y]) = if x == y then 1 else lcsLength [x] ys := by
+  induction ys with
+  | nil => simp only [List.nil_append, lcsLength]; split_ifs <;> simp
+  | cons b ys' ih => simp only [List.cons_append, lcsLength]; split_ifs <;> simp_all
+
+/-- Helper: lcsLength of a snoc list against a singleton list. -/
+private theorem lcsLength_snoc_singleton (x y : Char) (xs : List Char) :
+    lcsLength (xs ++ [x]) [y] = if x == y then 1 else lcsLength xs [y] := by
+  induction xs with
+  | nil => simp only [List.nil_append, lcsLength]; split_ifs <;> simp
+  | cons a xs' ih =>
+    simp only [List.cons_append, lcsLength]
+    split_ifs with hay hxy <;> simp_all [lcsLength_nil_right]
+
 /-- LCS length on snoc lists follows the standard recurrence.
     This is the key lemma connecting LCS computed from the end to LCS computed from the front. -/
 theorem lcsLength_snoc_snoc (xs ys : List Char) (x y : Char) :
     lcsLength (xs ++ [x]) (ys ++ [y]) =
       if x == y then 1 + lcsLength xs ys
       else max (lcsLength xs (ys ++ [y])) (lcsLength (xs ++ [x]) ys) := by
-  -- This requires a non-trivial double induction
-  -- The proof is deferred to the proof subagent
-  sorry
+  induction xs generalizing ys with
+  | nil =>
+    simp only [List.nil_append, lcsLength]
+    rw [lcsLength_singleton_snoc]
+    split_ifs <;> simp
+  | cons a xs' ih_xs =>
+    induction ys with
+    | nil =>
+      simp only [List.nil_append, List.cons_append, lcsLength, lcsLength_nil_right]
+      rw [lcsLength_snoc_singleton]
+      split_ifs <;> simp
+    | cons b ys' ih_ys =>
+      simp only [List.cons_append, lcsLength]
+      have h_ih := ih_xs ys'
+      by_cases hab : a == b
+      · -- Case a == b
+        by_cases hxy : x == y
+        · simp only [hxy, ↓reduceIte] at h_ih; simp only [hab, hxy, ↓reduceIte]; omega
+        · simp only [hxy, Bool.false_eq_true, ↓reduceIte] at h_ih
+          simp only [hab, hxy, Bool.false_eq_true, ↓reduceIte]; rw [h_ih]; omega
+      · -- Case a ≠ b
+        simp only [hab, Bool.false_eq_true, ↓reduceIte]
+        by_cases hxy : x == y
+        · -- x == y, a ≠ b
+          simp only [hxy, ↓reduceIte] at h_ih ih_ys
+          simp only [hxy, ↓reduceIte]
+          have ih_ys' : lcsLength (a :: (xs' ++ [x])) (ys' ++ [y]) = 1 + lcsLength (a :: xs') ys' := ih_ys
+          rw [ih_ys']
+          have h2 := ih_xs (b :: ys')
+          simp only [List.cons_append, hxy, ↓reduceIte] at h2
+          rw [h2]
+          omega
+        · -- x ≠ y, a ≠ b
+          simp only [hxy, Bool.false_eq_true, ↓reduceIte] at h_ih ih_ys
+          simp only [hxy, Bool.false_eq_true, ↓reduceIte]
+          have ih_ys' : lcsLength (a :: (xs' ++ [x])) (ys' ++ [y]) =
+              max (lcsLength (a :: xs') (ys' ++ [y])) (lcsLength (a :: (xs' ++ [x])) ys') := ih_ys
+          rw [ih_ys']
+          have h2 := ih_xs (b :: ys')
+          simp only [List.cons_append, hxy, Bool.false_eq_true, ↓reduceIte] at h2
+          rw [h2]
+          -- max(max(A,B), max(C,D)) = max(max(A,C), max(B,D)) by commutativity
+          simp only [Nat.max_comm, Nat.max_left_comm]
 
 /-- Key recurrence: when both indices are positive, lcsTarget follows the standard DP recurrence -/
 theorem lcsTarget_recurrence (l1 l2 : List Char) (i j : Nat)
@@ -213,12 +269,12 @@ theorem lcsTarget_recurrence (l1 l2 : List Char) (i j : Nat)
   have h_take_i : l1.take i = l1.take (i - 1) ++ [l1[i - 1]] := by
     have hi' : i - 1 + 1 = i := Nat.sub_add_cancel hi
     conv_lhs => rw [← hi']
-    rw [List.take_succ]
+    rw [List.take_add_one]
     simp only [List.getElem?_eq_getElem hi_lt, Option.toList_some]
   have h_take_j : l2.take j = l2.take (j - 1) ++ [l2[j - 1]] := by
     have hj' : j - 1 + 1 = j := Nat.sub_add_cancel hj
     conv_lhs => rw [← hj']
-    rw [List.take_succ]
+    rw [List.take_add_one]
     simp only [List.getElem?_eq_getElem hj_lt, Option.toList_some]
 
   have h_c1 : c1 = l1[i - 1] := by
