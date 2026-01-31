@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "lis_implementation",
+  "active_tree_id": "proof_a326cba1",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -3081,6 +3081,27 @@
         "enable_memory": true,
         "created_at": "now",
         "meta": "See ./.search_memory/lis_implementation/META.md"
+      }
+    },
+    "proof_a326cba1": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "v4.26.0",
+      "search_id": "proof_a326cba1",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_a326cba1/META.md"
       }
     }
   }
