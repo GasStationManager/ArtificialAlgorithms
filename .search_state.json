@@ -3765,9 +3765,29 @@
       }
     },
     "proof_9c2c97ce": {
-      "active": false,
-      "nodes": [],
-      "current_path": [],
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: \u2200 (input : List Int) (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (i : Nat) (h_size : assignments.size = state.processed), i < state.processed \u2192 assignments[i]! < state.piles.size",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": false,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_9c2c97ce_bp_0"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": null
+        }
+      ],
       "history": [],
       "parent_map": {},
       "edge_actions": {},
@@ -3782,7 +3802,7 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_9c2c97ce/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_9c2c97ce/META.md\nPantograph proof search for: \u2200 (input : List Int) (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (i : Nat) (h_size : assignments.size = state.processed), i < state.processed \u2192 assignments[i]! < state.piles.size"
       }
     }
   }
