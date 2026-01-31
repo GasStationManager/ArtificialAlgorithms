@@ -474,5 +474,226 @@ def findMinArrFin (a : Array Int) (h : 0 < a.size) :
   let ⟨result, hresult⟩ := Fin.dfoldl a.size motive step init
   ⟨result, fun i => hresult i (by simp [Fin.last])⟩
 
+/-! ## Alternative: Direct foldl with Manual Induction
+
+This section demonstrates an alternative pattern for verified folds using direct
+`List.foldl` with manual induction on the list suffix. This approach is cleaner than
+`ListFoldAcc` when:
+
+- The invariant depends on indices into the original list (e.g., `prices.getD i 0`)
+- You don't need permutation reasoning
+- You're processing a list suffix with `foldl`
+
+**Example: Maximum Stock Profit**
+
+Given a list of stock prices where `prices[i]` is the price on day `i`, find the
+maximum profit from buying on one day and selling on a later day. The algorithm
+maintains:
+- `minPrice`: minimum price seen so far (can buy at this price)
+- `maxProfit`: best profit achievable (max of `price - minPrice` seen so far)
+
+**Key Pattern:**
+1. Define an invariant structure with `k_bound : k ≤ list.length` and properties for indices `< k`
+2. Prove `init`: invariant holds at k=1 after processing first element
+3. Prove `step`: invariant preservation from k to k+1
+4. Prove `foldl_invariant_aux`: induction on suffix with `h_suffix : list.drop k = suffix`
+5. Final theorem applying the aux lemma
+-/
+
+/-- State for max profit calculation: tracks minimum price seen and best profit so far -/
+structure MaxProfitState where
+  minPrice : Int
+  maxProfit : Int
+  deriving Repr, DecidableEq
+
+/-- Minimum of first k elements of prices (prices[0..k)) -/
+def minOfFirstK (prices : List Int) (k : Nat) : Int :=
+  if k = 0 then 0  -- vacuous case
+  else (List.range k).foldl (fun acc i => min acc (prices.getD i 0)) (prices.getD 0 0)
+
+/-- Invariant after processing k prices from the list.
+
+The key insight is that we track:
+- `minPrice`: the minimum of prices[0..k), so we can "buy" at this price
+- `maxProfit`: the maximum achievable profit considering all buy/sell pairs in [0, k)
+
+The property `maxP_ge` captures: for any day j < k, if we sell on day j, the best
+profit (buying at the minimum price up to and including day j) is bounded by maxProfit.
+-/
+structure MaxProfitInv (prices : List Int) (state : MaxProfitState) (k : Nat) : Prop where
+  k_bound : k ≤ prices.length
+  -- minPrice equals minimum of prices[0..k)
+  minP_eq : k > 0 → state.minPrice = minOfFirstK prices k
+  -- maxProfit is non-negative (we can always choose not to trade)
+  maxP_nonneg : 0 ≤ state.maxProfit
+  -- maxProfit bounds the profit of selling on any day j < k
+  -- (buying at the running minimum up to that point)
+  maxP_ge : ∀ j, j < k → prices.getD j 0 - minOfFirstK prices (j + 1) ≤ state.maxProfit
+
+/-- Step function: update state with the next price -/
+def maxProfitStep (state : MaxProfitState) (price : Int) : MaxProfitState :=
+  { minPrice := min state.minPrice price
+    maxProfit := max state.maxProfit (price - state.minPrice) }
+
+/-- Initialize state with the first price: minPrice = price, maxProfit = 0 -/
+def maxProfitInit (price : Int) : MaxProfitState :=
+  { minPrice := price, maxProfit := 0 }
+
+/-! ### Key Lemmas -/
+
+/-- Helper: minOfFirstK for k+1 equals min of minOfFirstK k and prices[k] -/
+theorem minOfFirstK_succ (prices : List Int) (k : Nat) (hk_pos : k > 0) (_hk : k < prices.length) :
+    minOfFirstK prices (k + 1) = min (minOfFirstK prices k) (prices.getD k 0) := by
+  simp only [minOfFirstK]
+  have hk1 : k + 1 ≠ 0 := by omega
+  have hkne : k ≠ 0 := by omega
+  simp only [hk1, hkne, ↓reduceIte, List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- Init lemma: After processing the first element, the invariant holds at k=1 -/
+theorem maxProfitInv_init (prices : List Int) (h : prices.length > 0) :
+    MaxProfitInv prices (maxProfitInit (prices.getD 0 0)) 1 := by
+  constructor
+  · -- k_bound: 1 ≤ prices.length
+    exact h
+  · -- minP_eq: minPrice = minOfFirstK prices 1
+    intro _
+    simp only [maxProfitInit, minOfFirstK]
+    have h1 : (1 : Nat) ≠ 0 := by omega
+    simp only [h1, ↓reduceIte, List.range_one, List.foldl_cons, List.foldl_nil, min_self]
+  · -- maxP_nonneg: 0 ≤ maxProfit
+    simp [maxProfitInit]
+  · -- maxP_ge: for all j < 1, profit bound holds
+    intro j hj
+    have hj0 : j = 0 := Nat.lt_one_iff.mp hj
+    subst hj0
+    simp only [maxProfitInit, minOfFirstK, Nat.zero_add]
+    have h1 : (1 : Nat) ≠ 0 := by omega
+    simp only [h1, ↓reduceIte, List.range_one, List.foldl_cons, List.foldl_nil, min_self, sub_self, le_refl]
+
+/-- Step lemma: If invariant holds at k with k > 0, it holds at k+1 after processing prices[k] -/
+theorem maxProfitInv_step (prices : List Int) (state : MaxProfitState) (k : Nat)
+    (hinv : MaxProfitInv prices state k) (hk_pos : k > 0) (hk : k < prices.length) :
+    MaxProfitInv prices (maxProfitStep state (prices.getD k 0)) (k + 1) := by
+  constructor
+  · -- k_bound: k + 1 ≤ prices.length
+    omega
+  · -- minP_eq: new minPrice = minOfFirstK prices (k+1)
+    intro _
+    simp only [maxProfitStep]
+    have hmin := hinv.minP_eq hk_pos
+    rw [hmin, minOfFirstK_succ prices k hk_pos hk]
+  · -- maxP_nonneg: 0 ≤ max state.maxProfit (price - state.minPrice)
+    simp only [maxProfitStep]
+    exact le_max_of_le_left hinv.maxP_nonneg
+  · -- maxP_ge: for all j < k+1, profit bound holds
+    intro j hj
+    simp only [maxProfitStep]
+    -- Case split: j < k or j = k
+    by_cases hjlt : j < k
+    · -- Case j < k: use hinv.maxP_ge
+      have h := hinv.maxP_ge j hjlt
+      calc prices.getD j 0 - minOfFirstK prices (j + 1)
+          ≤ state.maxProfit := h
+        _ ≤ max state.maxProfit (prices.getD k 0 - state.minPrice) := le_max_left _ _
+    · -- Case j = k: need to show prices[k] - minOfFirstK(k+1) ≤ max(...)
+      have hjk : j = k := by omega
+      subst hjk
+      -- state.minPrice = minOfFirstK prices j
+      have hmin := hinv.minP_eq hk_pos
+      -- minOfFirstK prices (j+1) = min (minOfFirstK prices j) (prices.getD j 0)
+      rw [minOfFirstK_succ prices j hk_pos hk, ← hmin]
+      -- Now goal has state.minPrice instead of minOfFirstK prices j
+      -- Case split on whether state.minPrice ≤ prices[j]
+      by_cases hle : state.minPrice ≤ prices.getD j 0
+      · -- Case state.minPrice ≤ prices[j]: min = state.minPrice
+        rw [min_eq_left hle]
+        exact le_max_right _ _
+      · -- Case state.minPrice > prices[j]: min = prices[j], so diff = 0
+        push_neg at hle
+        rw [min_eq_right (Int.le_of_lt hle)]
+        simp only [sub_self]
+        exact le_max_of_le_left hinv.maxP_nonneg
+
+/-- Auxiliary lemma: foldl over suffix maintains invariant.
+    This uses induction on the suffix with the connection `suffix = prices.drop k`. -/
+theorem maxProfitInv_foldl_aux (prices : List Int) (state : MaxProfitState) (k : Nat)
+    (suffix : List Int) (h_suffix : suffix = prices.drop k)
+    (hinv : MaxProfitInv prices state k) (hk_pos : k > 0) :
+    MaxProfitInv prices (suffix.foldl maxProfitStep state) (k + suffix.length) := by
+  induction suffix generalizing k state with
+  | nil => simp [hinv]
+  | cons x xs ih =>
+    simp only [List.foldl_cons, List.length_cons]
+    have hk : k < prices.length := by
+      have hlen : (x :: xs).length = (prices.drop k).length := by rw [h_suffix]
+      simp only [List.length_cons, List.length_drop] at hlen
+      omega
+    have hdrop_form : prices.drop k = prices[k] :: prices.drop (k + 1) := List.drop_eq_getElem_cons hk
+    rw [hdrop_form] at h_suffix
+    injection h_suffix with hx_eq hxs_eq
+    have hx_getD : x = prices.getD k 0 := by rw [hx_eq, ← List.getD_eq_getElem prices 0 hk]
+    have hinv_next : MaxProfitInv prices (maxProfitStep state (prices.getD k 0)) (k + 1) :=
+      maxProfitInv_step prices state k hinv hk_pos hk
+    -- Need to use IH: xs = prices.drop (k+1), state' = maxProfitStep state x, start at k+1
+    rw [hx_getD]
+    have hk1_pos : k + 1 > 0 := by omega
+    have h_result := ih (maxProfitStep state (prices.getD k 0)) (k + 1) hxs_eq hinv_next hk1_pos
+    -- Fix the arithmetic: k + (xs.length + 1) = (k + 1) + xs.length
+    convert h_result using 1
+    omega
+
+/-- Main computation: fold over the list to compute max profit -/
+def maxProfitCompute (prices : List Int) : MaxProfitState :=
+  match prices with
+  | [] => { minPrice := 0, maxProfit := 0 }
+  | p :: ps => ps.foldl maxProfitStep (maxProfitInit p)
+
+/-- Final theorem: maxProfitCompute satisfies the full invariant -/
+theorem maxProfitCompute_spec (prices : List Int) (h : prices.length > 0) :
+    MaxProfitInv prices (maxProfitCompute prices) prices.length := by
+  match prices with
+  | [] => simp at h
+  | p :: ps =>
+    simp only [maxProfitCompute, List.length_cons]
+    -- Initial state after first element
+    have h_init : MaxProfitInv (p :: ps) (maxProfitInit p) 1 := by
+      have : (p :: ps).getD 0 0 = p := by simp
+      rw [← this]
+      exact maxProfitInv_init (p :: ps) (by simp)
+    -- Apply the auxiliary lemma with suffix = ps = (p :: ps).drop 1
+    have h_suffix : ps = (p :: ps).drop 1 := by simp
+    have h_result := maxProfitInv_foldl_aux (p :: ps) (maxProfitInit p) 1 ps h_suffix h_init (by omega)
+    -- 1 + ps.length = ps.length + 1
+    rw [Nat.add_comm] at h_result
+    exact h_result
+
+/-- Extract max profit value with correctness guarantee -/
+def maxProfit (prices : List Int) (h : prices.length > 0) :
+    { profit : Int // profit ≥ 0 ∧
+      ∀ j, j < prices.length →
+        prices.getD j 0 - minOfFirstK prices (j + 1) ≤ profit } :=
+  let state := maxProfitCompute prices
+  let spec := maxProfitCompute_spec prices h
+  ⟨state.maxProfit, spec.maxP_nonneg, spec.maxP_ge⟩
+
+/-! ### Documentation: When to Use This Pattern
+
+**Use direct foldl with manual induction when:**
+- Your invariant references indices into the original list (e.g., `list.getD i default`)
+- You need to track progress via index `k` rather than a `seen` list
+- The fold processes elements in order and you need "prefix" properties
+
+**Use `ListFoldAcc` instead when:**
+- You need permutation proofs (the `seen` list tracks exactly what was processed)
+- The order of processing doesn't matter for the property
+- You're computing something like a minimum/maximum where membership matters
+
+**Key differences:**
+- `ListFoldAcc` uses a `seen : List α` field that builds up the processed elements
+- Direct foldl uses an index `k : Nat` representing "processed first k elements"
+- `ListFoldAcc` requires proving `acc.seen.Perm original_list` at the end
+- Direct foldl requires proving the induction step connects `suffix = list.drop k`
+-/
+
 end Coding
 end RMP
