@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "proof_d6236e45",
+  "active_tree_id": "proof_4c84365a",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -3652,6 +3652,78 @@
       }
     },
     "proof_d6236e45": {
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: runPatience_sorted: PilesSorted (runPatience input).piles",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "unfold runPatience": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_d6236e45_bp_0"
+        },
+        {
+          "summary": "After 'unfold runPatience'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_d6236e45_bp_1"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": "unfold runPatience"
+        }
+      ],
+      "history": [
+        [
+          0,
+          "unfold runPatience",
+          1
+        ]
+      ],
+      "parent_map": {
+        "1": 0
+      },
+      "edge_actions": {
+        "0,1": "unfold runPatience"
+      },
+      "root_branch": "v4.26.0",
+      "search_id": "proof_d6236e45",
+      "git_action_branches": {
+        "unfold runPatience": "search_proof_d6236e45_0_c1c61572"
+      },
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_d6236e45/META.md\nPantograph proof search for: runPatience_sorted: PilesSorted (runPatience input).piles"
+      }
+    },
+    "proof_4c84365a": {
       "active": false,
       "nodes": [],
       "current_path": [],
@@ -3659,7 +3731,7 @@
       "parent_map": {},
       "edge_actions": {},
       "root_branch": "v4.26.0",
-      "search_id": "proof_d6236e45",
+      "search_id": "proof_4c84365a",
       "git_action_branches": {},
       "tree_type": "and_or",
       "metadata": {
@@ -3669,7 +3741,7 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_d6236e45/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_4c84365a/META.md"
       }
     }
   }
