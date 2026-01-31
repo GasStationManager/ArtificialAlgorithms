@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "proof_4c84365a",
+  "active_tree_id": "proof_9c2c97ce",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -3762,6 +3762,27 @@
         "enable_memory": true,
         "created_at": "now",
         "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_4c84365a/META.md\nPantograph proof search for: \u2200 (s l : List Int), Subseq s l \u2192 \u2200 (prefix : List Int), Subseq s (prefix ++ l)"
+      }
+    },
+    "proof_9c2c97ce": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "v4.26.0",
+      "search_id": "proof_9c2c97ce",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_9c2c97ce/META.md"
       }
     }
   }
