@@ -3724,9 +3724,29 @@
       }
     },
     "proof_4c84365a": {
-      "active": false,
-      "nodes": [],
-      "current_path": [],
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: \u2200 (s l : List Int), Subseq s l \u2192 \u2200 (prefix : List Int), Subseq s (prefix ++ l)",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_4c84365a_bp_0"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": null
+        }
+      ],
       "history": [],
       "parent_map": {},
       "edge_actions": {},
@@ -3741,7 +3761,7 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_4c84365a/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_4c84365a/META.md\nPantograph proof search for: \u2200 (s l : List Int), Subseq s l \u2192 \u2200 (prefix : List Int), Subseq s (prefix ++ l)"
       }
     }
   }
