@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "proof_a326cba1",
+  "active_tree_id": "proof_d6236e45",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -3084,14 +3084,284 @@
       }
     },
     "proof_a326cba1": {
-      "active": false,
-      "nodes": [],
-      "current_path": [],
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: binarySearchGE_spec: BinarySearchSpec piles target (binarySearchGE piles target)",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "unfold BinarySearchSpec binarySearchGE": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_0"
+        },
+        {
+          "summary": "After 'unfold BinarySearchSpec binarySearchGE'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "have go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) := by\n  intro lo hi\n  induction hi - lo using Nat.strong_induction_on generalizing lo hi with\n  | _ d ih =>\n    intro hlo hhi hbelow habove\n    unfold binarySearchGE.go\n    split\n    \u00b7 -- lo < hi case\n      rename_i hlt\n      simp only\n      split\n      \u00b7 -- piles[mid]! >= target case\n        rename_i hmid_ge\n        have hmid_lt_hi : (lo + hi) / 2 < hi := Nat.div_lt_of_lt_mul (by omega)\n        have hlo_le_mid : lo \u2264 (lo + hi) / 2 := Nat.le_div_two_add (by omega)\n        have hterm : (lo + hi) / 2 - lo < hi - lo := by omega\n        have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n        have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n        exact ih _ hterm rfl hlo_le_mid (Nat.le_of_lt (Nat.lt_of_lt_of_le hmid_lt_hi hhi)) hbelow habove'\n      \u00b7 -- piles[mid]! < target case\n        rename_i hmid_lt\n        have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_lt\n        have hlo_lt : lo < hi := \u2039lo < hi\u203a\n        have hmid_ge_lo : (lo + hi) / 2 >= lo := Nat.le_div_two_add (by omega)\n        have hterm : hi - ((lo + hi) / 2 + 1) < hi - lo := by omega\n        have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n          intro i hi'\n          if h : i < lo then exact hbelow i h\n          else if h' : i = (lo + hi) / 2 then rw [h']; exact hmid_lt'\n          else have : lo \u2264 i \u2227 i < (lo + hi) / 2 := \u27e8Nat.not_lt.mp h, by omega\u27e9\n               -- Need sorted property here\n               sorry\n        exact ih _ hterm rfl (by omega) hhi hbelow' habove\n    \u00b7 -- lo >= hi case\n      rename_i hge\n      have hle : hi \u2264 lo := Nat.not_lt.mp hge\n      have heq : lo = hi := Nat.le_antisymm hlo hle\n      simp only [heq]\n      exact \u27e8Nat.le_refl _, Nat.le_refl _, fun i hi' => hbelow i (heq \u25b8 hi'), habove\u27e9": {
+              "result": false,
+              "note": null
+            },
+            "-- Let's use strong induction on hi - lo with a simpler approach\nsuffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9\nintro lo hi\ninduction (hi - lo) using Nat.strongRecOn generalizing lo hi with\n| ind d ih => ?_": {
+              "result": false,
+              "note": null
+            },
+            "suffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_1"
+        },
+        {
+          "summary": "After 'suffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "intro lo hi hlo hhi hbelow habove": {
+              "result": false,
+              "note": null
+            },
+            "intro lo hi\ninduction hi - lo using Nat.strong_induction_on generalizing lo hi": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_2"
+        },
+        {
+          "summary": "After 'intro lo hi hlo hhi hbelow habove'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "induction hi - lo using Nat.strong_induction_on generalizing lo hi with\n| _ d ih =>\n  intro hlo hhi hbelow habove\n  simp only\n  unfold binarySearchGE.go\n  split_ifs with hlt\n  \u00b7 simp only\n    split_ifs with hmid_ge\n    \u00b7 have hterm : (lo + hi) / 2 - lo < hi - lo := by omega\n      have hmid_lt_hi : (lo + hi) / 2 < hi := by omega\n      have hlo_le_mid : lo \u2264 (lo + hi) / 2 := by omega\n      have hmid_le_hi : (lo + hi) / 2 \u2264 hi := by omega\n      have hmid_le_size : (lo + hi) / 2 \u2264 piles.size := Nat.le_trans hmid_le_hi hhi\n      have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n      exact ih ((lo + hi) / 2 - lo) hterm rfl hlo_le_mid hmid_le_size hbelow habove'\n    \u00b7 have hterm : hi - ((lo + hi) / 2 + 1) < hi - lo := by omega\n      have hmid1_le_hi : (lo + hi) / 2 + 1 \u2264 hi := by omega\n      have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_ge\n      have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n        intro i hi'\n        by_cases h : i < lo\n        \u00b7 exact hbelow i h\n        \u00b7 have hi_bound : lo \u2264 i \u2227 i \u2264 (lo + hi) / 2 := \u27e8Nat.not_lt.mp h, by omega\u27e9\n          by_cases heq : i = (lo + hi) / 2\n          \u00b7 rw [heq]; exact hmid_lt'\n          \u00b7 have hi_lt_mid : i < (lo + hi) / 2 := by omega\n            have hi_lt_size : i < piles.size := by omega\n            have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n            have hsorted' : PilesSorted piles := hsorted\n            unfold PilesSorted at hsorted'\n            sorry\n      exact ih (hi - ((lo + hi) / 2 + 1)) hterm rfl hmid1_le_hi hhi hbelow' habove\n  \u00b7 have heq : lo = hi := Nat.le_antisymm hlo (Nat.not_lt.mp hlt)\n    simp only [heq]\n    exact \u27e8Nat.le_refl _, Nat.le_refl _, fun i hi' => hbelow i (heq \u25b8 hi'), habove\u27e9": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_3"
+        },
+        {
+          "summary": "After 'intro lo hi\ninduction hi - lo using Nat.strong_induction_on generalizing lo hi'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "rename_i d ih\nintro hlo hhi hbelow habove\nsimp only\nunfold binarySearchGE.go\nsplit_ifs with hlt": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_4"
+        },
+        {
+          "summary": "After 'rename_i d ih\nintro hlo hhi hbelow habove\nsimp only\nunfold binarySearchGE.go\nsplit_ifs with hlt'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "simp only\nsplit_ifs with hmid_ge": {
+              "result": false,
+              "note": null
+            },
+            "simp only\nsplit_ifs with hmid_ge\n\u00b7 have hterm : (lo + hi) / 2 - lo < hi - lo := by omega\n  have hlo_le_mid : lo \u2264 (lo + hi) / 2 := by omega\n  have hmid_le_hi : (lo + hi) / 2 \u2264 hi := by omega\n  have hmid_le_size : (lo + hi) / 2 \u2264 piles.size := Nat.le_trans hmid_le_hi hhi\n  have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n  have hsub := ih ((lo + hi) / 2 - lo) hterm lo ((lo + hi) / 2) hlo_le_mid hmid_le_size hbelow habove'\n  simp only at hsub\n  obtain \u27e8h1, h2, h3, h4\u27e9 := hsub\n  exact \u27e8h1, Nat.le_trans h2 hmid_le_hi, h3, h4\u27e9\n\u00b7 have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_ge\n  have hterm : hi - ((lo + hi) / 2 + 1) < hi - lo := by omega\n  have hmid1_le_hi : (lo + hi) / 2 + 1 \u2264 hi := by omega\n  have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n    intro i hi'\n    by_cases h : i < lo\n    \u00b7 exact hbelow i h\n    \u00b7 by_cases heq : i = (lo + hi) / 2\n      \u00b7 rw [heq]; exact hmid_lt'\n      \u00b7 have hi_lt_mid : i < (lo + hi) / 2 := by omega\n        have hi_ge_lo : lo \u2264 i := Nat.not_lt.mp h\n        have hi_lt_size : i < piles.size := by omega\n        have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n        have hsorted_list := hsorted\n        unfold PilesSorted at hsorted_list\n        have hchain : piles.toList.IsChain (\u00b7 < \u00b7) := hsorted_list\n        have pi_lt_pmid : piles[i]! < piles[(lo + hi) / 2]! := by\n          have hi_mem : i < piles.toList.length := by simp; omega\n          have hmid_mem : (lo + hi) / 2 < piles.toList.length := by simp; omega\n          have := List.IsChain.rel hi_mem hmid_mem hi_lt_mid hchain\n          simp at this\n          exact this\n        exact Int.lt_trans pi_lt_pmid hmid_lt'\n  have hsub := ih (hi - ((lo + hi) / 2 + 1)) hterm ((lo + hi) / 2 + 1) hi hmid1_le_hi hhi hbelow' habove\n  simp only at hsub\n  obtain \u27e8h1, h2, h3, h4\u27e9 := hsub\n  exact \u27e8Nat.le_trans (by omega : lo \u2264 (lo + hi) / 2 + 1) h1, h2, h3, h4\u27e9": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_5"
+        },
+        {
+          "summary": "After 'simp only\nsplit_ifs with hmid_ge': 2 subgoals",
+          "possible_actions": [
+            "Subgoal 1: lo \u2264 binarySearchGE.go piles target lo ((lo + hi) ...",
+            "Subgoal 2: lo \u2264 binarySearchGE.go piles target ((lo + hi) / 2..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: lo \u2264 binarySearchGE.go piles target lo ((lo + hi) ...": {
+              "result": false,
+              "note": null
+            },
+            "\u00b7 have hterm : (lo + hi) / 2 - lo < d := by omega\n  have hlo_le_mid : lo \u2264 (lo + hi) / 2 := by omega\n  have hmid_le_hi : (lo + hi) / 2 \u2264 hi := by omega\n  have hmid_le_size : (lo + hi) / 2 \u2264 piles.size := Nat.le_trans hmid_le_hi hhi\n  have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n  have hsub := ih ((lo + hi) / 2 - lo) hterm lo ((lo + hi) / 2) hlo_le_mid hmid_le_size hbelow habove'\n  simp only at hsub\n  obtain \u27e8h1, h2, h3, h4\u27e9 := hsub\n  refine \u27e8h1, ?_, h3, h4\u27e9\n  omega\n\u00b7 have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_ge\n  have hterm : hi - ((lo + hi) / 2 + 1) < d := by omega\n  have hmid1_le_hi : (lo + hi) / 2 + 1 \u2264 hi := by omega\n  have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n    intro i hi'\n    by_cases h : i < lo\n    \u00b7 exact hbelow i h\n    \u00b7 by_cases heq : i = (lo + hi) / 2\n      \u00b7 rw [heq]; exact hmid_lt'\n      \u00b7 have hi_lt_mid : i < (lo + hi) / 2 := by omega\n        have hi_ge_lo : lo \u2264 i := Nat.not_lt.mp h\n        have hi_lt_size : i < piles.size := by omega\n        have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n        have hsorted_list := hsorted\n        unfold PilesSorted at hsorted_list\n        sorry\n  have hsub := ih (hi - ((lo + hi) / 2 + 1)) hterm ((lo + hi) / 2 + 1) hi hmid1_le_hi hhi hbelow' habove\n  simp only at hsub\n  obtain \u27e8h1, h2, h3, h4\u27e9 := hsub\n  refine \u27e8?_, h2, h3, h4\u27e9\n  omega": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": false,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a326cba1_bp_6"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": "unfold BinarySearchSpec binarySearchGE"
+        },
+        {
+          "branch_index": 1,
+          "action": "suffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9"
+        },
+        {
+          "branch_index": 2,
+          "action": "intro lo hi\ninduction hi - lo using Nat.strong_induction_on generalizing lo hi"
+        },
+        {
+          "branch_index": 4,
+          "action": "rename_i d ih\nintro hlo hhi hbelow habove\nsimp only\nunfold binarySearchGE.go\nsplit_ifs with hlt"
+        },
+        {
+          "branch_index": 5,
+          "action": null
+        }
+      ],
+      "history": [
+        [
+          0,
+          "unfold BinarySearchSpec binarySearchGE",
+          1
+        ],
+        [
+          1,
+          "suffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9",
+          2
+        ],
+        [
+          2,
+          "intro lo hi hlo hhi hbelow habove",
+          3
+        ],
+        [
+          2,
+          "intro lo hi\ninduction hi - lo using Nat.strong_induction_on generalizing lo hi",
+          4
+        ],
+        [
+          4,
+          "rename_i d ih\nintro hlo hhi hbelow habove\nsimp only\nunfold binarySearchGE.go\nsplit_ifs with hlt",
+          5
+        ],
+        [
+          5,
+          "simp only\nsplit_ifs with hmid_ge",
+          6
+        ]
+      ],
+      "parent_map": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 2,
+        "5": 4,
+        "6": 5
+      },
+      "edge_actions": {
+        "0,1": "unfold BinarySearchSpec binarySearchGE",
+        "1,2": "suffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9",
+        "2,3": "intro lo hi hlo hhi hbelow habove",
+        "2,4": "intro lo hi\ninduction hi - lo using Nat.strong_induction_on generalizing lo hi",
+        "4,5": "rename_i d ih\nintro hlo hhi hbelow habove\nsimp only\nunfold binarySearchGE.go\nsplit_ifs with hlt",
+        "5,6": "simp only\nsplit_ifs with hmid_ge"
+      },
+      "root_branch": "v4.26.0",
+      "search_id": "proof_a326cba1",
+      "git_action_branches": {
+        "unfold BinarySearchSpec binarySearchGE": "search_proof_a326cba1_0_a3a7c862",
+        "have go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) := by\n  intro lo hi\n  induction hi - lo using Nat.strong_induction_on generalizing lo hi with\n  | _ d ih =>\n    intro hlo hhi hbelow habove\n    unfold binarySearchGE.go\n    split\n    \u00b7 -- lo < hi case\n      rename_i hlt\n      simp only\n      split\n      \u00b7 -- piles[mid]! >= target case\n        rename_i hmid_ge\n        have hmid_lt_hi : (lo + hi) / 2 < hi := Nat.div_lt_of_lt_mul (by omega)\n        have hlo_le_mid : lo \u2264 (lo + hi) / 2 := Nat.le_div_two_add (by omega)\n        have hterm : (lo + hi) / 2 - lo < hi - lo := by omega\n        have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n        have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n        exact ih _ hterm rfl hlo_le_mid (Nat.le_of_lt (Nat.lt_of_lt_of_le hmid_lt_hi hhi)) hbelow habove'\n      \u00b7 -- piles[mid]! < target case\n        rename_i hmid_lt\n        have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_lt\n        have hlo_lt : lo < hi := \u2039lo < hi\u203a\n        have hmid_ge_lo : (lo + hi) / 2 >= lo := Nat.le_div_two_add (by omega)\n        have hterm : hi - ((lo + hi) / 2 + 1) < hi - lo := by omega\n        have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n          intro i hi'\n          if h : i < lo then exact hbelow i h\n          else if h' : i = (lo + hi) / 2 then rw [h']; exact hmid_lt'\n          else have : lo \u2264 i \u2227 i < (lo + hi) / 2 := \u27e8Nat.not_lt.mp h, by omega\u27e9\n               -- Need sorted property here\n               sorry\n        exact ih _ hterm rfl (by omega) hhi hbelow' habove\n    \u00b7 -- lo >= hi case\n      rename_i hge\n      have hle : hi \u2264 lo := Nat.not_lt.mp hge\n      have heq : lo = hi := Nat.le_antisymm hlo hle\n      simp only [heq]\n      exact \u27e8Nat.le_refl _, Nat.le_refl _, fun i hi' => hbelow i (heq \u25b8 hi'), habove\u27e9": "search_proof_a326cba1_1_86c9b96b",
+        "-- Let's use strong induction on hi - lo with a simpler approach\nsuffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9\nintro lo hi\ninduction (hi - lo) using Nat.strongRecOn generalizing lo hi with\n| ind d ih => ?_": "search_proof_a326cba1_1_58933385",
+        "suffices go_spec : \u2200 lo hi, lo \u2264 hi \u2192 hi \u2264 piles.size \u2192\n    (\u2200 i < lo, piles[i]! < target) \u2192\n    (hi < piles.size \u2192 piles[hi]! >= target) \u2192\n    let result := binarySearchGE.go piles target lo hi\n    lo \u2264 result \u2227 result \u2264 hi \u2227\n    (\u2200 i < result, piles[i]! < target) \u2227\n    (result < piles.size \u2192 piles[result]! >= target) by\n  have h := go_spec 0 piles.size (Nat.zero_le _) (Nat.le_refl _) (fun _ h => absurd h (Nat.not_lt_zero _)) (fun h => absurd h (Nat.lt_irrefl _))\n  simp only at h\n  obtain \u27e8_, hle, hbelow, habove\u27e9 := h\n  exact \u27e8hle, hbelow, habove\u27e9": "search_proof_a326cba1_1_ad260588",
+        "intro lo hi hlo hhi hbelow habove": "search_proof_a326cba1_2_954c8fb8",
+        "induction hi - lo using Nat.strong_induction_on generalizing lo hi with\n| _ d ih =>\n  intro hlo hhi hbelow habove\n  simp only\n  unfold binarySearchGE.go\n  split_ifs with hlt\n  \u00b7 simp only\n    split_ifs with hmid_ge\n    \u00b7 have hterm : (lo + hi) / 2 - lo < hi - lo := by omega\n      have hmid_lt_hi : (lo + hi) / 2 < hi := by omega\n      have hlo_le_mid : lo \u2264 (lo + hi) / 2 := by omega\n      have hmid_le_hi : (lo + hi) / 2 \u2264 hi := by omega\n      have hmid_le_size : (lo + hi) / 2 \u2264 piles.size := Nat.le_trans hmid_le_hi hhi\n      have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n      exact ih ((lo + hi) / 2 - lo) hterm rfl hlo_le_mid hmid_le_size hbelow habove'\n    \u00b7 have hterm : hi - ((lo + hi) / 2 + 1) < hi - lo := by omega\n      have hmid1_le_hi : (lo + hi) / 2 + 1 \u2264 hi := by omega\n      have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_ge\n      have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n        intro i hi'\n        by_cases h : i < lo\n        \u00b7 exact hbelow i h\n        \u00b7 have hi_bound : lo \u2264 i \u2227 i \u2264 (lo + hi) / 2 := \u27e8Nat.not_lt.mp h, by omega\u27e9\n          by_cases heq : i = (lo + hi) / 2\n          \u00b7 rw [heq]; exact hmid_lt'\n          \u00b7 have hi_lt_mid : i < (lo + hi) / 2 := by omega\n            have hi_lt_size : i < piles.size := by omega\n            have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n            have hsorted' : PilesSorted piles := hsorted\n            unfold PilesSorted at hsorted'\n            sorry\n      exact ih (hi - ((lo + hi) / 2 + 1)) hterm rfl hmid1_le_hi hhi hbelow' habove\n  \u00b7 have heq : lo = hi := Nat.le_antisymm hlo (Nat.not_lt.mp hlt)\n    simp only [heq]\n    exact \u27e8Nat.le_refl _, Nat.le_refl _, fun i hi' => hbelow i (heq \u25b8 hi'), habove\u27e9": "search_proof_a326cba1_3_60574bde",
+        "intro lo hi\ninduction hi - lo using Nat.strong_induction_on generalizing lo hi": "search_proof_a326cba1_2_85c17b2e",
+        "rename_i d ih\nintro hlo hhi hbelow habove\nsimp only\nunfold binarySearchGE.go\nsplit_ifs with hlt": "search_proof_a326cba1_4_b718ec5b",
+        "simp only\nsplit_ifs with hmid_ge": "search_proof_a326cba1_5_3948adf0",
+        "simp only\nsplit_ifs with hmid_ge\n\u00b7 have hterm : (lo + hi) / 2 - lo < hi - lo := by omega\n  have hlo_le_mid : lo \u2264 (lo + hi) / 2 := by omega\n  have hmid_le_hi : (lo + hi) / 2 \u2264 hi := by omega\n  have hmid_le_size : (lo + hi) / 2 \u2264 piles.size := Nat.le_trans hmid_le_hi hhi\n  have habove' : (lo + hi) / 2 < piles.size \u2192 piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge\n  have hsub := ih ((lo + hi) / 2 - lo) hterm lo ((lo + hi) / 2) hlo_le_mid hmid_le_size hbelow habove'\n  simp only at hsub\n  obtain \u27e8h1, h2, h3, h4\u27e9 := hsub\n  exact \u27e8h1, Nat.le_trans h2 hmid_le_hi, h3, h4\u27e9\n\u00b7 have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_ge\n  have hterm : hi - ((lo + hi) / 2 + 1) < hi - lo := by omega\n  have hmid1_le_hi : (lo + hi) / 2 + 1 \u2264 hi := by omega\n  have hbelow' : \u2200 i < (lo + hi) / 2 + 1, piles[i]! < target := by\n    intro i hi'\n    by_cases h : i < lo\n    \u00b7 exact hbelow i h\n    \u00b7 by_cases heq : i = (lo + hi) / 2\n      \u00b7 rw [heq]; exact hmid_lt'\n      \u00b7 have hi_lt_mid : i < (lo + hi) / 2 := by omega\n        have hi_ge_lo : lo \u2264 i := Nat.not_lt.mp h\n        have hi_lt_size : i < piles.size := by omega\n        have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega\n        have hsorted_list := hsorted\n        unfold PilesSorted at hsorted_list\n        have hchain : piles.toList.IsChain (\u00b7 < \u00b7) := hsorted_list\n        have pi_lt_pmid : piles[i]! < piles[(lo + hi) / 2]! := by\n          have hi_mem : i < piles.toList.length := by simp; omega\n          have hmid_mem : (lo + hi) / 2 < piles.toList.length := by simp; omega\n          have := List.IsChain.rel hi_mem hmid_mem hi_lt_mid hchain\n          simp at this\n          exact this\n        exact Int.lt_trans pi_lt_pmid hmid_lt'\n  have hsub := ih (hi - ((lo + hi) / 2 + 1)) hterm ((lo + hi) / 2 + 1) hi hmid1_le_hi hhi hbelow' habove\n  simp only at hsub\n  obtain \u27e8h1, h2, h3, h4\u27e9 := hsub\n  exact \u27e8Nat.le_trans (by omega : lo \u2264 (lo + hi) / 2 + 1) h1, h2, h3, h4\u27e9": "search_proof_a326cba1_5_1be5c10e"
+      },
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_a326cba1/META.md\nPantograph proof search for: binarySearchGE_spec: BinarySearchSpec piles target (binarySearchGE piles target)"
+      }
+    },
+    "proof_a3c20e31": {
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: pilesSorted_preserved: BinarySearchSpec piles target (binarySearchGE piles target)",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_a3c20e31_bp_0"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": null
+        }
+      ],
       "history": [],
       "parent_map": {},
       "edge_actions": {},
-      "root_branch": "v4.26.0",
-      "search_id": "proof_a326cba1",
+      "root_branch": "search_proof_a326cba1_bp_5",
+      "search_id": "proof_a3c20e31",
       "git_action_branches": {},
       "tree_type": "and_or",
       "metadata": {
@@ -3101,7 +3371,305 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_a326cba1/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_a3c20e31/META.md\nPantograph proof search for: pilesSorted_preserved: BinarySearchSpec piles target (binarySearchGE piles target)"
+      }
+    },
+    "proof_08af8a83": {
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: \u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h_lt : state.processed < input.length), PilesSorted (processElement input state h_lt).piles",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "intro input state h_sorted h_lt": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_0"
+        },
+        {
+          "summary": "After 'intro input state h_sorted h_lt'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "unfold processElement": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_1"
+        },
+        {
+          "summary": "After 'unfold processElement'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "simp only": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_2"
+        },
+        {
+          "summary": "After 'simp only'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "split_ifs with h_pos": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_3"
+        },
+        {
+          "summary": "After 'split_ifs with h_pos': 4 subgoals",
+          "possible_actions": [
+            "Subgoal 1: PilesSorted\n  { processed := state.processed + 1,\n...",
+            "Subgoal 2: PilesSorted\n  { processed := state.processed + 1,\n...",
+            "Subgoal 3: PilesSorted\n  { processed := state.processed + 1, ...",
+            "Subgoal 4: PilesSorted\n  { processed := state.processed + 1, ..."
+          ],
+          "taken_actions": {
+            "Focus on subgoal 0: PilesSorted\n  { processed := state.processed + 1,\n...": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_4"
+        },
+        {
+          "summary": "Proving replace case with pos > 0 and pos < piles.size",
+          "possible_actions": [
+            "simp only [PilesSorted]",
+            "unfold PilesSorted"
+          ],
+          "taken_actions": {
+            "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_5"
+        },
+        {
+          "summary": "After 'have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted': 4 subgoals",
+          "possible_actions": [
+            "Subgoal 1: PilesSorted\n  { processed := state.processed + 1,\n...",
+            "Subgoal 2: PilesSorted\n  { processed := state.processed + 1,\n...",
+            "Subgoal 3: PilesSorted\n  { processed := state.processed + 1, ...",
+            "Subgoal 4: PilesSorted\n  { processed := state.processed + 1, ..."
+          ],
+          "taken_actions": {},
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_6"
+        },
+        {
+          "summary": "Try to simplify goals",
+          "possible_actions": [
+            "simp only [PilesSorted]"
+          ],
+          "taken_actions": {
+            "all_goals simp only [PilesSorted]": {
+              "result": null,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_7"
+        },
+        {
+          "summary": "After 'all_goals simp only [PilesSorted]': 4 subgoals",
+          "possible_actions": [
+            "Subgoal 1: List.IsChain (fun x1 x2 => x1 < x2)\n  (state.piles...",
+            "Subgoal 2: List.IsChain (fun x1 x2 => x1 < x2)\n  (state.piles...",
+            "Subgoal 3: List.IsChain (fun x1 x2 => x1 < x2) (state.piles.p...",
+            "Subgoal 4: List.IsChain (fun x1 x2 => x1 < x2) (state.piles.p..."
+          ],
+          "taken_actions": {},
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_08af8a83_bp_8"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": "intro input state h_sorted h_lt"
+        },
+        {
+          "branch_index": 1,
+          "action": "unfold processElement"
+        },
+        {
+          "branch_index": 2,
+          "action": "simp only"
+        },
+        {
+          "branch_index": 3,
+          "action": "split_ifs with h_pos"
+        },
+        {
+          "branch_index": 4,
+          "action": "Focus on subgoal 0: PilesSorted\n  { processed := state.processed + 1,\n..."
+        },
+        {
+          "branch_index": 5,
+          "action": "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted"
+        },
+        {
+          "branch_index": 7,
+          "action": "all_goals simp only [PilesSorted]"
+        },
+        {
+          "branch_index": 8,
+          "action": null
+        }
+      ],
+      "history": [
+        [
+          0,
+          "intro input state h_sorted h_lt",
+          1
+        ],
+        [
+          1,
+          "unfold processElement",
+          2
+        ],
+        [
+          2,
+          "simp only",
+          3
+        ],
+        [
+          3,
+          "split_ifs with h_pos",
+          4
+        ],
+        [
+          4,
+          "Focus on subgoal 0: PilesSorted\n  { processed := state.processed + 1,\n...",
+          5
+        ],
+        [
+          5,
+          "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted",
+          6
+        ],
+        [
+          5,
+          "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted",
+          7
+        ],
+        [
+          7,
+          "all_goals simp only [PilesSorted]",
+          8
+        ]
+      ],
+      "parent_map": {
+        "1": 0,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5,
+        "7": 5,
+        "8": 7
+      },
+      "edge_actions": {
+        "0,1": "intro input state h_sorted h_lt",
+        "1,2": "unfold processElement",
+        "2,3": "simp only",
+        "3,4": "split_ifs with h_pos",
+        "4,5": "Focus on subgoal 0: PilesSorted\n  { processed := state.processed + 1,\n...",
+        "5,6": "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted",
+        "5,7": "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted",
+        "7,8": "all_goals simp only [PilesSorted]"
+      },
+      "root_branch": "search_proof_a3c20e31_bp_0",
+      "search_id": "proof_08af8a83",
+      "git_action_branches": {
+        "intro input state h_sorted h_lt": "search_proof_08af8a83_0_e1fa43e6",
+        "unfold processElement": "search_proof_08af8a83_1_c3441894",
+        "simp only": "search_proof_08af8a83_2_e10d0797",
+        "split_ifs with h_pos": "search_proof_08af8a83_3_ea551f4f",
+        "have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted": "search_proof_08af8a83_5_440fe778",
+        "all_goals simp only [PilesSorted]": "search_proof_08af8a83_7_7e893e8b"
+      },
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_08af8a83/META.md\nPantograph proof search for: \u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h_lt : state.processed < input.length), PilesSorted (processElement input state h_lt).piles"
+      }
+    },
+    "proof_d6236e45": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "v4.26.0",
+      "search_id": "proof_d6236e45",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_d6236e45/META.md"
       }
     }
   }
