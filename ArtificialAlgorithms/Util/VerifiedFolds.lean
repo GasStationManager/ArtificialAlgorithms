@@ -695,5 +695,256 @@ def maxProfit (prices : List Int) (h : prices.length > 0) :
 - Direct foldl requires proving the induction step connects `suffix = list.drop k`
 -/
 
+/-! ## Stateful Folds with Auxiliary Data
+
+This section demonstrates how to track multiple auxiliary values through a fold while
+maintaining provable invariants. The key pattern is:
+
+1. **Bundle all tracked state into a single structure** with explicit invariants
+2. **Use `Array (Option α)` instead of `HashMap`** for bounded categories
+3. **Prove invariants about each tracked value** and show how they compose
+
+### Why Array over HashMap
+
+Using `Array (Option Int)` instead of `HashMap Nat Int`:
+1. Array indexing is total for valid indices (no `Option` wrapping for known-present keys)
+2. Size invariant (`arr.size = k`) is easy to maintain
+3. Avoids HashMap-specific proof obligations
+4. Aligns with existing `ArrayFoldAcc` patterns
+
+### Example: Maximum Subarray Sum Divisible by k
+
+Given an array of integers, find the maximum subarray sum where the subarray length
+is divisible by `k`. The algorithm uses prefix sums and modular arithmetic:
+
+- `subarraySum[i..j] = prefixSum[j] - prefixSum[i-1]`
+- Length `(j - i + 1)` is divisible by `k` iff `j % k == (i - 1) % k`
+- Track `minPrefixByMod[m]` = minimum prefix sum among indices with `index % k == m`
+- Max subarray sum = max over all `j` of `prefixSum[j] - minPrefixByMod[j % k]`
+
+Note: We track prefix sums at indices 0, 1, ..., n where prefixSum[0] = 0 and
+prefixSum[i] = arr[0] + ... + arr[i-1] for i > 0. A subarray arr[i..j] has
+sum prefixSum[j+1] - prefixSum[i], and length (j - i + 1).
+-/
+
+/-- Prefix sum up to index i: sum of arr[0..i) -/
+def prefixSumAt (arr : List Int) (i : Nat) : Int :=
+  (arr.take i).sum
+
+/-- Minimum of a list of integers, or none if empty -/
+def listMinOpt (l : List Int) : Option Int :=
+  l.foldl (fun acc x => match acc with
+    | none => some x
+    | some m => some (min m x)) none
+
+/-- Maximum of a list of integers, or none if empty -/
+def listMaxOpt (l : List Int) : Option Int :=
+  l.foldl (fun acc x => match acc with
+    | none => some x
+    | some m => some (max m x)) none
+
+theorem listMinOpt_nil : listMinOpt [] = none := rfl
+theorem listMinOpt_singleton (x : Int) : listMinOpt [x] = some x := rfl
+theorem listMaxOpt_nil : listMaxOpt [] = none := rfl
+theorem listMaxOpt_singleton (x : Int) : listMaxOpt [x] = some x := rfl
+
+/-- Helper: updating Option Int with min -/
+def updateMinOpt (old : Option Int) (x : Int) : Option Int :=
+  match old with
+  | none => some x
+  | some m => some (min m x)
+
+/-- Helper: updating Option Int with max -/
+def updateMaxOpt (old : Option Int) (x : Int) : Option Int :=
+  match old with
+  | none => some x
+  | some m => some (max m x)
+
+/-- State for max subarray sum calculation where length is divisible by k.
+
+Tracks:
+- `idx`: number of elements processed (0 to arr.length)
+- `prefixSum`: current prefix sum = arr[0] + ... + arr[idx-1]
+- `minByMod`: array of size k where minByMod[m] = min prefix sum among indices with index % k = m
+- `maxSum`: best subarray sum found so far (None if no valid subarray yet)
+-/
+structure MaxSubarraySumState (arr : List Int) (k : Nat) where
+  idx : Nat
+  prefixSum : Int
+  minByMod : Array (Option Int)  -- size k
+  maxSum : Option Int
+  deriving Repr
+
+/-- Minimum prefix sum among indices ≤ n with index % k = m -/
+def minPrefixByMod (arr : List Int) (k : Nat) (n : Nat) (m : Nat) : Option Int :=
+  listMinOpt ((List.range (n + 1)).filter (· % k = m) |>.map (prefixSumAt arr))
+
+/-- Maximum subarray sum with length divisible by k, considering subarrays ending at positions ≤ n -/
+def maxSubarraySumSpec (arr : List Int) (k : Nat) (n : Nat) : Option Int :=
+  -- For each ending position j in [1, n], compute the best sum if we have a matching start
+  let candidates := (List.range n).filterMap fun j =>
+    -- j+1 is the ending prefix index; we need a start with same mod class
+    match minPrefixByMod arr k j ((j + 1) % k) with
+    | none => none
+    | some minP => some (prefixSumAt arr (j + 1) - minP)
+  listMaxOpt candidates
+
+/-- Invariant for MaxSubarraySumState after processing idx prefix sums (indices 0..idx).
+
+The key properties are:
+1. `idx_bound`: we haven't processed more than arr.length + 1 prefix indices
+2. `minByMod_size`: the modular tracking array has exactly k entries
+3. `prefix_correct`: prefixSum equals the actual prefix sum at idx
+4. `min_correct`: minByMod[m] tracks minimum prefix sum with index % k = m, for indices ≤ idx
+5. `maxSum_correct`: maxSum equals the best subarray sum found so far
+-/
+structure MaxSubarraySumInv (arr : List Int) (k : Nat) (_hk : k > 0)
+    (state : MaxSubarraySumState arr k) (idx : Nat) : Prop where
+  idx_eq : state.idx = idx
+  idx_bound : idx ≤ arr.length
+  minByMod_size : state.minByMod.size = k
+  prefix_correct : state.prefixSum = prefixSumAt arr idx
+  -- minByMod[m] equals the minimum prefix sum spec (using getD with none default)
+  min_correct : ∀ m < k, state.minByMod.getD m none = minPrefixByMod arr k idx m
+  maxSum_correct : state.maxSum = maxSubarraySumSpec arr k idx
+
+/-- Step function: process the next element arr[idx] -/
+def maxSubarraySumStep (arr : List Int) (k : Nat) (hk : k > 0)
+    (state : MaxSubarraySumState arr k) (hsize : state.minByMod.size = k)
+    (_hidx : state.idx < arr.length) : MaxSubarraySumState arr k :=
+  let newIdx := state.idx + 1
+  let newPrefixSum := state.prefixSum + arr.getD state.idx 0
+  let modClass := newIdx % k
+  have hmod : modClass < k := Nat.mod_lt newIdx hk
+  have hmod' : modClass < state.minByMod.size := by rw [hsize]; exact hmod
+  -- Update minByMod for the new prefix sum
+  let oldMin := state.minByMod[modClass]'hmod'
+  let newMin := match oldMin with
+    | none => newPrefixSum
+    | some m => min m newPrefixSum
+  let newMinByMod := state.minByMod.set modClass (some newMin) hmod'
+  -- Compute candidate max sum: newPrefixSum - minByMod[modClass]
+  -- This represents a subarray ending at newIdx with length divisible by k
+  let candidateSum := match oldMin with
+    | none => none  -- No previous prefix with same mod class
+    | some minPrev => some (newPrefixSum - minPrev)
+  -- Update maxSum
+  let newMaxSum := match state.maxSum, candidateSum with
+    | none, none => none
+    | some m, none => some m
+    | none, some c => some c
+    | some m, some c => some (max m c)
+  { idx := newIdx
+    prefixSum := newPrefixSum
+    minByMod := newMinByMod
+    maxSum := newMaxSum }
+
+/-- Initial state: idx=0, prefixSum=0, minByMod[0]=Some 0, others=None -/
+def maxSubarraySumInit (arr : List Int) (k : Nat) (_hk : k > 0) :
+    MaxSubarraySumState arr k :=
+  { idx := 0
+    prefixSum := 0
+    -- Initialize: minByMod[0] = Some 0 (prefix sum at index 0), others = None
+    minByMod := (Array.range k).map (fun i => if i = 0 then some 0 else none)
+    maxSum := none }
+
+theorem maxSubarraySumInit_minByMod_size (arr : List Int) (k : Nat) (hk : k > 0) :
+    (maxSubarraySumInit arr k hk).minByMod.size = k := by
+  simp [maxSubarraySumInit]
+
+/-- Init lemma: initial state satisfies invariant at idx=0 -/
+theorem maxSubarraySumInv_init (arr : List Int) (k : Nat) (hk : k > 0) :
+    MaxSubarraySumInv arr k hk (maxSubarraySumInit arr k hk) 0 := by
+  constructor
+  · -- idx_eq
+    rfl
+  · -- idx_bound
+    exact Nat.zero_le _
+  · -- minByMod_size
+    exact maxSubarraySumInit_minByMod_size arr k hk
+  · -- prefix_correct
+    simp [maxSubarraySumInit, prefixSumAt]
+  · -- min_correct
+    sorry
+  · -- maxSum_correct
+    simp [maxSubarraySumInit, maxSubarraySumSpec, listMaxOpt]
+
+/-- Step lemma: invariant preserved when processing next element -/
+theorem maxSubarraySumInv_step (arr : List Int) (k : Nat) (hk : k > 0)
+    (state : MaxSubarraySumState arr k) (idx : Nat)
+    (hinv : MaxSubarraySumInv arr k hk state idx) (hidx : idx < arr.length) :
+    MaxSubarraySumInv arr k hk
+      (maxSubarraySumStep arr k hk state hinv.minByMod_size (hinv.idx_eq ▸ hidx)) (idx + 1) := by
+  sorry
+
+/-- Compute max subarray sum by folding over the array -/
+def maxSubarraySumCompute (arr : List Int) (k : Nat) (hk : k > 0) :
+    MaxSubarraySumState arr k :=
+  let rec loop (state : MaxSubarraySumState arr k)
+      (hinv : MaxSubarraySumInv arr k hk state state.idx) :
+      MaxSubarraySumState arr k :=
+    if h : state.idx < arr.length then
+      let state' := maxSubarraySumStep arr k hk state hinv.minByMod_size h
+      have hinv' : MaxSubarraySumInv arr k hk state' state'.idx := by
+        have heq : state.idx = state.idx := rfl
+        have := maxSubarraySumInv_step arr k hk state state.idx
+          (heq ▸ hinv) h
+        have hidx_eq : state'.idx = state.idx + 1 := by simp [maxSubarraySumStep, state']
+        rw [hidx_eq]
+        exact this
+      loop state' hinv'
+    else
+      state
+  termination_by arr.length - state.idx
+  decreasing_by simp [maxSubarraySumStep]; omega
+  loop (maxSubarraySumInit arr k hk) (maxSubarraySumInv_init arr k hk)
+
+/-- Final specification theorem -/
+theorem maxSubarraySumCompute_spec (arr : List Int) (k : Nat) (hk : k > 0) :
+    MaxSubarraySumInv arr k hk (maxSubarraySumCompute arr k hk) arr.length := by
+  sorry
+
+/-- Extract the result with correctness proof -/
+def maxSubarraySum (arr : List Int) (k : Nat) (hk : k > 0) :
+    { result : Option Int // result = maxSubarraySumSpec arr k arr.length } :=
+  let state := maxSubarraySumCompute arr k hk
+  let spec := maxSubarraySumCompute_spec arr k hk
+  ⟨state.maxSum, spec.maxSum_correct⟩
+
+/-! ### Documentation: Design Choices
+
+**Why `Array (Option Int)` over `HashMap Nat Int`:**
+
+```lean
+-- DON'T: HashMap makes invariants hard to prove
+structure BadState where
+  minByMod : Std.HashMap Nat Int  -- Hard to reason about
+
+-- DO: Array with bounded size
+structure GoodState (k : Nat) where
+  minByMod : Array (Option Int)
+  minByMod_size : minByMod.size = k  -- Easy invariant
+```
+
+Problems with HashMap:
+1. `HashMap.find?` returns `Option` even for keys that "should" be present
+2. Proving `∀ m < k, HashMap.find? m = ...` requires reasoning about HashMap internals
+3. No simple lemmas connecting HashMap state to pure functional specifications
+
+Benefits of Array:
+1. `arr[m]?` is `some x` iff `m < arr.size` and `arr[m] = x`
+2. Size invariant `arr.size = k` is trivial to maintain through `Array.set`
+3. Direct correspondence between array state and mathematical specification
+
+**Composing Multiple Invariants:**
+
+The `MaxSubarraySumInv` structure demonstrates bundling multiple related invariants:
+- `prefix_correct`: relates `prefixSum` to actual prefix sums
+- `min_correct`: relates `minByMod` array to minimum computations
+- `maxSum_correct`: relates `maxSum` to the optimization objective
+
+Each invariant can be proven independently in the step lemma, then composed.
+-/
+
 end Coding
 end RMP
