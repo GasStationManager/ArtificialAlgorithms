@@ -80,11 +80,99 @@ def BinarySearchSpec (piles : Array Int) (target : Int) (result : Nat) : Prop :=
   (∀ i < result, piles[i]! < target) ∧
   (result < piles.size → piles[result]! >= target)
 
-/-- Binary search correctness (with sorry for now) -/
+/-- Helper lemma: getElem! equals getElem when index is in bounds -/
+theorem Array.getElem!_eq {α : Type*} [Inhabited α] (a : Array α) (i : Nat) (h : i < a.size) :
+    a[i]! = a[i] := by
+  have hi : i < a.size := h
+  show a.get!Internal i = a[i]
+  unfold Array.get!Internal
+  simp only [Array.getD, hi, ↓reduceDIte, Array.getInternal, Array.instGetElemNatLtSize]
+
+/-- Helper: In a sorted array, earlier elements are smaller -/
+theorem sorted_lt_of_lt {piles : Array Int} (hsorted : PilesSorted piles)
+    {i j : Nat} (hi_lt : i < piles.size) (hj_lt : j < piles.size) (hij : i < j) :
+    piles[i]! < piles[j]! := by
+  unfold PilesSorted at hsorted
+  have hi_list : i < piles.toList.length := by simp [hi_lt]
+  have hj_list : j < piles.toList.length := by simp [hj_lt]
+  -- Use isChain_iff_pairwise to get Pairwise, then pairwise_iff_getElem
+  have hpw : piles.toList.Pairwise (· < ·) := List.isChain_iff_pairwise.mp hsorted
+  have h := List.pairwise_iff_getElem.mp hpw i j hi_list hj_list hij
+  simp only [Array.getElem_toList] at h
+  -- The goal is piles[i]! < piles[j]! and we have piles[i] < piles[j]
+  rw [Array.getElem!_eq piles i hi_lt, Array.getElem!_eq piles j hj_lt]
+  exact h
+
+/-- Helper lemma about go function invariant -/
+theorem binarySearchGE_go_spec (piles : Array Int) (target : Int)
+    (hsorted : PilesSorted piles) :
+    ∀ (lo hi : Nat), lo ≤ hi → hi ≤ piles.size →
+    (∀ i < lo, piles[i]! < target) →
+    (hi < piles.size → piles[hi]! >= target) →
+    let result := binarySearchGE.go piles target lo hi
+    lo ≤ result ∧ result ≤ hi ∧
+    (∀ i < result, piles[i]! < target) ∧
+    (result < piles.size → piles[result]! >= target) := by
+  -- We use strong induction on hi - lo
+  intro lo hi
+  generalize h_term : hi - lo = d
+  induction d using Nat.strong_induction_on generalizing lo hi with
+  | _ d ih =>
+    intro hlo hhi hbelow habove
+    simp only
+    unfold binarySearchGE.go
+    split_ifs with hlt
+    · -- lo < hi case
+      simp only
+      split_ifs with hmid_ge
+      · -- piles[mid]! >= target, go left
+        have hterm : (lo + hi) / 2 - lo < d := by omega
+        have hlo_le_mid : lo ≤ (lo + hi) / 2 := by omega
+        have hmid_le_hi : (lo + hi) / 2 ≤ hi := by omega
+        have hmid_le_size : (lo + hi) / 2 ≤ piles.size := Nat.le_trans hmid_le_hi hhi
+        have habove' : (lo + hi) / 2 < piles.size → piles[(lo + hi) / 2]! >= target := fun _ => hmid_ge
+        have hsub := ih ((lo + hi) / 2 - lo) hterm lo ((lo + hi) / 2) rfl hlo_le_mid hmid_le_size hbelow habove'
+        simp only at hsub
+        obtain ⟨h1, h2, h3, h4⟩ := hsub
+        exact ⟨h1, Nat.le_trans h2 hmid_le_hi, h3, h4⟩
+      · -- piles[mid]! < target, go right
+        have hmid_lt' : piles[(lo + hi) / 2]! < target := Int.not_le.mp hmid_ge
+        have hterm : hi - ((lo + hi) / 2 + 1) < d := by omega
+        have hmid1_le_hi : (lo + hi) / 2 + 1 ≤ hi := by omega
+        have hmid_lt_size : (lo + hi) / 2 < piles.size := by omega
+        have hbelow' : ∀ i < (lo + hi) / 2 + 1, piles[i]! < target := by
+          intro i hi'
+          by_cases h : i < lo
+          · exact hbelow i h
+          · by_cases heq : i = (lo + hi) / 2
+            · rw [heq]; exact hmid_lt'
+            · have hi_lt_mid : i < (lo + hi) / 2 := by omega
+              have hi_ge_lo : lo ≤ i := Nat.not_lt.mp h
+              have hi_lt_size : i < piles.size := by omega
+              have pi_lt_pmid : piles[i]! < piles[(lo + hi) / 2]! :=
+                sorted_lt_of_lt hsorted hi_lt_size hmid_lt_size hi_lt_mid
+              exact Int.lt_trans pi_lt_pmid hmid_lt'
+        have hsub := ih (hi - ((lo + hi) / 2 + 1)) hterm ((lo + hi) / 2 + 1) hi rfl hmid1_le_hi hhi hbelow' habove
+        simp only at hsub
+        obtain ⟨h1, h2, h3, h4⟩ := hsub
+        exact ⟨Nat.le_trans (by omega : lo ≤ (lo + hi) / 2 + 1) h1, h2, h3, h4⟩
+    · -- lo >= hi case
+      have heq : lo = hi := Nat.le_antisymm hlo (Nat.not_lt.mp hlt)
+      simp only [heq]
+      exact ⟨Nat.le_refl _, Nat.le_refl _, fun i hi' => hbelow i (heq ▸ hi'), habove⟩
+
+/-- Binary search correctness -/
 theorem binarySearchGE_spec (piles : Array Int) (target : Int)
     (hsorted : PilesSorted piles) :
     BinarySearchSpec piles target (binarySearchGE piles target) := by
-  sorry
+  unfold BinarySearchSpec binarySearchGE
+  have h := binarySearchGE_go_spec piles target hsorted 0 piles.size
+    (Nat.zero_le _) (Nat.le_refl _)
+    (fun _ h => absurd h (Nat.not_lt_zero _))
+    (fun h => absurd h (Nat.lt_irrefl _))
+  simp only at h
+  obtain ⟨_, hle, hbelow, habove⟩ := h
+  exact ⟨hle, hbelow, habove⟩
 
 /-- Process one element in patience sorting -/
 def processElement (input : List Int) (state : LISState input)
@@ -220,12 +308,131 @@ def longestIncreasingSubsequence (input : List Int) :
 4. `SubseqValid`: The reconstructed sequence is a valid subsequence
 -/
 
+/-- Helper: elem < piles[pos+1] when pos < size - 1 and elem < piles[pos] -/
+theorem elem_lt_next_pile {piles : Array Int} {pos : Nat} {elem : Int}
+    (hsorted : PilesSorted piles)
+    (h_pos : pos < piles.size)
+    (h_elem_le : elem ≤ piles[pos])
+    (h_next : pos + 1 < piles.size) :
+    elem < piles[pos + 1] := by
+  have h_lt : piles[pos] < piles[pos + 1] := by
+    have hpw : piles.toList.Pairwise (· < ·) := List.isChain_iff_pairwise.mp hsorted
+    have h := List.pairwise_iff_getElem.mp hpw pos (pos + 1) (by simp [h_pos]) (by simp [h_next]) (by omega)
+    simp only [Array.getElem_toList] at h
+    exact h
+  omega
+
+/-- Helper: piles[pos-1] < elem when pos > 0 and all elements before pos are < elem -/
+theorem prev_pile_lt_elem {piles : Array Int} {pos : Nat} {elem : Int}
+    (h_pos_gt : pos > 0)
+    (h_pos_lt : pos < piles.size)
+    (h_below : ∀ i < pos, piles[i]! < elem) :
+    piles[pos - 1] < elem := by
+  have h_prev : pos - 1 < pos := by omega
+  have h_prev_lt : pos - 1 < piles.size := by omega
+  have := h_below (pos - 1) h_prev
+  rw [Array.getElem!_eq piles (pos - 1) h_prev_lt] at this
+  exact this
+
+/-- Helper: List.set preserves Pairwise when the new element maintains order -/
+theorem List.pairwise_set_of_rel {α : Type*} {R : α → α → Prop} {l : List α} {i : Nat} {x : α}
+    (h_pw : l.Pairwise R)
+    (_h_len : i < l.length)
+    (h_left : ∀ j < i, (hj : j < l.length) → R l[j] x)
+    (h_right : ∀ j, i < j → (hj : j < l.length) → R x l[j]) :
+    (l.set i x).Pairwise R := by
+  rw [List.pairwise_iff_getElem] at h_pw ⊢
+  intro a b ha hb hab
+  simp only [List.length_set] at ha hb
+  simp only [List.getElem_set]
+  split_ifs with hia hib hib
+  · omega
+  · exact h_right b (by omega : i < b) hb
+  · exact h_left a (by omega : a < i) ha
+  · exact h_pw a b ha hb hab
+
+/-- Helper: last element of non-empty array -/
+theorem Array.getLast?_toList_eq' {α : Type*} (a : Array α) (h : a.size > 0) :
+    a.toList.getLast? = some a[a.size - 1] := by
+  have hlen : a.toList.length > 0 := by simp [h]
+  have hne : a.toList ≠ [] := List.ne_nil_of_length_pos hlen
+  rw [List.getLast?_eq_some_getLast hne]
+  simp only [List.getLast_eq_getElem, Array.length_toList, Array.getElem_toList]
+
 /-- Pile tops remain sorted after processing each element -/
 theorem pilesSorted_preserved (input : List Int) (state : LISState input)
     (h_sorted : PilesSorted state.piles)
     (h_lt : state.processed < input.length) :
     PilesSorted (processElement input state h_lt).piles := by
-  sorry
+  unfold processElement
+  -- Get binary search spec
+  have bs := binarySearchGE_spec state.piles input[state.processed] h_sorted
+  obtain ⟨h_le, h_below, h_above⟩ := bs
+  -- Split on whether we replace or push (the main branching condition)
+  by_cases h_pos : binarySearchGE state.piles input[state.processed] < state.piles.size
+  · -- Case: pos < piles.size (replace existing pile)
+    simp only [h_pos, ↓reduceDIte, PilesSorted]
+    rw [Array.toList_set]
+    -- Need to show (state.piles.toList.set pos elem).IsChain (· < ·)
+    apply List.isChain_iff_pairwise.mpr
+    apply List.pairwise_set_of_rel
+    · exact List.isChain_iff_pairwise.mp h_sorted
+    · simp [h_pos]
+    · -- For j < pos, show piles[j] < elem
+      intro j hj_lt hj_len
+      simp only [Array.length_toList] at hj_len
+      have := h_below j hj_lt
+      rw [Array.getElem!_eq _ _ hj_len] at this
+      simp only [Array.getElem_toList]
+      exact this
+    · -- For j > pos, show elem < piles[j]
+      intro j hj_gt hj_len
+      simp only [Array.length_toList] at hj_len
+      simp only [Array.getElem_toList]
+      -- elem ≤ piles[pos] (from binary search) and piles[pos] < piles[j] (from sorted)
+      have h_elem_le : input[state.processed] ≤ state.piles[binarySearchGE state.piles input[state.processed]] := by
+        have := h_above h_pos
+        rw [Array.getElem!_eq _ _ h_pos] at this
+        exact this
+      have h_sorted_pw : state.piles.toList.Pairwise (· < ·) := List.isChain_iff_pairwise.mp h_sorted
+      have h_pos_j : state.piles[binarySearchGE state.piles input[state.processed]] < state.piles[j] := by
+        have := List.pairwise_iff_getElem.mp h_sorted_pw
+          (binarySearchGE state.piles input[state.processed]) j
+          (by simp [h_pos]) (by simp [hj_len]) hj_gt
+        simp only [Array.getElem_toList] at this
+        exact this
+      omega
+  · -- Case: pos >= piles.size (push new element)
+    simp only [h_pos, ↓reduceDIte, PilesSorted]
+    rw [Array.toList_push]
+    -- pos = piles.size, so all elements < elem
+    have h_pos_eq : binarySearchGE state.piles input[state.processed] = state.piles.size := by
+      have : binarySearchGE state.piles input[state.processed] ≤ state.piles.size := h_le
+      omega
+    -- Need to show (piles.toList ++ [elem]).IsChain (· < ·)
+    apply List.IsChain.append h_sorted (List.IsChain.singleton _)
+    -- Show last of piles < elem
+    intro x hx y hy
+    simp only [List.head?_cons, Option.mem_def] at hy
+    cases hy
+    -- x is the last element of piles.toList
+    by_cases h_empty : state.piles.size = 0
+    · -- Empty piles case: getLast? = none, so the premise is false
+      have hempty_list : state.piles.toList = [] := by
+        have : state.piles.toList.length = 0 := by simp [h_empty]
+        exact List.eq_nil_of_length_eq_zero this
+      simp only [hempty_list, List.getLast?_nil, Option.mem_def] at hx
+      cases hx
+    · -- Non-empty piles case
+      have h_size_pos : state.piles.size > 0 := Nat.pos_of_ne_zero h_empty
+      rw [Array.getLast?_toList_eq' _ h_size_pos] at hx
+      simp only [Option.mem_def, Option.some.injEq] at hx
+      subst hx
+      -- Need: piles[size-1] < elem
+      have h_last_idx : state.piles.size - 1 < state.piles.size := by omega
+      have := h_below (state.piles.size - 1) (by omega : state.piles.size - 1 < binarySearchGE state.piles input[state.processed])
+      rw [Array.getElem!_eq _ _ h_last_idx] at this
+      exact this
 
 /-- Final state has piles sorted -/
 theorem runPatience_sorted (input : List Int) :
