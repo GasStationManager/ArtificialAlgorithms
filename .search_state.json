@@ -2974,9 +2974,28 @@
       }
     },
     "stateful_folds": {
-      "active": false,
-      "nodes": [],
-      "current_path": [],
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Choose problem instance: max subarray sum divisible by k",
+          "possible_actions": [
+            "Prefix sum with modular tracking: track prefixSum and minPrefixByMod array",
+            "Subarray sum via two pointers: track running sum in window",
+            "Different problem: longest subarray with equal 0s and 1s"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_stateful_folds_bp_0"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": null
+        }
+      ],
       "history": [],
       "parent_map": {},
       "edge_actions": {},
