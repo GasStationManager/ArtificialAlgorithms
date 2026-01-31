@@ -1962,6 +1962,65 @@ form a non-increasing sequence (by value at time of placement). Therefore,
 any strictly increasing subsequence can have at most one element from each pile.
 -/
 
+/-- State after processing exactly k additional elements, starting from a given state -/
+def stateAfter (input : List Int) (state : LISState input) (k : Nat) : LISState input :=
+  if k = 0 then state
+  else if h : state.processed < input.length then
+    stateAfter input (processElement input state h) (k - 1)
+  else state
+termination_by k
+decreasing_by simp_wf; omega
+
+/-- State after processing exactly k elements from the beginning -/
+def stateAtStep (input : List Int) (k : Nat) : LISState input :=
+  stateAfter input (initLISState input) k
+
+/-- stateAfter 0 returns the original state -/
+theorem stateAfter_zero (input : List Int) (state : LISState input) :
+    stateAfter input state 0 = state := by
+  simp only [stateAfter, ↓reduceIte]
+
+/-- stateAfter succ unfolds correctly -/
+theorem stateAfter_succ (input : List Int) (state : LISState input) (k : Nat)
+    (h : state.processed < input.length) :
+    stateAfter input state (k + 1) = stateAfter input (processElement input state h) k := by
+  conv_lhs => unfold stateAfter
+  simp only [Nat.add_one_ne_zero, ↓reduceIte, dif_pos h, Nat.add_sub_cancel]
+
+/-- stateAfter succ when done unfolds correctly -/
+theorem stateAfter_succ_done (input : List Int) (state : LISState input) (k : Nat)
+    (h : ¬state.processed < input.length) :
+    stateAfter input state (k + 1) = state := by
+  conv_lhs => unfold stateAfter
+  simp only [Nat.add_one_ne_zero, ↓reduceIte, dif_neg h]
+
+/-- stateAfter preserves processed count relationship -/
+theorem stateAfter_processed (input : List Int) (state : LISState input) (k : Nat) :
+    (stateAfter input state k).processed = min (state.processed + k) input.length := by
+  induction k generalizing state with
+  | zero =>
+    rw [stateAfter_zero]
+    have := state.h_processed
+    omega
+  | succ k ih =>
+    by_cases h : state.processed < input.length
+    · rw [stateAfter_succ _ _ _ h, ih]
+      have h_proc : (processElement input state h).processed = state.processed + 1 := by
+        unfold processElement; simp only; split_ifs <;> simp only
+      simp only [h_proc]
+      omega
+    · rw [stateAfter_succ_done _ _ _ h]
+      have h_eq : state.processed = input.length := by
+        have := state.h_processed; omega
+      omega
+
+/-- stateAtStep k has processed = min k input.length -/
+theorem stateAtStep_processed (input : List Int) (k : Nat) :
+    (stateAtStep input k).processed = min k input.length := by
+  unfold stateAtStep
+  rw [stateAfter_processed]
+  simp [initLISState]
+
 /-- Which pile an element at a given input index ends up in (during processing).
     This tracks the pile assignment history, not just the final state.
     Returns the pile index (0-indexed) for each processed element. -/
@@ -2081,19 +2140,204 @@ theorem pileAssignment_eq_binarySearch (input : List Int) (i : Nat) (hi : i < in
   -- At step i, we compute binarySearchGE on the piles array at that point
   sorry
 
+/-- Helper: binarySearchGE result is at most the array size -/
+theorem binarySearchGE_le_size (piles : Array Int) (target : Int)
+    (hsorted : PilesSorted piles) :
+    binarySearchGE piles target ≤ piles.size := by
+  have hspec := binarySearchGE_spec piles target hsorted
+  exact hspec.1
+
+/-- Helper: piles.size after processing one element increases by at most 1 -/
+theorem processElement_piles_size_bound (input : List Int) (state : LISState input)
+    (h : state.processed < input.length)
+    (h_inv : state.piles.size ≤ state.processed) :
+    (processElement input state h).piles.size ≤ (processElement input state h).processed := by
+  unfold processElement
+  simp only
+  split_ifs with h_pred h_pos h_pos
+  all_goals simp only [Array.size_set, Array.size_push]; omega
+
+/-- Helper: piles.size invariant is preserved through the go loop -/
+theorem runPatience_go_piles_size_le_processed (input : List Int) (state : LISState input)
+    (h_inv : state.piles.size ≤ state.processed) :
+    (runPatience.go input state).piles.size ≤ (runPatience.go input state).processed := by
+  unfold runPatience.go
+  split_ifs with h
+  · have h_next := processElement_piles_size_bound input state h h_inv
+    exact runPatience_go_piles_size_le_processed input (processElement input state h) h_next
+  · exact h_inv
+termination_by input.length - state.processed
+decreasing_by exact processElement_decreases input state h
+
+/-- Helper: piles.size ≤ processed for runPatience result -/
+theorem runPatience_piles_size_le_processed (input : List Int) :
+    (runPatience input).piles.size ≤ (runPatience input).processed := by
+  unfold runPatience
+  exact runPatience_go_piles_size_le_processed input (initLISState input) (by simp [initLISState])
+
+/-- Helper: runPatience.processed = input.length -/
+theorem runPatience_go_processed_eq (input : List Int) (state : LISState input) :
+    (runPatience.go input state).processed = input.length := by
+  unfold runPatience.go
+  split_ifs with h
+  · exact runPatience_go_processed_eq input (processElement input state h)
+  · have := state.h_processed
+    omega
+termination_by input.length - state.processed
+decreasing_by exact processElement_decreases input state h
+
+theorem runPatience_processed_eq (input : List Int) :
+    (runPatience input).processed = input.length := by
+  unfold runPatience
+  exact runPatience_go_processed_eq input (initLISState input)
+
+/-- Helper: monotonicity of piles - the pile array never shrinks -/
+theorem processElement_piles_size_mono' (input : List Int) (state : LISState input)
+    (h : state.processed < input.length) :
+    state.piles.size ≤ (processElement input state h).piles.size := by
+  unfold processElement
+  simp only
+  split_ifs with h_pos h_gt h_gt
+  · simp only [Array.size_set]; exact Nat.le_refl _
+  · simp only [Array.size_set]; exact Nat.le_refl _
+  · simp only [Array.size_push]; omega
+  · simp only [Array.size_push]; omega
+
+/-- Key invariant: at step i, the assignment is at most the current piles.size -/
+theorem pileAssignmentGo_le_piles_size (input : List Int) (state : LISState input)
+    (assignments : Array Nat) (h_sorted : PilesSorted state.piles)
+    (h_size : assignments.size = state.processed)
+    (h_inv : ∀ j < assignments.size, assignments[j]! ≤ state.piles.size) :
+    ∀ i < input.length, (pileAssignmentGo input state assignments h_sorted)[i]! ≤
+      (runPatience.go input state).piles.size := by
+  intro i hi
+  unfold pileAssignmentGo runPatience.go
+  split_ifs with h
+  · -- Recursive case: state.processed < input.length
+    have h_bs := binarySearchGE_le_size state.piles input[state.processed] h_sorted
+    have h_sorted' := pilesSorted_preserved input state h_sorted h
+    have h_new_size : (assignments.push (binarySearchGE state.piles input[state.processed])).size =
+        (processElement input state h).processed := by
+      simp only [Array.size_push, h_size]
+      unfold processElement; simp only; split_ifs <;> simp
+    -- Show the new invariant holds
+    have h_inv' : ∀ j < (assignments.push (binarySearchGE state.piles input[state.processed])).size,
+        (assignments.push (binarySearchGE state.piles input[state.processed]))[j]! ≤
+          (processElement input state h).piles.size := by
+      intro j hj
+      simp only [Array.size_push] at hj
+      by_cases h_eq : j = assignments.size
+      · -- New element
+        subst h_eq
+        rw [Array.getElem!_push_last]
+        -- bs ≤ state.piles.size ≤ new piles.size
+        have h_mono := processElement_piles_size_mono' input state h
+        omega
+      · -- Old element
+        have hj' : j < assignments.size := by omega
+        rw [Array.getElem!_push_lt _ _ _ hj']
+        have h_mono := processElement_piles_size_mono' input state h
+        have := h_inv j hj'
+        omega
+    have h_rec := pileAssignmentGo_le_piles_size input (processElement input state h)
+      (assignments.push (binarySearchGE state.piles input[state.processed]))
+      h_sorted' h_new_size h_inv' i hi
+    -- Now connect runPatience.go results
+    exact h_rec
+  · -- Base case: state.processed ≥ input.length
+    -- So state.processed = input.length, and i < input.length
+    have h_eq : state.processed = input.length := by
+      have := state.h_processed; omega
+    have hi' : i < assignments.size := by rw [h_size, h_eq]; exact hi
+    exact h_inv i hi'
+termination_by input.length - state.processed
+decreasing_by exact processElement_decreases input state h
+
 /-- Key lemma: pile assignment at index i is bounded by the number of piles at step i+1 -/
 theorem pileAssignment_bounded_by_step (input : List Int) (i : Nat) (hi : i < input.length) :
     (pileAssignment input)[i]! ≤ i := by
-  -- At step i, there are at most i+1 piles (0 to i), and the assignment
-  -- is at most the current piles.size, which is at most i
+  -- At step i, there are at most i piles (indices 0 to i-1), and the assignment
+  -- is at most the current piles.size, which is at most i.
+  -- The binary search returns a position in [0, piles.size], and we assign to that position.
+  -- Since piles.size ≤ i at step i (we've processed i elements), assignment ≤ i.
+  unfold pileAssignment
+  -- Need to track the state at step i and show piles.size ≤ i
   sorry
+
+/-- Helper: the final pile count is at least the pile count at any step -/
+theorem runPatience_piles_size_ge' (input : List Int) (state : LISState input)
+    (h_sorted : PilesSorted state.piles) :
+    state.piles.size ≤ (runPatience.go input state).piles.size := by
+  unfold runPatience.go
+  split_ifs with h
+  · have h_mono := processElement_piles_size_mono' input state h
+    have h_sorted' := pilesSorted_preserved input state h_sorted h
+    have h_rec := runPatience_piles_size_ge' input (processElement input state h) h_sorted'
+    omega
+  · exact Nat.le_refl _
+termination_by input.length - state.processed
+decreasing_by exact processElement_decreases input state h
+
+/-- Key invariant: each assignment is strictly less than the current state piles.size.
+    This is stronger than needed - we track that assignments are < state.piles.size
+    at the time of assignment, which implies < final piles.size by monotonicity. -/
+theorem pileAssignmentGo_lt_state (input : List Int) (state : LISState input)
+    (assignments : Array Nat) (h_sorted : PilesSorted state.piles)
+    (h_size : assignments.size = state.processed)
+    (h_inv : ∀ j < assignments.size, assignments[j]! < state.piles.size) :
+    ∀ i < input.length, (pileAssignmentGo input state assignments h_sorted)[i]! <
+      (runPatience.go input state).piles.size := by
+  intro i hi
+  unfold pileAssignmentGo runPatience.go
+  split_ifs with h
+  · -- Recursive case
+    have h_sorted' := pilesSorted_preserved input state h_sorted h
+    have h_new_size : (assignments.push (binarySearchGE state.piles input[state.processed])).size =
+        (processElement input state h).processed := by
+      simp only [Array.size_push, h_size]
+      unfold processElement; simp only; split_ifs <;> simp
+    -- For the new element, show pos < processElement.piles.size
+    have h_bs := binarySearchGE_le_size state.piles input[state.processed] h_sorted
+    -- After processElement, piles.size is either unchanged (replace) or +1 (push)
+    have h_new_inv : ∀ j < (assignments.push (binarySearchGE state.piles input[state.processed])).size,
+        (assignments.push (binarySearchGE state.piles input[state.processed]))[j]! <
+          (processElement input state h).piles.size := by
+      intro j hj
+      simp only [Array.size_push] at hj
+      by_cases h_eq : j = assignments.size
+      · -- New element
+        subst h_eq
+        rw [Array.getElem!_push_last]
+        -- binarySearchGE returns pos ≤ state.piles.size
+        -- In replace case (pos < state.piles.size): newState.piles.size = state.piles.size, so pos < newState.piles.size
+        -- In push case (pos = state.piles.size): newState.piles.size = state.piles.size + 1, so pos < newState.piles.size
+        unfold processElement
+        simp only
+        split_ifs with h_pos h_gt h_gt
+        all_goals simp only [Array.size_set, Array.size_push]; omega
+      · -- Old element
+        have hj' : j < assignments.size := by omega
+        rw [Array.getElem!_push_lt _ _ _ hj']
+        have h_old := h_inv j hj'
+        have h_mono := processElement_piles_size_mono' input state h
+        omega
+    exact pileAssignmentGo_lt_state input (processElement input state h)
+      (assignments.push (binarySearchGE state.piles input[state.processed]))
+      h_sorted' h_new_size h_new_inv i hi
+  · -- Base case: state.processed ≥ input.length
+    have h_eq : state.processed = input.length := by have := state.h_processed; omega
+    have hi' : i < assignments.size := by rw [h_size, h_eq]; exact hi
+    exact h_inv i hi'
+termination_by input.length - state.processed
+decreasing_by exact processElement_decreases input state h
 
 /-- The pile assignment values are bounded by the final number of piles -/
 theorem pileAssignment_bounded (input : List Int) (i : Nat) (hi : i < input.length) :
     (pileAssignment input)[i]! < (runPatience input).piles.size := by
-  -- The pile where element i goes is within bounds of the piles at that step.
-  -- The final number of piles is >= the number at any step.
-  sorry
+  unfold pileAssignment runPatience
+  apply pileAssignmentGo_lt_state input (initLISState input) #[] pilesSorted_empty rfl
+  · intro j hj; simp at hj
+  · exact hi
 
 /-- Helper: monotonicity of piles - the pile array never shrinks -/
 theorem processElement_piles_size_mono (input : List Int) (state : LISState input)
@@ -2137,6 +2381,75 @@ theorem processElement_placed_le_top (input : List Int) (state : LISState input)
   -- Need: input[state.processed] <= state.piles[pos]!
   exact h_above
 
+/-- stateAtStep equals the result of iterating processElement -/
+theorem stateAtStep_eq_go (input : List Int) (k : Nat) :
+    stateAtStep input k = stateAfter input (initLISState input) k := rfl
+
+/-- runPatience.go from a state equals stateAfter by remaining steps -/
+theorem runPatience_go_eq_stateAfter (input : List Int) (state : LISState input) :
+    runPatience.go input state = stateAfter input state (input.length - state.processed) := by
+  generalize hd : input.length - state.processed = d
+  induction d generalizing state with
+  | zero =>
+    have h : ¬(state.processed < input.length) := by
+      have := state.h_processed
+      omega
+    conv_lhs => unfold runPatience.go
+    simp only [dif_neg h]
+    rw [stateAfter_zero]
+  | succ n ih =>
+    have h : state.processed < input.length := by omega
+    conv_lhs => unfold runPatience.go
+    simp only [dif_pos h]
+    rw [stateAfter_succ _ _ _ h]
+    have h_proc : (processElement input state h).processed = state.processed + 1 := by
+      unfold processElement; simp only; split_ifs <;> simp only
+    have h_dec : input.length - (processElement input state h).processed = n := by
+      omega
+    exact ih (processElement input state h) h_dec
+
+/-- PilesSorted is preserved through stateAfter -/
+theorem stateAfter_pilesSorted (input : List Int) (state : LISState input) (k : Nat)
+    (h_sorted : PilesSorted state.piles) :
+    PilesSorted (stateAfter input state k).piles := by
+  induction k generalizing state with
+  | zero => rw [stateAfter_zero]; exact h_sorted
+  | succ k ih =>
+    by_cases h : state.processed < input.length
+    · rw [stateAfter_succ _ _ _ h]
+      exact ih (processElement input state h) (pilesSorted_preserved input state h_sorted h)
+    · rw [stateAfter_succ_done _ _ _ h]
+      exact h_sorted
+
+/-- stateAtStep preserves PilesSorted -/
+theorem stateAtStep_pilesSorted (input : List Int) (k : Nat) :
+    PilesSorted (stateAtStep input k).piles := by
+  unfold stateAtStep
+  apply stateAfter_pilesSorted
+  exact pilesSorted_empty
+
+/-- Pile tops are monotonically non-increasing: if pile p exists at step k and l > k,
+    then the pile top at step l is <= the pile top at step k -/
+theorem pile_top_nonincreasing (input : List Int) (p k l : Nat)
+    (hkl : k ≤ l)
+    (hp_at_k : p < (stateAtStep input k).piles.size) :
+    (stateAtStep input l).piles[p]! ≤ (stateAtStep input k).piles[p]! := by
+  -- This lemma requires proving that pile tops only decrease when elements are placed on them
+  -- For now, we use sorry
+  sorry
+
+/-- pileAssignment[i]! equals binarySearchGE at state i -/
+theorem pileAssignment_at_state (input : List Int) (i : Nat) (hi : i < input.length) :
+    (pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]! := by
+  sorry
+
+/-- When element i is placed on existing pile p, the pile top becomes input[i]! -/
+theorem pile_top_after_placement (input : List Int) (i : Nat) (hi : i < input.length)
+    (p : Nat) (hp : p = (pileAssignment input)[i]!)
+    (hp_lt : p < (stateAtStep input i).piles.size) :
+    (stateAtStep input (i + 1)).piles[p]! = input[i]! := by
+  sorry
+
 /-- Key invariant: elements assigned to the same pile with x < y have input[x] >= input[y].
 
     This is the core insight: when element at index y is placed on pile p,
@@ -2147,8 +2460,15 @@ theorem same_pile_ge (input : List Int) (x y : Nat)
     (hx : x < input.length) (hy : y < input.length) (hxy : x < y)
     (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!) :
     input[x]! ≥ input[y]! := by
-  -- This is the key technical lemma
-  -- The proof requires tracking the pile state at each step
+  -- The proof requires:
+  -- 1. pileAssignment[i]! equals binarySearchGE at state i (pileAssignment_at_state)
+  -- 2. When placed on existing pile, top becomes input[i]! (pile_top_after_placement)
+  -- 3. Pile tops are non-increasing over time (pile_top_nonincreasing)
+  --
+  -- With these, the proof follows:
+  -- - When y is placed on pile p, input[y]! <= pile_top_at_step_y[p]!
+  -- - pile_top_at_step_y[p]! <= pile_top_at_step_(x+1)[p]! = input[x]!
+  -- - Therefore input[y]! <= input[x]!
   sorry
 
 /-- If two indices have the same pile assignment and x < y, then input[x] >= input[y] -/
@@ -2194,6 +2514,30 @@ theorem List.getElem!_cons_succ' {α : Type*} [Inhabited α] (x : α) (xs : List
     (x :: xs)[i + 1]! = xs[i]! := by
   simp only [getElem!_def, getElem?_cons_succ]
 
+/-- Helper: map with (+1) preserves chains under (<) -/
+theorem List.IsChain_map_succ {indices : List Nat} (h : indices.IsChain (· < ·)) :
+    (indices.map (· + 1)).IsChain (· < ·) := by
+  induction indices with
+  | nil => exact List.IsChain.nil
+  | cons x xs ih =>
+    simp only [List.map]
+    cases xs with
+    | nil => exact List.IsChain.singleton _
+    | cons y ys =>
+      simp only [List.map]
+      cases h with
+      | cons_cons hxy htail =>
+        apply List.IsChain.cons_cons
+        · omega
+        · exact ih htail
+
+/-- Helper: 0 is less than all elements of (indices.map (· + 1)) when indices is nonempty -/
+theorem zero_lt_all_map_succ {indices : List Nat} (i : Nat) (h : i ∈ indices.map (· + 1)) :
+    0 < i := by
+  simp only [List.mem_map] at h
+  obtain ⟨j, _, hj⟩ := h
+  omega
+
 /-- For any subsequence relation, we can extract a list of strictly increasing indices.
     Note: This uses choice because Subseq is a Prop and cannot eliminate to data directly.
     The actual implementation would use the classical axiom to extract witnesses. -/
@@ -2203,9 +2547,75 @@ theorem subseq_has_indices {s l : List Int} (h : Subseq s l) :
       indices.IsChain (· < ·) ∧
       (∀ i ∈ indices, i < l.length) ∧
       indices.map (fun i => l[i]!) = s := by
-  -- This requires extracting computational content from a Prop
-  -- which needs classical reasoning or refactoring Subseq to be a Type
-  sorry
+  induction h with
+  | nil =>
+    exact ⟨[], rfl, List.IsChain.nil, by simp, rfl⟩
+  | cons_skip hsub ih =>
+    -- Skip the head element, so indices in tail are shifted by 1
+    -- hsub : Subseq s l (where l is the tail)
+    -- ih : ∃ indices, ... for Subseq s l
+    -- We want: indices for Subseq s (x :: l)
+    obtain ⟨indices, h_len, h_chain, h_bound, h_map⟩ := ih
+    use indices.map (· + 1)
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · simp [h_len]
+    · exact List.IsChain_map_succ h_chain
+    · intro i hi
+      simp only [List.mem_map] at hi
+      obtain ⟨j, hj, rfl⟩ := hi
+      have := h_bound j hj
+      simp only [List.length_cons]
+      omega
+    · -- Show: (indices.map (· + 1)).map (fun i => (head :: tail)[i]!) = s
+      simp only [List.map_map, Function.comp_def]
+      -- The goal is indices.map (fun j => (head :: tail)[j + 1]!) = s
+      -- We have h_map : indices.map (fun i => tail[i]!) = s
+      convert h_map using 2
+  | cons_take hsub ih =>
+    -- Take the head element, add 0 to indices and shift the rest by 1
+    -- hsub : Subseq s l (where s is tail of subsequence, l is tail of list)
+    -- ih : ∃ indices, ... for Subseq s l
+    -- We want: indices for Subseq (x :: s) (x :: l)
+    obtain ⟨indices, h_len, h_chain, h_bound, h_map⟩ := ih
+    use 0 :: indices.map (· + 1)
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · simp [h_len]
+    · -- Show chain: 0 < first of (indices.map (· + 1)) and rest is chain
+      cases indices with
+      | nil =>
+        -- 0 :: [].map (· + 1) = [0], which is trivially a chain (singleton)
+        simp only [List.map]
+        exact List.IsChain.singleton _
+      | cons y ys =>
+        simp only [List.map]
+        apply List.IsChain.cons_cons
+        · omega
+        · exact List.IsChain_map_succ h_chain
+    · intro i hi
+      simp only [List.mem_cons] at hi
+      cases hi with
+      | inl h =>
+        simp only [h, List.length_cons]
+        omega
+      | inr h =>
+        simp only [List.mem_map] at h
+        obtain ⟨j, hj, rfl⟩ := h
+        have := h_bound j hj
+        simp only [List.length_cons]
+        omega
+    · -- Show: (0 :: indices.map (· + 1)).map (fun i => (head :: tail)[i]!) = head :: s
+      simp only [List.map]
+      -- Goal: (head :: tail)[0]! :: (indices.map (· + 1)).map (fun i => (head :: tail)[i]!) = head :: s
+      -- First show (head :: tail)[0]! = head
+      have h0 : ∀ (x : Int) (xs : List Int), (x :: xs)[0]! = x := by
+        intro x xs
+        simp only [getElem!_def, List.getElem?_cons_zero]
+      rw [h0]
+      -- Now show the tail part: (indices.map (· + 1)).map (fun i => (head :: tail)[i]!) = s
+      congr 1
+      conv_rhs => rw [← h_map]
+      simp only [List.map_map, Function.comp_def]
+      convert rfl using 2
 
 /-- Upper bound: length of any strictly increasing subsequence ≤ number of piles.
 
@@ -2235,9 +2645,49 @@ theorem lis_length_le_piles_size (input : List Int) (s : List Int)
   -- A list with pairwise distinct values all bounded by n has length ≤ n
   -- This is a pigeonhole argument
   rw [← h_len]
-  -- The pile assignments are pairwise distinct and all < piles.size
-  -- Therefore indices.length ≤ piles.size
-  sorry -- Pigeonhole: |indices| distinct values in [0, piles.size) implies |indices| ≤ piles.size
+
+  -- Set up for pigeonhole argument
+  set n := (runPatience input).piles.size with hn
+  set mapped := indices.map (fun i => (pileAssignment input)[i]!) with h_mapped
+
+  -- First, convert the pairwise distinct to Nodup on the mapped list
+  -- h_distinct : List.Pairwise (fun a b => (pileAssignment input)[a]! ≠ (pileAssignment input)[b]!) indices
+  -- We need: (indices.map f).Nodup where f = fun i => (pileAssignment input)[i]!
+  -- List.Nodup is defined as List.Pairwise (· ≠ ·)
+  -- List.pairwise_map says: Pairwise R (map f l) ↔ Pairwise (fun a b => R (f a) (f b)) l
+  have h_piles_nodup : mapped.Nodup := by
+    rw [h_mapped]
+    unfold List.Nodup
+    rw [List.pairwise_map]
+    -- Goal: indices.Pairwise (fun a b => f a ≠ f b)
+    exact h_distinct
+
+  have h_len_map : mapped.length = indices.length := by simp [h_mapped]
+
+  have h_bounded_map : ∀ x ∈ mapped, x < n := by
+    intro x hx
+    simp only [h_mapped, List.mem_map] at hx
+    obtain ⟨i, hi, rfl⟩ := hx
+    exact h_bounded_piles i hi
+
+  -- Convert to Fin n list and use Fintype cardinality bound
+  have h_to_fin : ∀ x ∈ mapped, x < n := h_bounded_map
+  set fin_list : List (Fin n) := mapped.pmap (fun x hx => ⟨x, hx⟩) h_to_fin with h_fin_def
+
+  have h_fin_len : fin_list.length = mapped.length := by simp [h_fin_def, List.length_pmap]
+
+  have h_fin_nodup : fin_list.Nodup := by
+    rw [h_fin_def]
+    apply List.Nodup.pmap
+    · -- Injectivity: ⟨a, ha⟩ = ⟨b, hb⟩ → a = b
+      intro a _ b _ hab
+      simp only [Fin.mk.injEq] at hab
+      exact hab
+    · exact h_piles_nodup
+
+  have h_card := List.Nodup.length_le_card h_fin_nodup
+  simp only [Fintype.card_fin] at h_card
+  omega
 
 /-- Lower bound: there exists a strictly increasing subsequence of length = piles.size -/
 theorem exists_lis_of_length_piles_size (input : List Int) :
