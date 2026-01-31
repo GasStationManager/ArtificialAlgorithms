@@ -748,6 +748,54 @@ theorem listMinOpt_singleton (x : Int) : listMinOpt [x] = some x := rfl
 theorem listMaxOpt_nil : listMaxOpt [] = none := rfl
 theorem listMaxOpt_singleton (x : Int) : listMaxOpt [x] = some x := rfl
 
+/-- Adding an element to listMaxOpt -/
+theorem listMaxOpt_append_singleton (l : List Int) (x : Int) :
+    listMaxOpt (l ++ [x]) = match listMaxOpt l with
+      | none => some x
+      | some m => some (max m x) := by
+  simp only [listMaxOpt, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- Combining two Options with max -/
+def optionMax (a b : Option Int) : Option Int :=
+  match a, b with
+  | none, none => none
+  | some m, none => some m
+  | none, some c => some c
+  | some m, some c => some (max m c)
+
+theorem listMaxOpt_append (l1 l2 : List Int) :
+    listMaxOpt (l1 ++ l2) = optionMax (listMaxOpt l1) (listMaxOpt l2) := by
+  induction l2 using List.reverseRecOn generalizing l1 with
+  | nil =>
+    simp [listMaxOpt_nil, optionMax]
+    cases listMaxOpt l1 <;> rfl
+  | append_singleton l2 x ih =>
+    rw [← List.append_assoc, listMaxOpt_append_singleton, ih, listMaxOpt_append_singleton]
+    cases listMaxOpt l1 <;> cases listMaxOpt l2 <;> simp [optionMax, max_assoc]
+
+/-- Adding an element to listMinOpt -/
+theorem listMinOpt_append_singleton (l : List Int) (x : Int) :
+    listMinOpt (l ++ [x]) = match listMinOpt l with
+      | none => some x
+      | some m => some (min m x) := by
+  simp only [listMinOpt, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- prefixSumAt step lemma -/
+theorem prefixSumAt_succ (arr : List Int) (idx : Nat) (hidx : idx < arr.length) :
+    prefixSumAt arr (idx + 1) = prefixSumAt arr idx + arr[idx] := by
+  simp only [prefixSumAt]
+  rw [List.take_add_one]
+  -- arr[idx]? = some arr[idx] when idx < arr.length
+  have hgetElem? : arr[idx]? = some arr[idx] := List.getElem?_eq_getElem hidx
+  rw [hgetElem?]
+  simp only [Option.toList, List.sum_append, List.sum_singleton]
+
+/-- prefixSumAt step lemma using getD -/
+theorem prefixSumAt_succ' (arr : List Int) (idx : Nat) (hidx : idx < arr.length) :
+    prefixSumAt arr (idx + 1) = prefixSumAt arr idx + arr.getD idx 0 := by
+  rw [prefixSumAt_succ arr idx hidx]
+  simp only [List.getD, List.getElem?_eq_getElem hidx, Option.getD_some]
+
 /-- Helper: updating Option Int with min -/
 def updateMinOpt (old : Option Int) (x : Int) : Option Int :=
   match old with
@@ -779,6 +827,30 @@ structure MaxSubarraySumState (arr : List Int) (k : Nat) where
 def minPrefixByMod (arr : List Int) (k : Nat) (n : Nat) (m : Nat) : Option Int :=
   listMinOpt ((List.range (n + 1)).filter (· % k = m) |>.map (prefixSumAt arr))
 
+/-- minPrefixByMod step for different mod class (unchanged) -/
+theorem minPrefixByMod_step_ne' (arr : List Int) (k : Nat) (_hk : k > 0) (idx : Nat) (m : Nat)
+    (_hm : m < k) (hne : m ≠ (idx + 1) % k) :
+    minPrefixByMod arr k (idx + 1) m = minPrefixByMod arr k idx m := by
+  simp only [minPrefixByMod]
+  congr 1
+  rw [List.range_succ]
+  simp only [List.filter_append, List.map_append, List.filter_singleton]
+  have hne' : ¬((idx + 1) % k = m) := fun h => hne h.symm
+  simp only [hne', decide_false, cond_false, List.map_nil, List.append_nil]
+
+/-- minPrefixByMod step for same mod class (adds new element with min) -/
+theorem minPrefixByMod_step_eq' (arr : List Int) (k : Nat) (_hk : k > 0) (idx : Nat) (m : Nat)
+    (_hm : m < k) (heq : m = (idx + 1) % k) :
+    minPrefixByMod arr k (idx + 1) m = match minPrefixByMod arr k idx m with
+      | none => some (prefixSumAt arr (idx + 1))
+      | some oldMin => some (min oldMin (prefixSumAt arr (idx + 1))) := by
+  simp only [minPrefixByMod]
+  rw [List.range_succ]
+  simp only [List.filter_append, List.map_append, List.filter_singleton]
+  have heq' : (idx + 1) % k = m := heq.symm
+  simp only [heq', decide_true, cond_true, List.map_singleton]
+  rw [listMinOpt_append_singleton]
+
 /-- Maximum subarray sum with length divisible by k, considering subarrays ending at positions ≤ n -/
 def maxSubarraySumSpec (arr : List Int) (k : Nat) (n : Nat) : Option Int :=
   -- For each ending position j in [1, n], compute the best sum if we have a matching start
@@ -788,6 +860,21 @@ def maxSubarraySumSpec (arr : List Int) (k : Nat) (n : Nat) : Option Int :=
     | none => none
     | some minP => some (prefixSumAt arr (j + 1) - minP)
   listMaxOpt candidates
+
+/-- The candidate at position idx for maxSubarraySumSpec -/
+def maxSubarraySumCandidate (arr : List Int) (k : Nat) (idx : Nat) : Option Int :=
+  match minPrefixByMod arr k idx ((idx + 1) % k) with
+  | none => none
+  | some minP => some (prefixSumAt arr (idx + 1) - minP)
+
+/-- Step lemma for maxSubarraySumSpec: adding one more position -/
+theorem maxSubarraySumSpec_step (arr : List Int) (k : Nat) (idx : Nat) :
+    maxSubarraySumSpec arr k (idx + 1) =
+      optionMax (maxSubarraySumSpec arr k idx) (maxSubarraySumCandidate arr k idx) := by
+  simp only [maxSubarraySumSpec, maxSubarraySumCandidate]
+  rw [List.range_succ, List.filterMap_append, listMaxOpt_append]
+  simp only [List.filterMap_cons, List.filterMap_nil]
+  cases minPrefixByMod arr k idx ((idx + 1) % k) <;> rfl
 
 /-- Invariant for MaxSubarraySumState after processing idx prefix sums (indices 0..idx).
 
@@ -865,17 +952,118 @@ theorem maxSubarraySumInv_init (arr : List Int) (k : Nat) (hk : k > 0) :
   · -- prefix_correct
     simp [maxSubarraySumInit, prefixSumAt]
   · -- min_correct
-    sorry
+    intro m hm
+    simp only [maxSubarraySumInit, minPrefixByMod]
+    simp
+    by_cases hm0 : m = 0
+    · subst hm0
+      simp [listMinOpt, prefixSumAt, hk]
+    · simp [listMinOpt, hm, hm0]
+      have h0mod : (0 : Nat) % k = 0 := Nat.zero_mod k
+      grind
   · -- maxSum_correct
     simp [maxSubarraySumInit, maxSubarraySumSpec, listMaxOpt]
+
+/-- Helper: Array.getD after Array.set at the same index -/
+theorem Array.getD_set_eq' (arr : Array α) (i : Nat) (v : α) (hi : i < arr.size) (d : α) :
+    (arr.set i v hi).getD i d = v := by
+  simp [Array.getD, Array.size_set, hi]
+
+/-- Helper: Array.getD after Array.set at a different index -/
+theorem Array.getD_set_ne' (arr : Array α) (i j : Nat) (v : α) (hi : i < arr.size) (d : α)
+    (hne : j ≠ i) (hj : j < arr.size) :
+    (arr.set i v hi).getD j d = arr.getD j d := by
+  simp only [Array.getD, Array.size_set, hj, dite_true]
+  exact Array.getElem_set_ne hi hj hne.symm
 
 /-- Step lemma: invariant preserved when processing next element -/
 theorem maxSubarraySumInv_step (arr : List Int) (k : Nat) (hk : k > 0)
     (state : MaxSubarraySumState arr k) (idx : Nat)
     (hinv : MaxSubarraySumInv arr k hk state idx) (hidx : idx < arr.length) :
     MaxSubarraySumInv arr k hk
-      (maxSubarraySumStep arr k hk state hinv.minByMod_size (hinv.idx_eq ▸ hidx)) (idx + 1) := by
-  sorry
+      (maxSubarraySumStep arr k hk state hinv.minByMod_size (by rw [hinv.idx_eq]; exact hidx)) (idx + 1) := by
+  -- Useful abbreviations
+  let modClass := (idx + 1) % k
+  have hmod : modClass < k := Nat.mod_lt (idx + 1) hk
+  have hmod_size : modClass < state.minByMod.size := by rw [hinv.minByMod_size]; exact hmod
+  have hidx' : state.idx < arr.length := by rw [hinv.idx_eq]; exact hidx
+  -- Construct the invariant
+  constructor
+  · -- idx_eq: newIdx = idx + 1
+    simp only [maxSubarraySumStep]
+    rw [hinv.idx_eq]
+  · -- idx_bound: idx + 1 ≤ arr.length
+    omega
+  · -- minByMod_size: size preserved by Array.set
+    simp only [maxSubarraySumStep]
+    rw [Array.size_set]
+    exact hinv.minByMod_size
+  · -- prefix_correct: newPrefixSum = prefixSumAt arr (idx + 1)
+    simp only [maxSubarraySumStep]
+    rw [hinv.prefix_correct, hinv.idx_eq]
+    exact (prefixSumAt_succ' arr idx hidx).symm
+  · -- min_correct: updated minByMod matches minPrefixByMod spec at idx + 1
+    intro m hm
+    simp only [maxSubarraySumStep]
+    -- We have state.minByMod.set modClass (some newMin)
+    -- where modClass = (state.idx + 1) % k = (idx + 1) % k
+    have hmod_eq : (state.idx + 1) % k = modClass := by rw [hinv.idx_eq]
+    by_cases hmeq : m = modClass
+    · -- Case: m = modClass (the updated index)
+      subst hmeq
+      simp only [hmod_eq]
+      rw [Array.getD_set_eq']
+      -- Now need to show: some newMin = minPrefixByMod arr k (idx + 1) modClass
+      rw [minPrefixByMod_step_eq' arr k hk idx modClass hmod rfl]
+      -- Show the min computation matches
+      have hprev := hinv.min_correct modClass hmod
+      -- oldMin = state.minByMod[modClass] via getElem
+      have holdMin : state.minByMod[modClass]'hmod_size = state.minByMod.getD modClass none := by
+        simp [Array.getD, hmod_size]
+      rw [holdMin, hprev]
+      -- newPrefixSum = prefixSumAt arr (idx + 1)
+      have hnewPfx : state.prefixSum + arr.getD state.idx 0 = prefixSumAt arr (idx + 1) := by
+        rw [hinv.prefix_correct, hinv.idx_eq, prefixSumAt_succ' arr idx hidx]
+      rw [hnewPfx]
+      -- The match cases align
+      cases hcase : minPrefixByMod arr k idx modClass
+      · simp
+      · simp
+    · -- Case: m ≠ modClass (unchanged index)
+      have hm_size : m < state.minByMod.size := by rw [hinv.minByMod_size]; exact hm
+      simp only [hmod_eq]
+      rw [Array.getD_set_ne' _ _ _ _ hmod_size _ hmeq hm_size]
+      rw [minPrefixByMod_step_ne' arr k hk idx m hm hmeq]
+      exact hinv.min_correct m hm
+  · -- maxSum_correct: updated maxSum matches maxSubarraySumSpec at idx + 1
+    simp only [maxSubarraySumStep]
+    rw [maxSubarraySumSpec_step arr k idx]
+    rw [hinv.maxSum_correct]
+    have hmod_eq : (state.idx + 1) % k = (idx + 1) % k := by rw [hinv.idx_eq]
+    have hmod_size : (state.idx + 1) % k < state.minByMod.size := by
+      rw [hinv.minByMod_size]; exact Nat.mod_lt (state.idx + 1) hk
+    have hmc : (idx + 1) % k < k := Nat.mod_lt (idx + 1) hk
+    have hmin_inv : state.minByMod.getD ((idx + 1) % k) none = minPrefixByMod arr k idx ((idx + 1) % k) :=
+      hinv.min_correct ((idx + 1) % k) hmc
+    have hnewPfx : state.prefixSum + arr.getD state.idx 0 = prefixSumAt arr (idx + 1) := by
+      rw [hinv.prefix_correct, hinv.idx_eq, prefixSumAt_succ' arr idx hidx]
+    have hgetD_eq : state.minByMod[(state.idx + 1) % k]'hmod_size =
+        state.minByMod.getD ((state.idx + 1) % k) none := by simp [Array.getD, hmod_size]
+    have hmin_eq : state.minByMod[(state.idx + 1) % k]'hmod_size =
+        minPrefixByMod arr k idx ((idx + 1) % k) := by rw [hgetD_eq, hmod_eq, hmin_inv]
+    simp only [hmod_eq, hnewPfx, maxSubarraySumCandidate, optionMax]
+    -- Case on minPrefixByMod, and use hmin_eq to relate
+    cases hcase : minPrefixByMod arr k idx ((idx + 1) % k) with
+    | none =>
+      have hstate_none : state.minByMod[(state.idx + 1) % k]'hmod_size = none := by
+        rw [hmin_eq]; exact hcase
+      simp only [hmod_eq] at hstate_none
+      simp only [hstate_none]
+    | some val =>
+      have hstate_some : state.minByMod[(state.idx + 1) % k]'hmod_size = some val := by
+        rw [hmin_eq]; exact hcase
+      simp only [hmod_eq] at hstate_some
+      simp only [hstate_some]
 
 /-- Compute max subarray sum by folding over the array -/
 def maxSubarraySumCompute (arr : List Int) (k : Nat) (hk : k > 0) :
@@ -899,10 +1087,36 @@ def maxSubarraySumCompute (arr : List Int) (k : Nat) (hk : k > 0) :
   decreasing_by simp [maxSubarraySumStep]; omega
   loop (maxSubarraySumInit arr k hk) (maxSubarraySumInv_init arr k hk)
 
+/-- Helper: loop returns state with invariant at arr.length -/
+theorem maxSubarraySumCompute_loop_spec (arr : List Int) (k : Nat) (hk : k > 0)
+    (state : MaxSubarraySumState arr k) (hinv : MaxSubarraySumInv arr k hk state state.idx) :
+    MaxSubarraySumInv arr k hk (maxSubarraySumCompute.loop arr k hk state hinv) arr.length := by
+  unfold maxSubarraySumCompute.loop
+  split
+  · -- state.idx < arr.length: recursive case
+    rename_i h
+    let state' := maxSubarraySumStep arr k hk state hinv.minByMod_size h
+    have hinv' : MaxSubarraySumInv arr k hk state' state'.idx := by
+      have heq : state.idx = state.idx := rfl
+      have := maxSubarraySumInv_step arr k hk state state.idx (heq ▸ hinv) h
+      have hidx_eq : state'.idx = state.idx + 1 := by simp [maxSubarraySumStep, state']
+      rw [hidx_eq]
+      exact this
+    exact maxSubarraySumCompute_loop_spec arr k hk state' hinv'
+  · -- state.idx >= arr.length: base case
+    rename_i h
+    have hge : state.idx ≥ arr.length := Nat.ge_of_not_lt h
+    have heq : state.idx = arr.length := Nat.le_antisymm hinv.idx_bound hge
+    rw [← heq, ← hinv.idx_eq]
+    exact hinv
+termination_by arr.length - state.idx
+decreasing_by simp [maxSubarraySumStep]; omega
+
 /-- Final specification theorem -/
 theorem maxSubarraySumCompute_spec (arr : List Int) (k : Nat) (hk : k > 0) :
     MaxSubarraySumInv arr k hk (maxSubarraySumCompute arr k hk) arr.length := by
-  sorry
+  unfold maxSubarraySumCompute
+  exact maxSubarraySumCompute_loop_spec arr k hk _ (maxSubarraySumInv_init arr k hk)
 
 /-- Extract the result with correctness proof -/
 def maxSubarraySum (arr : List Int) (k : Nat) (hk : k > 0) :
