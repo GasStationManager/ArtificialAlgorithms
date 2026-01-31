@@ -1,2 +1,4 @@
 /.lake
 .mcp.json
+.claude/
+HANDOFF*.md
