@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "foldl_induction",
+  "active_tree_id": "stateful_folds",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -2971,6 +2971,27 @@
         "enable_memory": true,
         "created_at": "now",
         "meta": "See ./.search_memory/foldl_induction/META.md"
+      }
+    },
+    "stateful_folds": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "v4.26.0",
+      "search_id": "stateful_folds",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": true,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See ./.search_memory/stateful_folds/META.md"
       }
     }
   }
