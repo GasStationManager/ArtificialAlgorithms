@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "proof_eba8d6e1",
+  "active_tree_id": "proof_415e196c",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -2669,6 +2669,27 @@
         "enable_memory": true,
         "created_at": "now",
         "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_eba8d6e1/META.md\nPantograph proof search for: shrinkUntilValid_minimal: SlidingWindow.subarraySum a l (\u2191s.shrinkUntilValid).right > k"
+      }
+    },
+    "proof_415e196c": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "v4.26.0",
+      "search_id": "proof_415e196c",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_415e196c/META.md"
       }
     }
   }
