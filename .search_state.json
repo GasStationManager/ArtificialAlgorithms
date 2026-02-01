@@ -3962,6 +3962,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_392e67b9_bp_8"
+        },
+        {
+          "summary": "After 'induction d using Nat.strong_induction_on generalizing state assignments h_sorted'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_392e67b9_bp_9"
         }
       ],
       "current_path": [
@@ -3992,6 +4006,10 @@
         {
           "branch_index": 8,
           "action": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted"
+        },
+        {
+          "branch_index": 9,
+          "action": null
         }
       ],
       "history": [
@@ -4034,6 +4052,11 @@
           7,
           "generalize h_term : input.length - state.processed = d",
           8
+        ],
+        [
+          8,
+          "induction d using Nat.strong_induction_on generalizing state assignments h_sorted",
+          9
         ]
       ],
       "parent_map": {
@@ -4044,7 +4067,8 @@
         "5": 3,
         "6": 5,
         "7": 6,
-        "8": 7
+        "8": 7,
+        "9": 8
       },
       "edge_actions": {
         "0,1": "intro input i hi",
@@ -4054,7 +4078,8 @@
         "3,5": "induction i using Nat.strong_induction_on generalizing input",
         "5,6": "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
         "6,7": "intro state assignments h_sorted h_size h_le",
-        "7,8": "generalize h_term : input.length - state.processed = d"
+        "7,8": "generalize h_term : input.length - state.processed = d",
+        "8,9": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
