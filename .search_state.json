@@ -4764,10 +4764,13 @@
         },
         {
           "summary": "Establish processed < length",
-          "possible_actions": [
-            "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4841,7 +4844,7 @@
         },
         {
           "branch_index": 18,
-          "action": null
+          "action": "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
         }
       ],
       "history": [
@@ -4997,7 +5000,8 @@
         "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!": "search_proof_1b1b7b2d_14_9120ec5e",
         "have h_pos_eq : pos = p := by simp only [pos, pileAssignment_at_state input i hi]; exact hp.symm": "search_proof_1b1b7b2d_15_e73da37c",
         "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_15_6b471f8d",
-        "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt": "search_proof_1b1b7b2d_16_7f22abfd"
+        "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt": "search_proof_1b1b7b2d_16_7f22abfd",
+        "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_18_fbaa7611"
       },
       "tree_type": "and_or",
       "metadata": {
