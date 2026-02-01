@@ -1,0 +1,178 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (p k l : Nat), k \u2264 l \u2192 p < (stateAtStep input k).piles.size \u2192 (stateAtStep input l).piles[p]! \u2264 (stateAtStep input k).piles[p]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input p k l hkl hp_at_k",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "subst hd",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "clear hkl",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "induction d generalizing k with | zero => simp | succ d ih => ?_",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := sorry\n  have h_step : (stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]! := sorry\n  have h_ih := ih (k + 1) hp_at_k1\n  exact le_trans h_ih h_step",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "by_cases hk : k < input.length",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input p k l hkl hp_at_k",
+    "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9",
+    "subst hd",
+    "clear hkl",
+    "induction d generalizing k with | zero => simp | succ d ih => ?_",
+    "by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := sorry\n  have h_step : (stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]! := sorry\n  have h_ih := ih (k + 1) hp_at_k1\n  exact le_trans h_ih h_step",
+    "by_cases hk : k < input.length"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.2886",
+      "target": "p < (stateAtStep input (k + 1)).piles.size",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "d",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 (k : \u2115),\n  p < (stateAtStep input k).piles.size \u2192 (stateAtStep input (k + d)).piles[p]! \u2264 (stateAtStep input k).piles[p]!"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_at_k",
+          "type": "p < (stateAtStep input k).piles.size"
+        },
+        {
+          "name": "hk",
+          "type": "k < input.length"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.2893",
+      "target": "p < (stateAtStep input (k + 1)).piles.size",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "d",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 (k : \u2115),\n  p < (stateAtStep input k).piles.size \u2192 (stateAtStep input (k + d)).piles[p]! \u2264 (stateAtStep input k).piles[p]!"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_at_k",
+          "type": "p < (stateAtStep input k).piles.size"
+        },
+        {
+          "name": "hk",
+          "type": "\u00ack < input.length"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.2859",
+      "target": "(stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "d",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 (k : \u2115),\n  p < (stateAtStep input k).piles.size \u2192 (stateAtStep input (k + d)).piles[p]! \u2264 (stateAtStep input k).piles[p]!"
+        },
+        {
+          "name": "k",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_at_k",
+          "type": "p < (stateAtStep input k).piles.size"
+        },
+        {
+          "name": "hp_at_k1",
+          "type": "p < (stateAtStep input (k + 1)).piles.size"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_de4cf274",
+  "branch_id": "11"
+}
