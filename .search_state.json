@@ -4514,7 +4514,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4536,7 +4541,7 @@
         },
         {
           "branch_index": 3,
-          "action": null
+          "action": "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi"
         }
       ],
       "history": [
@@ -4571,7 +4576,8 @@
       "git_action_branches": {
         "intro input i hi p hp hp_lt": "search_proof_1b1b7b2d_0_8f860886",
         "unfold stateAtStep": "search_proof_1b1b7b2d_1_71e19a15",
-        "have h_state_i : (stateAfter input (initLISState input) i).processed = i := by rw [stateAfter_processed]; simp [initLISState]; omega": "search_proof_1b1b7b2d_2_0e53b524"
+        "have h_state_i : (stateAfter input (initLISState input) i).processed = i := by rw [stateAfter_processed]; simp [initLISState]; omega": "search_proof_1b1b7b2d_2_0e53b524",
+        "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi": "search_proof_1b1b7b2d_3_28706580"
       },
       "tree_type": "and_or",
       "metadata": {
