@@ -4703,10 +4703,14 @@
         {
           "summary": "Show pos = p and pos < piles.size",
           "possible_actions": [
-            "have h_pos_eq : pos = p := by rw [pileAssignment_at_state input i hi]; exact hp.symm",
-            "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!"
+            "have h_pos_eq : pos = p := by rw [pileAssignment_at_state input i hi]; exact hp.symm"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4764,7 +4768,7 @@
         },
         {
           "branch_index": 14,
-          "action": null
+          "action": "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!"
         }
       ],
       "history": [
@@ -4888,7 +4892,8 @@
         "have h_step : stateAtStep input (i + 1) = processElement input (stateAtStep input i) h_proc_lt := by unfold stateAtStep; rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]": "search_proof_1b1b7b2d_10_580774cd",
         "simp only [stateAtStep, pileAssignment_at_state hi]": "search_proof_1b1b7b2d_12_304854c6",
         "rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_12_b40e2a0d",
-        "let pos := binarySearchGE (stateAtStep input i).piles input[i]!": "search_proof_1b1b7b2d_13_806f9e04"
+        "let pos := binarySearchGE (stateAtStep input i).piles input[i]!": "search_proof_1b1b7b2d_13_806f9e04",
+        "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!": "search_proof_1b1b7b2d_14_9120ec5e"
       },
       "tree_type": "and_or",
       "metadata": {
