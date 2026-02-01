@@ -6543,17 +6543,46 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_fc51a8d4_bp_0"
+        },
+        {
+          "summary": "After draft: 5 subgoals from sorry placeholders",
+          "possible_actions": [
+            "Subgoal 1: p < (stateAtStep input (x + 1)).piles.size...",
+            "Subgoal 2: p < (stateAtStep input y).piles.size...",
+            "Subgoal 3: input[y]! \u2264 (stateAtStep input y).piles[p]!...",
+            "Subgoal 4: (stateAtStep input y).piles[p]! \u2264 (stateAtStep inp...",
+            "Subgoal 5: (stateAtStep input (x + 1)).piles[p]! = input[x]!..."
+          ],
+          "taken_actions": {},
+          "node_type": "AND",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_fc51a8d4_bp_1"
         }
       ],
       "current_path": [
         {
           "branch_index": 0,
           "action": "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b..."
+        },
+        {
+          "branch_index": 1,
+          "action": null
         }
       ],
-      "history": [],
-      "parent_map": {},
-      "edge_actions": {},
+      "history": [
+        [
+          0,
+          "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b...",
+          1
+        ]
+      ],
+      "parent_map": {
+        "1": 0
+      },
+      "edge_actions": {
+        "0,1": "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b..."
+      },
       "root_branch": "search_proof_48aa7ef7_bp_13",
       "search_id": "proof_fc51a8d4",
       "git_action_branches": {
