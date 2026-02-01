@@ -6139,7 +6139,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -6161,7 +6166,7 @@
         },
         {
           "branch_index": 3,
-          "action": null
+          "action": "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]"
         }
       ],
       "history": [
@@ -6196,7 +6201,8 @@
       "git_action_branches": {
         "intro input x y hx hy hxy h_same": "search_proof_48aa7ef7_0_91edbb0d",
         "let p := (pileAssignment input)[x]!": "search_proof_48aa7ef7_1_84893f81",
-        "have hp_x : p = (pileAssignment input)[x]! := rfl": "search_proof_48aa7ef7_2_c701f4f7"
+        "have hp_x : p = (pileAssignment input)[x]! := rfl": "search_proof_48aa7ef7_2_c701f4f7",
+        "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]": "search_proof_48aa7ef7_3_54eb4d35"
       },
       "tree_type": "and_or",
       "metadata": {
