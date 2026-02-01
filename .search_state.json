@@ -4207,6 +4207,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_ad0ab438_bp_1"
+        },
+        {
+          "summary": "After 'have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_ad0ab438_bp_2"
         }
       ],
       "current_path": [
@@ -4217,6 +4231,10 @@
         {
           "branch_index": 1,
           "action": "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega"
+        },
+        {
+          "branch_index": 2,
+          "action": null
         }
       ],
       "history": [
@@ -4224,13 +4242,20 @@
           0,
           "intro input i hi",
           1
+        ],
+        [
+          1,
+          "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega",
+          2
         ]
       ],
       "parent_map": {
-        "1": 0
+        "1": 0,
+        "2": 1
       },
       "edge_actions": {
-        "0,1": "intro input i hi"
+        "0,1": "intro input i hi",
+        "1,2": "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega"
       },
       "root_branch": "search_proof_392e67b9_bp_10",
       "search_id": "proof_ad0ab438",
