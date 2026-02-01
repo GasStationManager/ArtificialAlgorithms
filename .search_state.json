@@ -4699,6 +4699,18 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_13"
+        },
+        {
+          "summary": "Show pos = p and pos < piles.size",
+          "possible_actions": [
+            "have h_pos_eq : pos = p := by rw [pileAssignment_at_state input i hi]; exact hp.symm",
+            "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_14"
         }
       ],
       "current_path": [
@@ -4749,6 +4761,10 @@
         {
           "branch_index": 13,
           "action": "let pos := binarySearchGE (stateAtStep input i).piles input[i]!"
+        },
+        {
+          "branch_index": 14,
+          "action": null
         }
       ],
       "history": [
@@ -4816,6 +4832,11 @@
           12,
           "rw [hp, pileAssignment_at_state input i hi]",
           13
+        ],
+        [
+          13,
+          "let pos := binarySearchGE (stateAtStep input i).piles input[i]!",
+          14
         ]
       ],
       "parent_map": {
@@ -4831,7 +4852,8 @@
         "10": 9,
         "11": 9,
         "12": 11,
-        "13": 12
+        "13": 12,
+        "14": 13
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -4846,7 +4868,8 @@
         "9,10": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
         "9,11": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
         "11,12": "intro input i hi p hp hp_lt",
-        "12,13": "rw [hp, pileAssignment_at_state input i hi]"
+        "12,13": "rw [hp, pileAssignment_at_state input i hi]",
+        "13,14": "let pos := binarySearchGE (stateAtStep input i).piles input[i]!"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
