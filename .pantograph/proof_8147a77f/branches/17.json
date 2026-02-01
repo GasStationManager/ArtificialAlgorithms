@@ -1,0 +1,215 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h : state.processed < input.length) (p : Nat) (hp : p < state.piles.size), (processElement input state h).piles[p]! \u2264 state.piles[p]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input state h_sorted h p hp",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "unfold processElement",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "simp only",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "split_ifs with h_pos",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "grind",
+      "goal_id": "_uniq.1830",
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "grind",
+      "goal_id": "_uniq.1986",
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.1507",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "grind",
+      "goal_id": "_uniq.4622",
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.4615",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "subst hp_eq",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.6091",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "simp only [LISState.piles]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.6124",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "rw [Array.getElem!_set_eq]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.7357",
+      "focused_goal_index": 0
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "grind",
+      "goal_id": "_uniq.7482",
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "subst hp_eq",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "simp only [LISState.piles]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input state h_sorted h p hp",
+    "unfold processElement",
+    "simp only",
+    "split_ifs with h_pos",
+    "grind",
+    "grind",
+    "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
+    "grind",
+    "subst hp_eq",
+    "simp only [LISState.piles]",
+    "rw [Array.getElem!_set_eq]",
+    "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos",
+    "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
+    "grind",
+    "subst hp_eq",
+    "simp only [LISState.piles]"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.8986",
+      "target": "(state.piles.set (binarySearchGE state.piles input[state.processed]) input[state.processed]\n      \u22ef)[binarySearchGE state.piles input[state.processed]]! \u2264\n  state.piles[binarySearchGE state.piles input[state.processed]]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "state",
+          "type": "LISState input"
+        },
+        {
+          "name": "h_sorted",
+          "type": "PilesSorted state.piles"
+        },
+        {
+          "name": "h",
+          "type": "state.processed < input.length"
+        },
+        {
+          "name": "h_pos",
+          "type": "binarySearchGE state.piles input[state.processed] < state.piles.size"
+        },
+        {
+          "name": "h\u271d",
+          "type": "\u00acbinarySearchGE state.piles input[state.processed] > 0"
+        },
+        {
+          "name": "hp",
+          "type": "binarySearchGE state.piles input[state.processed] < state.piles.size"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": 0,
+  "search_tree_id": "proof_8147a77f",
+  "branch_id": "17"
+}
