@@ -5171,10 +5171,13 @@
         },
         {
           "summary": "Perform induction on d",
-          "possible_actions": [
-            "induction d generalizing k with | zero => simp | succ d ih => ?_"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "induction d generalizing k with | zero => simp | succ d ih => ?_": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5200,7 +5203,7 @@
         },
         {
           "branch_index": 4,
-          "action": null
+          "action": "induction d generalizing k with | zero => simp | succ d ih => ?_"
         }
       ],
       "history": [
@@ -5243,7 +5246,8 @@
         "intro input p k l hkl hp_at_k": "search_proof_de4cf274_0_f85767d3",
         "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9": "search_proof_de4cf274_1_0e4278df",
         "subst hd": "search_proof_de4cf274_2_45f57d43",
-        "clear hkl": "search_proof_de4cf274_3_b1419a46"
+        "clear hkl": "search_proof_de4cf274_3_b1419a46",
+        "induction d generalizing k with | zero => simp | succ d ih => ?_": "search_proof_de4cf274_4_e9054451"
       },
       "tree_type": "and_or",
       "metadata": {
