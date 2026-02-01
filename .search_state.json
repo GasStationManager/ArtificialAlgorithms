@@ -4607,6 +4607,19 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_7"
+        },
+        {
+          "summary": "Need to show (stateAtStep input (i + 1)).piles[p]! = input[i]!",
+          "possible_actions": [
+            "have h_proc : (stateAtStep input i).processed = i := stateAtStep_processed input i \u25b8 by simp; omega",
+            "simp only [stateAtStep]",
+            "unfold stateAtStep"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_8"
         }
       ],
       "current_path": [
@@ -4637,6 +4650,10 @@
         {
           "branch_index": 6,
           "action": "intro input i hi p hp hp_lt"
+        },
+        {
+          "branch_index": 8,
+          "action": null
         }
       ],
       "history": [
@@ -4674,6 +4691,11 @@
           6,
           "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]",
           7
+        ],
+        [
+          6,
+          "intro input i hi p hp hp_lt",
+          8
         ]
       ],
       "parent_map": {
@@ -4683,7 +4705,8 @@
         "4": 3,
         "5": 4,
         "6": 5,
-        "7": 6
+        "7": 6,
+        "8": 6
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -4692,7 +4715,8 @@
         "3,4": "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi",
         "4,5": "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]",
         "5,6": "have h_init_lt : (initLISState input).processed < input.length := by simp [initLISState]; omega",
-        "6,7": "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]"
+        "6,7": "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]",
+        "6,8": "intro input i hi p hp hp_lt"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
