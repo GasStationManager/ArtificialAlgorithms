@@ -5582,7 +5582,12 @@
             "Subgoal 1: { processed := state.processed + 1,\n        piles ...",
             "Subgoal 2: { processed := state.processed + 1,\n        piles ..."
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "Focus on subgoal 0: { processed := state.processed + 1,\n        piles ...": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "AND",
           "node_status": null,
           "git_branch": null,
@@ -5608,7 +5613,7 @@
         },
         {
           "branch_index": 4,
-          "action": null
+          "action": "Focus on subgoal 0: { processed := state.processed + 1,\n        piles ..."
         }
       ],
       "history": [
