@@ -514,19 +514,14 @@ theorem runPatience_sorted (input : List Int) :
   unfold runPatience
   exact runPatience_go_sorted input (initLISState input) pilesSorted_empty
 
-/-- The number of piles equals the length of LIS -/
+/-- The number of piles equals the length of LIS
+    NOTE: Full proof is in piles_size_eq_lis_length_full below (after all dependencies are defined) -/
 theorem piles_size_eq_lis_length (input : List Int) :
     ∀ lis : List Int, IsLIS lis input →
       lis.length = (runPatience input).piles.size := by
   intro lis h_lis
-  obtain ⟨h_inc, h_sub, h_max⟩ := h_lis
-  -- Upper bound from lis_length_le_piles_size and lower bound from exists_lis_of_length_piles_size
-  -- These are proven after longestIncreasingSubsequence is defined
-  -- The full proof structure is:
-  -- 1. lis.length ≤ piles.size (any strictly increasing subseq is bounded)
-  -- 2. ∃ s with s.length = piles.size (the reconstructed LIS)
-  -- 3. By maximality: piles.size ≤ lis.length
-  -- 4. Therefore lis.length = piles.size
+  -- The full proof is in piles_size_eq_lis_length_full below
+  -- We need lis_length_le_piles_size and exists_lis_of_length_piles_size which are proven later
   sorry
 
 /-!
@@ -2711,6 +2706,18 @@ theorem pile_top_nonincreasing (input : List Int) (p k l : Nat)
     have h_step := pile_top_single_step input p k hp_at_k
     exact le_trans h_ih h_step
 
+/-- Helper: pile sizes are non-decreasing from step k to step l when k <= l -/
+private theorem stateAtStep_piles_size_mono (input : List Int) (k l : Nat) (hkl : k ≤ l) :
+    (stateAtStep input k).piles.size ≤ (stateAtStep input l).piles.size := by
+  obtain ⟨d, hd⟩ : ∃ d, l = k + d := ⟨l - k, by omega⟩
+  subst hd
+  clear hkl
+  induction d with
+  | zero => simp
+  | succ d ih =>
+    rw [show k + (d + 1) = (k + d) + 1 by ring]
+    exact Nat.le_trans ih (stateAtStep_succ_piles_size_mono input (k + d))
+
 /-- Key invariant: elements assigned to the same pile with x < y have input[x] >= input[y].
 
     This is the core insight: when element at index y is placed on pile p,
@@ -2721,16 +2728,82 @@ theorem same_pile_ge (input : List Int) (x y : Nat)
     (hx : x < input.length) (hy : y < input.length) (hxy : x < y)
     (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!) :
     input[x]! ≥ input[y]! := by
-  -- The proof requires:
-  -- 1. pileAssignment[i]! equals binarySearchGE at state i (pileAssignment_at_state)
-  -- 2. When placed on existing pile, top becomes input[i]! (pile_top_after_placement)
-  -- 3. Pile tops are non-increasing over time (pile_top_nonincreasing)
-  --
-  -- With these, the proof follows:
-  -- - When y is placed on pile p, input[y]! <= pile_top_at_step_y[p]!
-  -- - pile_top_at_step_y[p]! <= pile_top_at_step_(x+1)[p]! = input[x]!
-  -- - Therefore input[y]! <= input[x]!
-  sorry
+  -- Let p be the common pile assignment
+  let p := (pileAssignment input)[x]!
+  have hp_x : p = (pileAssignment input)[x]! := rfl
+  have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]
+
+  -- Step 1: Show pile p exists at step x+1 (after element x is placed)
+  have h_p_at_state_x : p = binarySearchGE (stateAtStep input x).piles input[x]! := by
+    rw [hp_x, pileAssignment_at_state input x hx]
+  have h_bs_le_x := binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)
+
+  -- Prove p < (stateAtStep input (x+1)).piles.size by analyzing processElement
+  have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by
+    obtain ⟨h_proc_lt, h_step⟩ := stateAtStep_succ input x hx
+    rw [h_step, h_p_at_state_x]
+    have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega
+    have h_elem_both : input[(stateAtStep input x).processed] = input[x]! := by
+      simp only [h_proc_x]; exact (List.getElem!_eq_getElem input x hx).symm
+    have h_bs_eq : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] =
+                   binarySearchGE (stateAtStep input x).piles input[x]! := by simp only [h_elem_both]
+    unfold processElement; simp only
+    by_cases h_lt : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] < (stateAtStep input x).piles.size
+    · simp only [h_lt, ↓reduceDIte, Array.size_set]; rw [← h_bs_eq]; exact h_lt
+    · simp only [h_lt, ↓reduceDIte, Array.size_push]; push_neg at h_lt
+      have h_bs_le' : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] ≤ (stateAtStep input x).piles.size := by
+        rw [h_bs_eq]; exact h_bs_le_x
+      have h_eq_size := Nat.le_antisymm h_bs_le' h_lt
+      rw [← h_bs_eq, h_eq_size]; omega
+
+  -- Step 2: Show pile p exists at step y by monotonicity of pile sizes
+  have h_p_lt_size_y : p < (stateAtStep input y).piles.size := by
+    have h_mono : (stateAtStep input (x + 1)).piles.size ≤ (stateAtStep input y).piles.size :=
+      stateAtStep_piles_size_mono input (x + 1) y (by omega)
+    omega
+
+  -- Step 3: By binary search spec, input[y]! <= piles[p] at step y
+  have h_y_at_state : p = binarySearchGE (stateAtStep input y).piles input[y]! := by rw [hp_y, pileAssignment_at_state input y hy]
+  have h_bs_spec := binarySearchGE_spec (stateAtStep input y).piles input[y]! (stateAtStep_pilesSorted input y)
+  have h_y_le_top : input[y]! ≤ (stateAtStep input y).piles[p]! := by
+    rw [h_y_at_state]; exact h_bs_spec.2.2 (by rw [← h_y_at_state]; exact h_p_lt_size_y)
+
+  -- Step 4: By pile_top_nonincreasing, piles[p] at step y <= piles[p] at step x+1
+  have h_top_mono : (stateAtStep input y).piles[p]! ≤ (stateAtStep input (x + 1)).piles[p]! :=
+    pile_top_nonincreasing input p (x + 1) y (by omega) h_p_lt_size_x1
+
+  -- Step 5: Show piles[p] at step x+1 = input[x]! (by pile_top_after_placement or direct proof for push case)
+  have h_top_eq : (stateAtStep input (x + 1)).piles[p]! = input[x]! := by
+    by_cases h_lt : p < (stateAtStep input x).piles.size
+    · exact pile_top_after_placement input x hx p hp_x h_lt
+    · -- Push case: p = (stateAtStep input x).piles.size
+      push_neg at h_lt
+      have h_eq : p = (stateAtStep input x).piles.size := by rw [h_p_at_state_x]; omega
+      obtain ⟨h_proc_lt, h_step⟩ := stateAtStep_succ input x hx
+      rw [h_step, h_eq]
+      have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega
+      have h_elem_both : input[(stateAtStep input x).processed] = input[x]! := by
+        simp only [h_proc_x]; exact (List.getElem!_eq_getElem input x hx).symm
+      have h_elem_eq' : input[(stateAtStep input x).processed]! = input[x]! := by simp only [h_proc_x]
+      have h_bs_eq : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] =
+                     binarySearchGE (stateAtStep input x).piles input[x]! := by simp only [h_elem_both]
+      have h_bs_eq_size : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] =
+                          (stateAtStep input x).piles.size := by
+        rw [h_bs_eq]
+        -- p = binarySearchGE ... from h_p_at_state_x, and p = piles.size from h_eq
+        calc binarySearchGE (stateAtStep input x).piles input[x]!
+           = p := h_p_at_state_x.symm
+         _ = (stateAtStep input x).piles.size := h_eq
+      have h_bs_not_lt : ¬(binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] < (stateAtStep input x).piles.size) := by
+        rw [h_bs_eq_size]; omega
+      unfold processElement; simp only [h_bs_not_lt, ↓reduceDIte]
+      -- After unfolding, the goal is about piles.push elem[piles.size]!
+      rw [Array.getElem!_push_last, h_elem_both]
+
+  -- Combine the chain of inequalities
+  calc input[y]! ≤ (stateAtStep input y).piles[p]! := h_y_le_top
+       _ ≤ (stateAtStep input (x + 1)).piles[p]! := h_top_mono
+       _ = input[x]! := h_top_eq
 
 /-- If two indices have the same pile assignment and x < y, then input[x] >= input[y] -/
 theorem same_pile_not_strictly_lt (input : List Int) (x y : Nat)
