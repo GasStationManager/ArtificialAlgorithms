@@ -6158,7 +6158,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -6184,7 +6189,7 @@
         },
         {
           "branch_index": 4,
-          "action": null
+          "action": "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy"
         }
       ],
       "history": [
@@ -6227,7 +6232,8 @@
         "intro input x y hx hy hxy h_same": "search_proof_48aa7ef7_0_91edbb0d",
         "let p := (pileAssignment input)[x]!": "search_proof_48aa7ef7_1_84893f81",
         "have hp_x : p = (pileAssignment input)[x]! := rfl": "search_proof_48aa7ef7_2_c701f4f7",
-        "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]": "search_proof_48aa7ef7_3_54eb4d35"
+        "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]": "search_proof_48aa7ef7_3_54eb4d35",
+        "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy": "search_proof_48aa7ef7_4_f5913b7c"
       },
       "tree_type": "and_or",
       "metadata": {
