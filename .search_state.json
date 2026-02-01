@@ -4789,6 +4789,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_19"
+        },
+        {
+          "summary": "Use induction on stateAfter",
+          "possible_actions": [
+            "induction i with | zero => simp [stateAfter, initLISState, processElement] | succ n ih => sorry"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_20"
         }
       ],
       "current_path": [
@@ -4863,6 +4874,10 @@
         {
           "branch_index": 19,
           "action": "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]"
+        },
+        {
+          "branch_index": 20,
+          "action": null
         }
       ],
       "history": [
@@ -4960,6 +4975,11 @@
           18,
           "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
           19
+        ],
+        [
+          19,
+          "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]",
+          20
         ]
       ],
       "parent_map": {
@@ -4981,7 +5001,8 @@
         "16": 15,
         "17": 16,
         "18": 17,
-        "19": 18
+        "19": 18,
+        "20": 19
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -5002,7 +5023,8 @@
         "15,16": "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]",
         "16,17": "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt",
         "17,18": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
-        "18,19": "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
+        "18,19": "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
+        "19,20": "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
