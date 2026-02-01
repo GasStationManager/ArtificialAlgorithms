@@ -1,0 +1,56 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (i : Nat), i < input.length \u2192 (pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input i hi",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input i hi",
+    "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.123",
+      "target": "(pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "i",
+          "type": "\u2115"
+        },
+        {
+          "name": "hi",
+          "type": "i < input.length"
+        },
+        {
+          "name": "h_state_proc",
+          "type": "(stateAtStep input i).processed = i"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_ad0ab438",
+  "branch_id": "2"
+}
