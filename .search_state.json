@@ -5697,10 +5697,14 @@
         {
           "summary": "Apply getElem!_set_eq then use processElement_placed_le_top",
           "possible_actions": [
-            "rw [Array.getElem!_set_eq]",
             "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "rw [Array.getElem!_set_eq]": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5754,7 +5758,7 @@
         },
         {
           "branch_index": 11,
-          "action": null
+          "action": "rw [Array.getElem!_set_eq]"
         }
       ],
       "history": [
@@ -5849,7 +5853,8 @@
         "split_ifs with h_pos": "search_proof_8147a77f_3_ea551f4f",
         "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]": "search_proof_8147a77f_5_da6b5f18",
         "subst hp_eq": "search_proof_8147a77f_7_f4c633ee",
-        "simp only [LISState.piles]": "search_proof_8147a77f_9_e40cf041"
+        "simp only [LISState.piles]": "search_proof_8147a77f_9_e40cf041",
+        "rw [Array.getElem!_set_eq]": "search_proof_8147a77f_11_5060a844"
       },
       "tree_type": "and_or",
       "metadata": {
