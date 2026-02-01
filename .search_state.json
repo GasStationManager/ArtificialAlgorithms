@@ -4675,6 +4675,10 @@
             "simp only [stateAtStep, pileAssignment_at_state hi]": {
               "result": false,
               "note": null
+            },
+            "rw [hp, pileAssignment_at_state input i hi]": {
+              "result": null,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -4726,7 +4730,7 @@
         },
         {
           "branch_index": 12,
-          "action": null
+          "action": "rw [hp, pileAssignment_at_state input i hi]"
         }
       ],
       "history": [
@@ -4834,7 +4838,8 @@
         "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": "search_proof_1b1b7b2d_8_6e6f3a8e",
         "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_9_fadecb0a",
         "have h_step : stateAtStep input (i + 1) = processElement input (stateAtStep input i) h_proc_lt := by unfold stateAtStep; rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]": "search_proof_1b1b7b2d_10_580774cd",
-        "simp only [stateAtStep, pileAssignment_at_state hi]": "search_proof_1b1b7b2d_12_304854c6"
+        "simp only [stateAtStep, pileAssignment_at_state hi]": "search_proof_1b1b7b2d_12_304854c6",
+        "rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_12_b40e2a0d"
       },
       "tree_type": "and_or",
       "metadata": {
