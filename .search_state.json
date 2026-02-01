@@ -4750,10 +4750,13 @@
         },
         {
           "summary": "Establish processed = i",
-          "possible_actions": [
-            "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4823,7 +4826,7 @@
         },
         {
           "branch_index": 17,
-          "action": null
+          "action": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega"
         }
       ],
       "history": [
@@ -4963,7 +4966,7 @@
         "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]": "search_proof_1b1b7b2d_4_9110f5ad",
         "have h_init_lt : (initLISState input).processed < input.length := by simp [initLISState]; omega": "search_proof_1b1b7b2d_5_11698fac",
         "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]": "search_proof_1b1b7b2d_6_fc7d04c5",
-        "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": "search_proof_1b1b7b2d_8_6e6f3a8e",
+        "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": "search_proof_1b1b7b2d_17_6e6f3a8e",
         "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_9_fadecb0a",
         "have h_step : stateAtStep input (i + 1) = processElement input (stateAtStep input i) h_proc_lt := by unfold stateAtStep; rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]": "search_proof_1b1b7b2d_10_580774cd",
         "simp only [stateAtStep, pileAssignment_at_state hi]": "search_proof_1b1b7b2d_12_304854c6",
