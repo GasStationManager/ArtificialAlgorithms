@@ -1,0 +1,116 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (i : Nat), i < input.length \u2192 (pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input i hi",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "intro state assignments h_sorted h_size h_le",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "generalize h_term : input.length - state.processed = d",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "rename_i ih",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input i hi",
+    "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
+    "intro state assignments h_sorted h_size h_le",
+    "generalize h_term : input.length - state.processed = d",
+    "induction d using Nat.strong_induction_on generalizing state assignments h_sorted",
+    "rename_i ih"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.408",
+      "target": "(pileAssignmentGo input state assignments h_sorted)[i]! =\n  binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "i",
+          "type": "\u2115"
+        },
+        {
+          "name": "hi",
+          "type": "i < input.length"
+        },
+        {
+          "name": "n\u271d",
+          "type": "\u2115"
+        },
+        {
+          "name": "ih",
+          "type": "\u2200 m < n\u271d,\n  \u2200 (state : LISState input) (assignments : Array \u2115) (h_sorted : PilesSorted state.piles),\n    assignments.size = state.processed \u2192\n      state.processed \u2264 i \u2192\n        input.length - state.processed = m \u2192\n          (pileAssignmentGo input state assignments h_sorted)[i]! =\n            binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]!"
+        },
+        {
+          "name": "state",
+          "type": "LISState input"
+        },
+        {
+          "name": "assignments",
+          "type": "Array \u2115"
+        },
+        {
+          "name": "h_sorted",
+          "type": "PilesSorted state.piles"
+        },
+        {
+          "name": "h_size",
+          "type": "assignments.size = state.processed"
+        },
+        {
+          "name": "h_le",
+          "type": "state.processed \u2264 i"
+        },
+        {
+          "name": "h_term",
+          "type": "input.length - state.processed = n\u271d"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_392e67b9",
+  "branch_id": "10"
+}
