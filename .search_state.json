@@ -4541,6 +4541,10 @@
             "have h_unfold : stateAfter input (initLISState input) (i + 1) = stateAfter input (processElement input (initLISState input) (by simp [initLISState])) i := stateAfter_succ input (initLISState input) i (by simp [initLISState])": {
               "result": false,
               "note": null
+            },
+            "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]": {
+              "result": null,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -4568,7 +4572,7 @@
         },
         {
           "branch_index": 4,
-          "action": null
+          "action": "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]"
         }
       ],
       "history": [
@@ -4613,7 +4617,8 @@
         "have h_state_i : (stateAfter input (initLISState input) i).processed = i := by rw [stateAfter_processed]; simp [initLISState]; omega": "search_proof_1b1b7b2d_2_0e53b524",
         "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi": "search_proof_1b1b7b2d_3_28706580",
         "rw [stateAfter_succ input (stateAfter input (initLISState input) i) 0 h_proc_lt]": "search_proof_1b1b7b2d_4_d4007039",
-        "have h_unfold : stateAfter input (initLISState input) (i + 1) = stateAfter input (processElement input (initLISState input) (by simp [initLISState])) i := stateAfter_succ input (initLISState input) i (by simp [initLISState])": "search_proof_1b1b7b2d_4_14c217b0"
+        "have h_unfold : stateAfter input (initLISState input) (i + 1) = stateAfter input (processElement input (initLISState input) (by simp [initLISState])) i := stateAfter_succ input (initLISState input) i (by simp [initLISState])": "search_proof_1b1b7b2d_4_14c217b0",
+        "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]": "search_proof_1b1b7b2d_4_9110f5ad"
       },
       "tree_type": "and_or",
       "metadata": {
