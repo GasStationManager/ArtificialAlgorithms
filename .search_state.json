@@ -5156,10 +5156,14 @@
           "summary": "Induct on d",
           "possible_actions": [
             "induction d with | zero => rfl | succ d ih => ?_",
-            "induction d generalizing k with",
-            "clear hkl"
+            "induction d generalizing k with"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "clear hkl": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5181,7 +5185,7 @@
         },
         {
           "branch_index": 3,
-          "action": null
+          "action": "clear hkl"
         }
       ],
       "history": [
@@ -5216,7 +5220,8 @@
       "git_action_branches": {
         "intro input p k l hkl hp_at_k": "search_proof_de4cf274_0_f85767d3",
         "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9": "search_proof_de4cf274_1_0e4278df",
-        "subst hd": "search_proof_de4cf274_2_45f57d43"
+        "subst hd": "search_proof_de4cf274_2_45f57d43",
+        "clear hkl": "search_proof_de4cf274_3_b1419a46"
       },
       "tree_type": "and_or",
       "metadata": {
