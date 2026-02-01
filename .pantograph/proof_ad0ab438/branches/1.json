@@ -1,0 +1,44 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (i : Nat), i < input.length \u2192 (pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input i hi",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input i hi"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.115",
+      "target": "(pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "i",
+          "type": "\u2115"
+        },
+        {
+          "name": "hi",
+          "type": "i < input.length"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_ad0ab438",
+  "branch_id": "1"
+}
