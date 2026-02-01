@@ -5664,10 +5664,14 @@
         {
           "summary": "Simplify piles field and use getElem!_set_eq",
           "possible_actions": [
-            "simp only [LISState.piles]",
             "rw [Array.getElem!_set_eq state.piles (binarySearchGE state.piles input[state.processed]) input[state.processed] h_pos]"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "simp only [LISState.piles]": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5713,7 +5717,7 @@
         },
         {
           "branch_index": 9,
-          "action": null
+          "action": "simp only [LISState.piles]"
         }
       ],
       "history": [
@@ -5793,7 +5797,8 @@
         "simp only": "search_proof_8147a77f_2_e10d0797",
         "split_ifs with h_pos": "search_proof_8147a77f_3_ea551f4f",
         "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]": "search_proof_8147a77f_5_da6b5f18",
-        "subst hp_eq": "search_proof_8147a77f_7_f4c633ee"
+        "subst hp_eq": "search_proof_8147a77f_7_f4c633ee",
+        "simp only [LISState.piles]": "search_proof_8147a77f_9_e40cf041"
       },
       "tree_type": "and_or",
       "metadata": {
