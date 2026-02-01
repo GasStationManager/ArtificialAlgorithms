@@ -4718,12 +4718,15 @@
         },
         {
           "summary": "Establish pos = p",
-          "possible_actions": [
-            "have h_pos_eq : pos = p := by simp only [pos, pileAssignment_at_state input i hi]; exact hp.symm"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_pos_eq : pos = p := by simp only [pos, pileAssignment_at_state input i hi]; exact hp.symm": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
-          "node_status": null,
+          "node_status": false,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_15"
         }
@@ -4915,7 +4918,8 @@
         "simp only [stateAtStep, pileAssignment_at_state hi]": "search_proof_1b1b7b2d_12_304854c6",
         "rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_12_b40e2a0d",
         "let pos := binarySearchGE (stateAtStep input i).piles input[i]!": "search_proof_1b1b7b2d_13_806f9e04",
-        "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!": "search_proof_1b1b7b2d_14_9120ec5e"
+        "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!": "search_proof_1b1b7b2d_14_9120ec5e",
+        "have h_pos_eq : pos = p := by simp only [pos, pileAssignment_at_state input i hi]; exact hp.symm": "search_proof_1b1b7b2d_15_e73da37c"
       },
       "tree_type": "and_or",
       "metadata": {
