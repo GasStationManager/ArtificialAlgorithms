@@ -2428,27 +2428,288 @@ theorem stateAtStep_pilesSorted (input : List Int) (k : Nat) :
   apply stateAfter_pilesSorted
   exact pilesSorted_empty
 
-/-- Pile tops are monotonically non-increasing: if pile p exists at step k and l > k,
-    then the pile top at step l is <= the pile top at step k -/
-theorem pile_top_nonincreasing (input : List Int) (p k l : Nat)
-    (hkl : k ≤ l)
-    (hp_at_k : p < (stateAtStep input k).piles.size) :
-    (stateAtStep input l).piles[p]! ≤ (stateAtStep input k).piles[p]! := by
-  -- This lemma requires proving that pile tops only decrease when elements are placed on them
-  -- For now, we use sorry
-  sorry
+-- Theorem pile_top_nonincreasing and its helpers are defined after stateAtStep_succ
+-- to allow using that key lemma. See after stateAtStep_succ for the actual proofs.
 
 /-- pileAssignment[i]! equals binarySearchGE at state i -/
 theorem pileAssignment_at_state (input : List Int) (i : Nat) (hi : i < input.length) :
     (pileAssignment input)[i]! = binarySearchGE (stateAtStep input i).piles input[i]! := by
-  sorry
+  unfold pileAssignment stateAtStep
+  have h_sync : ∀ state : LISState input, ∀ assignments : Array Nat, ∀ h_sorted : PilesSorted state.piles, ∀ k : Nat, assignments.size = state.processed → state.processed + k = i → (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state k).piles input[i]! := by
+    intro state assignments h_sorted k h_size h_sum
+    induction k using Nat.strong_induction_on generalizing state assignments h_sorted with
+    | _ k ih_k =>
+      by_cases h_eq : k = 0
+      · -- Base case: k = 0, so state.processed = i
+        subst h_eq
+        simp only [Nat.add_zero] at h_sum
+        subst h_sum
+        rw [stateAfter_zero]
+        have h_result := pileAssignmentGo_get_current input state assignments h_sorted h_size hi
+        rw [List.getElem!_eq_getElem input state.processed hi]
+        exact h_result
+      · -- Recursive case: k > 0
+        have h_pos : 0 < k := Nat.pos_of_ne_zero h_eq
+        have h_proc_lt : state.processed < input.length := by omega
+        have h_proc' : (processElement input state h_proc_lt).processed = state.processed + 1 := by
+          unfold processElement; simp only; split_ifs <;> simp
+        have h_new_size : (assignments.push (binarySearchGE state.piles input[state.processed])).size = (processElement input state h_proc_lt).processed := by
+          simp only [Array.size_push, h_size, h_proc']
+        have h_sorted' := pilesSorted_preserved input state h_sorted h_proc_lt
+        have h_sum' : (processElement input state h_proc_lt).processed + (k - 1) = i := by
+          rw [h_proc']; omega
+        have h_term : k - 1 < k := Nat.sub_lt h_pos Nat.one_pos
+        have h_ih := ih_k (k - 1) h_term (processElement input state h_proc_lt) _ h_sorted' h_new_size h_sum'
+        have h_stateAfter : stateAfter input state k = stateAfter input (processElement input state h_proc_lt) (k - 1) := by
+          conv_lhs => rw [show k = (k - 1) + 1 by omega]
+          rw [← stateAfter_succ input state (k - 1) h_proc_lt]
+        rw [h_stateAfter]
+        have h_step : (pileAssignmentGo input state assignments h_sorted)[i]! = (pileAssignmentGo input (processElement input state h_proc_lt) (assignments.push (binarySearchGE state.piles input[state.processed])) h_sorted')[i]! := by
+          conv_lhs => unfold pileAssignmentGo
+          simp only [h_proc_lt, dif_pos]
+        rw [h_step]
+        exact h_ih
+  have h_init_processed : (initLISState input).processed = 0 := by unfold initLISState; simp
+  have h_init_size : (#[] : Array Nat).size = (initLISState input).processed := by simp [h_init_processed]
+  have h_sum : (initLISState input).processed + i = i := by simp [h_init_processed]
+  exact h_sync (initLISState input) #[] pilesSorted_empty i h_init_size h_sum
+
+/-- Helper: stateAfter (k+1) equals processElement applied when processed < input.length -/
+theorem stateAfter_succ_processElement (input : List Int) (state : LISState input) (k : Nat)
+    (h : (stateAfter input state k).processed < input.length) :
+    stateAfter input state (k + 1) = processElement input (stateAfter input state k) h := by
+  induction k generalizing state with
+  | zero =>
+    simp only [stateAfter_zero] at h ⊢
+    rw [stateAfter_succ _ _ 0 h, stateAfter_zero]
+  | succ k ih =>
+    by_cases h_state : state.processed < input.length
+    · rw [stateAfter_succ _ _ (k + 1) h_state]
+      have h_eq : stateAfter input state (k + 1) = stateAfter input (processElement input state h_state) k := by
+        rw [stateAfter_succ _ _ k h_state]
+      have h' : (stateAfter input (processElement input state h_state) k).processed < input.length := by
+        rw [← h_eq]; exact h
+      have h_ih := ih (processElement input state h_state) h'
+      rw [h_ih]
+      congr 1
+      exact h_eq.symm
+    · rw [stateAfter_succ_done _ _ (k + 1) h_state]
+      simp only [stateAfter_succ_done _ _ k h_state] at h
+      exact absurd h h_state
+
+/-- Helper: stateAtStep (i+1) equals processElement applied to stateAtStep i -/
+theorem stateAtStep_succ (input : List Int) (i : Nat) (hi : i < input.length) :
+    ∃ h : (stateAtStep input i).processed < input.length,
+      stateAtStep input (i + 1) = processElement input (stateAtStep input i) h := by
+  have h_proc : (stateAtStep input i).processed = i := by
+    rw [stateAtStep_processed]; simp; omega
+  have h : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi
+  use h
+  unfold stateAtStep
+  exact stateAfter_succ_processElement input (initLISState input) i h
 
 /-- When element i is placed on existing pile p, the pile top becomes input[i]! -/
 theorem pile_top_after_placement (input : List Int) (i : Nat) (hi : i < input.length)
     (p : Nat) (hp : p = (pileAssignment input)[i]!)
     (hp_lt : p < (stateAtStep input i).piles.size) :
     (stateAtStep input (i + 1)).piles[p]! = input[i]! := by
-  sorry
+  -- Get the key equation: stateAtStep (i+1) = processElement (stateAtStep i)
+  obtain ⟨h_proc_lt, h_step⟩ := stateAtStep_succ input i hi
+  rw [h_step]
+  -- Use pileAssignment_at_state to show p = binarySearchGE
+  have h_p_eq : p = binarySearchGE (stateAtStep input i).piles input[i]! := by
+    rw [hp, pileAssignment_at_state input i hi]
+  -- Since hp_lt : p < piles.size, processElement uses the set branch
+  have h_proc_eq : (stateAtStep input i).processed = i := by
+    rw [stateAtStep_processed]; simp; omega
+  -- Convert input[i]! to input[i] for proof (they're equal when i < input.length)
+  have h_elem_eq : input[i]! = input[i] := List.getElem!_eq_getElem input i hi
+  unfold processElement
+  simp only [h_proc_eq]
+  -- Now we have binarySearchGE ... input[i] (without bang)
+  -- Need to show these are the same
+  have h_bs_eq : binarySearchGE (stateAtStep input i).piles input[i] =
+      binarySearchGE (stateAtStep input i).piles input[i]! := by
+    rw [h_elem_eq]
+  -- Rewrite hp_lt using h_p_eq to get the condition for the if
+  have h_pos_lt : binarySearchGE (stateAtStep input i).piles input[i] < (stateAtStep input i).piles.size := by
+    rw [h_bs_eq, ← h_p_eq]; exact hp_lt
+  -- Split on the position condition - we know p < piles.size
+  simp only [h_pos_lt, ↓reduceDIte]
+  -- Now we need to show piles.set(...).piles[p]! = input[i]!
+  -- First relate p to the set index
+  have h_p_eq' : p = binarySearchGE (stateAtStep input i).piles input[i] := by
+    rw [h_p_eq, ← h_elem_eq]
+  rw [h_p_eq', h_elem_eq]
+  -- Now the piles is state.piles.set pos elem, and we access piles[pos]
+  exact Array.getElem!_set_eq (stateAtStep input i).piles
+    (binarySearchGE (stateAtStep input i).piles input[i]) input[i] h_pos_lt
+
+-- Helper: stateAfter can be split into composition when the intermediate state is "done"
+-- Proof by strong induction on (k + m), using the fact that stateAfter recursively processes until done
+private theorem stateAfter_split_done (input : List Int) (state : LISState input) (k m : Nat)
+    (h_done : (stateAfter input state k).processed = input.length) :
+    stateAfter input state (k + m) = stateAfter input state k := by
+  -- Prove by induction on k + m, keeping k fixed
+  induction m with
+  | zero => simp [Nat.add_zero]
+  | succ m ih =>
+    -- Goal: stateAfter state (k + (m + 1)) = stateAfter state k
+    -- ih: stateAfter state (k + m) = stateAfter state k
+    rw [show k + (m + 1) = (k + m) + 1 by ring]
+    -- Now we need: stateAfter state ((k + m) + 1) = stateAfter state k
+    -- Using ih, we can rewrite: (stateAfter state (k + m)).processed = (stateAfter state k).processed = length
+    have h_done_km : (stateAfter input state (k + m)).processed = input.length := by
+      rw [ih, h_done]
+    -- stateAfter state (n + 1) unfolds to:
+    -- if n + 1 = 0 then state (false)
+    -- else if state.processed < length then stateAfter (processElement state) n
+    -- else state
+    by_cases h_state_lt : state.processed < input.length
+    · -- state.processed < length: stateAfter state (n+1) = stateAfter (processElement state) n
+      rw [stateAfter_succ _ _ _ h_state_lt]
+      -- Goal: stateAfter (processElement state) (k + m) = stateAfter state k
+      -- We have: stateAfter state (k + m) = stateAfter state k (by ih)
+      -- and stateAfter state (k + 1) = stateAfter (processElement state) k (by stateAfter_succ)
+      -- So stateAfter state (k + m) = stateAfter state k
+      -- and stateAfter state (k + m + 1) = stateAfter (processElement state) (k + m)
+      -- We need: stateAfter (processElement state) (k + m) = stateAfter state k
+      -- Using the relationship: stateAfter state (k + 1 + m) = stateAfter (processElement state) (k + m)
+      -- And stateAfter state (k + 1 + m) = stateAfter state k (by a similar argument)
+      -- The issue is that the induction hypothesis is about state, not (processElement state)
+      -- We need a stronger induction that works for any starting state.
+      -- Let me use the processed count to track this.
+      have h_proc_state : (stateAfter input state k).processed = input.length := h_done
+      have h_proc_pe : (stateAfter input (processElement input state h_state_lt) (k - 1)).processed = input.length := by
+        have h_eq : stateAfter input state k = stateAfter input (processElement input state h_state_lt) (k - 1) := by
+          cases k with
+          | zero =>
+            simp only [stateAfter_zero] at h_done
+            -- state.processed = input.length contradicts h_state_lt
+            omega
+          | succ k' =>
+            rw [stateAfter_succ _ _ _ h_state_lt]
+            simp only [Nat.succ_sub_one]
+        rw [← h_eq]; exact h_done
+      -- This is getting too complicated. Let me try a different approach using stateAfter_processed.
+      -- stateAfter state n has processed = min(state.processed + n, length)
+      -- If state.processed + k >= length, then for any m >= 0,
+      -- stateAfter state (k + m) has the same processed count as stateAfter state k
+      -- And the piles should also be the same since no new processing happens.
+      -- But proving the piles are the same requires understanding the structure of stateAfter.
+      -- Actually, I realize the issue: stateAfter doesn't just track processed, it also updates piles.
+      -- But once processed = length, no more elements are added.
+      -- The key is that stateAfter (processElement state) n = stateAfter state (n + 1) when state.processed < length
+      -- So for k >= 1 with state.processed < length:
+      -- stateAfter state k = stateAfter (processElement state) (k - 1)
+      -- Now, (processElement state).processed = state.processed + 1
+      -- So eventually after enough recursions, we reach a state where processed >= length.
+      -- At that point, stateAfter_succ_done applies.
+      sorry
+    · -- state.processed >= length: stateAfter state (n+1) = state
+      rw [stateAfter_succ_done _ _ _ h_state_lt]
+      -- Goal: state = stateAfter state k
+      -- We also have stateAfter state k has processed = length (h_done)
+      -- But state.processed >= length, so stateAfter state k should just return state
+      -- Let's prove this by showing that stateAfter with a "done" state returns that state.
+      have h_eq : stateAfter input state k = state := by
+        induction k with
+        | zero => rw [stateAfter_zero]
+        | succ k' ih' =>
+          rw [stateAfter_succ_done _ _ _ h_state_lt]
+      rw [h_eq]
+
+-- Helper: when k >= input.length, stateAtStep k = stateAtStep input.length
+private theorem stateAtStep_ge_length (input : List Int) (k : Nat)
+    (hk : k ≥ input.length) :
+    stateAtStep input k = stateAtStep input input.length := by
+  unfold stateAtStep
+  obtain ⟨d, hd⟩ : ∃ d, k = input.length + d := ⟨k - input.length, by omega⟩
+  subst hd
+  -- Goal: stateAfter init (input.length + d) = stateAfter init input.length
+  have h_done : (stateAfter input (initLISState input) input.length).processed = input.length := by
+    rw [stateAfter_processed]; simp [initLISState]
+  exact stateAfter_split_done input (initLISState input) input.length d h_done
+
+-- Helper: stateAtStep (k+1).piles.size >= stateAtStep k.piles.size
+private theorem stateAtStep_succ_piles_size_mono (input : List Int) (k : Nat) :
+    (stateAtStep input k).piles.size ≤ (stateAtStep input (k + 1)).piles.size := by
+  by_cases hk : k < input.length
+  · -- k < input.length: use stateAtStep_succ
+    obtain ⟨h_proc_lt, h_step⟩ := stateAtStep_succ input k hk
+    rw [h_step]
+    exact processElement_piles_size_mono input (stateAtStep input k) h_proc_lt
+  · -- k >= input.length: no change
+    have h_eq : stateAtStep input (k + 1) = stateAtStep input k := by
+      rw [stateAtStep_ge_length input (k + 1) (by omega)]
+      rw [stateAtStep_ge_length input k (Nat.not_lt.mp hk)]
+    rw [h_eq]
+
+-- Helper: processElement either preserves pile[p] or sets it to a smaller/equal value
+private theorem processElement_piles_getElem_le (input : List Int) (state : LISState input)
+    (h_sorted : PilesSorted state.piles)
+    (h : state.processed < input.length) (p : Nat)
+    (hp : p < state.piles.size) :
+    (processElement input state h).piles[p]! ≤ state.piles[p]! := by
+  -- processElement either sets piles[pos] to input[state.processed] (where pos < piles.size)
+  -- or pushes a new pile (when pos = piles.size).
+  -- In the first case: input[state.processed] <= piles[pos] by binary search spec (processElement_placed_le_top)
+  -- In the second case: existing piles are unchanged (Array.getElem!_push_lt)
+  unfold processElement
+  simp only
+  -- The if-then-else for predecessors doesn't affect piles, so we only care about pos < piles.size
+  by_cases h_pos : binarySearchGE state.piles input[state.processed] < state.piles.size
+  · -- Set case: pos < piles.size
+    simp only [h_pos, ↓reduceDIte]
+    by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]
+    · -- p = pos: the new value is input[state.processed] <= old value at pos
+      subst hp_eq
+      rw [Array.getElem!_set_eq]
+      exact processElement_placed_le_top input state h_sorted h
+        (binarySearchGE state.piles input[state.processed]) rfl h_pos
+    · -- p ≠ pos: the value at p is unchanged
+      rw [Array.getElem!_set_ne _ _ _ _ h_pos hp_eq hp]
+  · -- Push case: pos >= piles.size, existing piles unchanged
+    simp only [h_pos, ↓reduceDIte]
+    rw [Array.getElem!_push_lt _ _ _ hp]
+
+-- Helper: pile top at existing pile is non-increasing after one step
+private theorem pile_top_single_step (input : List Int) (p k : Nat)
+    (hp_at_k : p < (stateAtStep input k).piles.size) :
+    (stateAtStep input (k + 1)).piles[p]! ≤ (stateAtStep input k).piles[p]! := by
+  by_cases hk : k < input.length
+  · -- k < input.length: processElement either sets pile[p] to input[k] or leaves it unchanged
+    obtain ⟨h_proc_lt, h_step⟩ := stateAtStep_succ input k hk
+    rw [h_step]
+    have h_sorted := stateAtStep_pilesSorted input k
+    exact processElement_piles_getElem_le input (stateAtStep input k) h_sorted h_proc_lt p hp_at_k
+  · -- k >= input.length: state doesn't change
+    have h_eq : stateAtStep input (k + 1) = stateAtStep input k := by
+      rw [stateAtStep_ge_length input (k + 1) (by omega)]
+      rw [stateAtStep_ge_length input k (Nat.not_lt.mp hk)]
+    rw [h_eq]
+
+/-- Pile tops are monotonically non-increasing: if pile p exists at step k and l >= k,
+    then the pile top at step l is <= the pile top at step k -/
+theorem pile_top_nonincreasing (input : List Int) (p k l : Nat)
+    (hkl : k ≤ l)
+    (hp_at_k : p < (stateAtStep input k).piles.size) :
+    (stateAtStep input l).piles[p]! ≤ (stateAtStep input k).piles[p]! := by
+  -- Use induction on the difference l - k
+  obtain ⟨d, hd⟩ : ∃ d, l = k + d := ⟨l - k, by omega⟩
+  subst hd
+  clear hkl
+  induction d generalizing k with
+  | zero => simp
+  | succ d ih =>
+    rw [show k + (d + 1) = k + 1 + d by ring]
+    -- First prove that p < (stateAtStep input (k + 1)).piles.size
+    have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size :=
+      Nat.lt_of_lt_of_le hp_at_k (stateAtStep_succ_piles_size_mono input k)
+    -- Chain the inequalities
+    have h_ih := ih (k + 1) hp_at_k1
+    have h_step := pile_top_single_step input p k hp_at_k
+    exact le_trans h_ih h_step
 
 /-- Key invariant: elements assigned to the same pile with x < y have input[x] >= input[y].
 
