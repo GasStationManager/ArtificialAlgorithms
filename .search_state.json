@@ -5683,7 +5683,12 @@
             "Subgoal 1: (state.piles.set (binarySearchGE state.piles input...",
             "Subgoal 2: { processed := state.processed + 1,\n        piles ..."
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "Focus on subgoal 0: (state.piles.set (binarySearchGE state.piles input...": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "AND",
           "node_status": null,
           "git_branch": null,
@@ -5733,7 +5738,7 @@
         },
         {
           "branch_index": 10,
-          "action": null
+          "action": "Focus on subgoal 0: (state.piles.set (binarySearchGE state.piles input..."
         }
       ],
       "history": [
