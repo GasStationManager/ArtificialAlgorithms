@@ -4197,7 +4197,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4211,7 +4216,7 @@
         },
         {
           "branch_index": 1,
-          "action": null
+          "action": "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega"
         }
       ],
       "history": [
@@ -4230,7 +4235,8 @@
       "root_branch": "search_proof_392e67b9_bp_10",
       "search_id": "proof_ad0ab438",
       "git_action_branches": {
-        "intro input i hi": "search_proof_ad0ab438_0_633425c4"
+        "intro input i hi": "search_proof_ad0ab438_0_633425c4",
+        "have h_state_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp [hi]; omega": "search_proof_ad0ab438_1_7757fcdc"
       },
       "tree_type": "and_or",
       "metadata": {
