@@ -5255,6 +5255,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_de4cf274_bp_8"
+        },
+        {
+          "summary": "Draft tactic with sorries for the successor case",
+          "possible_actions": [
+            "rw [show k + (d + 1) = k + 1 + d by ring]; have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := sorry; have h_step : (stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]! := sorry; have h_ih := ih (k + 1) hp_at_k1; exact le_trans h_ih h_step"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_9"
         }
       ],
       "current_path": [
@@ -5281,6 +5292,10 @@
         {
           "branch_index": 5,
           "action": "rw [show k + (d + 1) = (k + 1) + d by omega]"
+        },
+        {
+          "branch_index": 9,
+          "action": null
         }
       ],
       "history": [
@@ -5323,6 +5338,11 @@
           7,
           "rw [show k + (d + 1) = k + 1 + d by ring]",
           8
+        ],
+        [
+          5,
+          "rw [show k + (d + 1) = (k + 1) + d by omega]",
+          9
         ]
       ],
       "parent_map": {
@@ -5333,7 +5353,8 @@
         "5": 4,
         "6": 5,
         "7": 5,
-        "8": 7
+        "8": 7,
+        "9": 5
       },
       "edge_actions": {
         "0,1": "intro input p k l hkl hp_at_k",
@@ -5343,7 +5364,8 @@
         "4,5": "induction d generalizing k with | zero => simp | succ d ih => ?_",
         "5,6": "rw [show k + (d + 1) = (k + 1) + d by omega]",
         "5,7": "rw [show k + (d + 1) = (k + 1) + d by omega]",
-        "7,8": "rw [show k + (d + 1) = k + 1 + d by ring]"
+        "7,8": "rw [show k + (d + 1) = k + 1 + d by ring]",
+        "5,9": "rw [show k + (d + 1) = (k + 1) + d by omega]"
       },
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
