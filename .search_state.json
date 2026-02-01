@@ -5508,7 +5508,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "intro input state h_sorted h p hp": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5518,7 +5523,7 @@
       "current_path": [
         {
           "branch_index": 0,
-          "action": null
+          "action": "intro input state h_sorted h p hp"
         }
       ],
       "history": [],
@@ -5526,7 +5531,9 @@
       "edge_actions": {},
       "root_branch": "search_proof_de4cf274_bp_11",
       "search_id": "proof_8147a77f",
-      "git_action_branches": {},
+      "git_action_branches": {
+        "intro input state h_sorted h p hp": "search_proof_8147a77f_0_962eff87"
+      },
       "tree_type": "and_or",
       "metadata": {
         "show_path": false,
