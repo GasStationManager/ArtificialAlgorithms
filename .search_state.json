@@ -4736,10 +4736,13 @@
         },
         {
           "summary": "Establish pos < piles.size",
-          "possible_actions": [
-            "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4805,7 +4808,7 @@
         },
         {
           "branch_index": 16,
-          "action": null
+          "action": "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt"
         }
       ],
       "history": [
@@ -4946,7 +4949,8 @@
         "let pos := binarySearchGE (stateAtStep input i).piles input[i]!": "search_proof_1b1b7b2d_13_806f9e04",
         "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!": "search_proof_1b1b7b2d_14_9120ec5e",
         "have h_pos_eq : pos = p := by simp only [pos, pileAssignment_at_state input i hi]; exact hp.symm": "search_proof_1b1b7b2d_15_e73da37c",
-        "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_15_6b471f8d"
+        "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_15_6b471f8d",
+        "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt": "search_proof_1b1b7b2d_16_7f22abfd"
       },
       "tree_type": "and_or",
       "metadata": {
