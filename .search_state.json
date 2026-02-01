@@ -5168,6 +5168,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_de4cf274_bp_3"
+        },
+        {
+          "summary": "Perform induction on d",
+          "possible_actions": [
+            "induction d generalizing k with | zero => simp | succ d ih => ?_"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_4"
         }
       ],
       "current_path": [
@@ -5186,6 +5197,10 @@
         {
           "branch_index": 3,
           "action": "clear hkl"
+        },
+        {
+          "branch_index": 4,
+          "action": null
         }
       ],
       "history": [
@@ -5203,17 +5218,24 @@
           2,
           "subst hd",
           3
+        ],
+        [
+          3,
+          "clear hkl",
+          4
         ]
       ],
       "parent_map": {
         "1": 0,
         "2": 1,
-        "3": 2
+        "3": 2,
+        "4": 3
       },
       "edge_actions": {
         "0,1": "intro input p k l hkl hp_at_k",
         "1,2": "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9",
-        "2,3": "subst hd"
+        "2,3": "subst hd",
+        "3,4": "clear hkl"
       },
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
