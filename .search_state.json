@@ -4778,10 +4778,13 @@
         },
         {
           "summary": "Unfold stateAtStep and processElement",
-          "possible_actions": [
-            "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4859,7 +4862,7 @@
         },
         {
           "branch_index": 19,
-          "action": null
+          "action": "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]"
         }
       ],
       "history": [
@@ -5023,7 +5026,8 @@
         "have h_pos_eq : pos = p := by simp only [pos, pileAssignment_at_state input i hi]; exact hp.symm": "search_proof_1b1b7b2d_15_e73da37c",
         "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_15_6b471f8d",
         "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt": "search_proof_1b1b7b2d_16_7f22abfd",
-        "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_18_fbaa7611"
+        "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_18_fbaa7611",
+        "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]": "search_proof_1b1b7b2d_19_42b2fc0c"
       },
       "tree_type": "and_or",
       "metadata": {
