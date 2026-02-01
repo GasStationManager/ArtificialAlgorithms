@@ -6206,6 +6206,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_48aa7ef7_bp_6"
+        },
+        {
+          "summary": "After 'have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_48aa7ef7_bp_7"
         }
       ],
       "current_path": [
@@ -6236,6 +6250,10 @@
         {
           "branch_index": 6,
           "action": "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]"
+        },
+        {
+          "branch_index": 7,
+          "action": null
         }
       ],
       "history": [
@@ -6268,6 +6286,11 @@
           5,
           "have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! := pileAssignment_at_state input x hx",
           6
+        ],
+        [
+          6,
+          "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]",
+          7
         ]
       ],
       "parent_map": {
@@ -6276,7 +6299,8 @@
         "3": 2,
         "4": 3,
         "5": 4,
-        "6": 5
+        "6": 5,
+        "7": 6
       },
       "edge_actions": {
         "0,1": "intro input x y hx hy hxy h_same",
@@ -6284,7 +6308,8 @@
         "2,3": "have hp_x : p = (pileAssignment input)[x]! := rfl",
         "3,4": "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]",
         "4,5": "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy",
-        "5,6": "have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! := pileAssignment_at_state input x hx"
+        "5,6": "have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! := pileAssignment_at_state input x hx",
+        "6,7": "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]"
       },
       "root_branch": "",
       "search_id": "proof_48aa7ef7",
