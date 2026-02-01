@@ -5729,10 +5729,13 @@
         },
         {
           "summary": "Apply processElement_placed_le_top",
-          "possible_actions": [
-            "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5794,7 +5797,7 @@
         },
         {
           "branch_index": 13,
-          "action": null
+          "action": "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos"
         }
       ],
       "history": [
@@ -5904,7 +5907,8 @@
         "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]": "search_proof_8147a77f_5_da6b5f18",
         "subst hp_eq": "search_proof_8147a77f_7_f4c633ee",
         "simp only [LISState.piles]": "search_proof_8147a77f_9_e40cf041",
-        "rw [Array.getElem!_set_eq]": "search_proof_8147a77f_11_5060a844"
+        "rw [Array.getElem!_set_eq]": "search_proof_8147a77f_11_5060a844",
+        "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos": "search_proof_8147a77f_13_319f003a"
       },
       "tree_type": "and_or",
       "metadata": {
