@@ -6244,6 +6244,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_48aa7ef7_bp_8"
+        },
+        {
+          "summary": "After 'obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_48aa7ef7_bp_9"
         }
       ],
       "current_path": [
@@ -6282,6 +6296,10 @@
         {
           "branch_index": 8,
           "action": "obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx"
+        },
+        {
+          "branch_index": 9,
+          "action": null
         }
       ],
       "history": [
@@ -6324,6 +6342,11 @@
           7,
           "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)",
           8
+        ],
+        [
+          8,
+          "obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx",
+          9
         ]
       ],
       "parent_map": {
@@ -6334,7 +6357,8 @@
         "5": 4,
         "6": 5,
         "7": 6,
-        "8": 7
+        "8": 7,
+        "9": 8
       },
       "edge_actions": {
         "0,1": "intro input x y hx hy hxy h_same",
@@ -6344,7 +6368,8 @@
         "4,5": "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy",
         "5,6": "have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! := pileAssignment_at_state input x hx",
         "6,7": "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]",
-        "7,8": "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)"
+        "7,8": "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)",
+        "8,9": "obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx"
       },
       "root_branch": "",
       "search_id": "proof_48aa7ef7",
