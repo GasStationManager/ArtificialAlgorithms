@@ -6282,6 +6282,22 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_48aa7ef7_bp_10"
+        },
+        {
+          "summary": "Proving p < piles.size at step x+1",
+          "possible_actions": [
+            "have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size"
+          ],
+          "taken_actions": {
+            "have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  have h_bs_le := binarySearchGE_le_size (stateAtStep input x).piles input[(stateAtStep input x).processed]! (stateAtStep_pilesSorted input x)\n  have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega\n  rw [h_proc_x] at h_bs_le\n  unfold processElement; simp only\n  split_ifs with h_pos h_gt h_gt\n  all_goals (\n    try simp only [Array.size_set]\n    try simp only [Array.size_push]\n    have h_p_eq : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [h_p_eq_bs]\n    omega\n  )": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_48aa7ef7_bp_11"
         }
       ],
       "current_path": [
@@ -6376,6 +6392,11 @@
           9,
           "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
           10
+        ],
+        [
+          9,
+          "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
+          11
         ]
       ],
       "parent_map": {
@@ -6388,7 +6409,8 @@
         "7": 6,
         "8": 7,
         "9": 8,
-        "10": 9
+        "10": 9,
+        "11": 9
       },
       "edge_actions": {
         "0,1": "intro input x y hx hy hxy h_same",
@@ -6400,7 +6422,8 @@
         "6,7": "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]",
         "7,8": "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)",
         "8,9": "obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx",
-        "9,10": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega"
+        "9,10": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
+        "9,11": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega"
       },
       "root_branch": "",
       "search_id": "proof_48aa7ef7",
@@ -6415,7 +6438,8 @@
         "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)": "search_proof_48aa7ef7_7_82dd5a9a",
         "obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx": "search_proof_48aa7ef7_8_ae6326b1",
         "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega": "search_proof_48aa7ef7_9_c0c25636",
-        "have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  unfold processElement\n  simp only [h_proc_x]\n  split_ifs with h_pos h_gt h_gt\n  all_goals simp only [Array.size_set, Array.size_push]; omega": "search_proof_48aa7ef7_10_fb8b6b27"
+        "have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  unfold processElement\n  simp only [h_proc_x]\n  split_ifs with h_pos h_gt h_gt\n  all_goals simp only [Array.size_set, Array.size_push]; omega": "search_proof_48aa7ef7_10_fb8b6b27",
+        "have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  have h_bs_le := binarySearchGE_le_size (stateAtStep input x).piles input[(stateAtStep input x).processed]! (stateAtStep_pilesSorted input x)\n  have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega\n  rw [h_proc_x] at h_bs_le\n  unfold processElement; simp only\n  split_ifs with h_pos h_gt h_gt\n  all_goals (\n    try simp only [Array.size_set]\n    try simp only [Array.size_push]\n    have h_p_eq : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [h_p_eq_bs]\n    omega\n  )": "search_proof_48aa7ef7_11_9d7b6759"
       },
       "tree_type": "and_or",
       "metadata": {
