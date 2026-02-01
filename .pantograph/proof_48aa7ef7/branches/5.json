@@ -1,0 +1,108 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (x y : Nat) (hx : x < input.length) (hy : y < input.length) (hxy : x < y) (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!), input[x]! \u2265 input[y]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input x y hx hy hxy h_same",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "let p := (pileAssignment input)[x]!",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hp_x : p = (pileAssignment input)[x]! := rfl",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input x y hx hy hxy h_same",
+    "let p := (pileAssignment input)[x]!",
+    "have hp_x : p = (pileAssignment input)[x]! := rfl",
+    "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]",
+    "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.475",
+      "target": "input[x]! \u2265 input[y]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "x",
+          "type": "\u2115"
+        },
+        {
+          "name": "y",
+          "type": "\u2115"
+        },
+        {
+          "name": "hx",
+          "type": "x < input.length"
+        },
+        {
+          "name": "hy",
+          "type": "y < input.length"
+        },
+        {
+          "name": "hxy",
+          "type": "x < y"
+        },
+        {
+          "name": "h_same",
+          "type": "(pileAssignment input)[x]! = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_x",
+          "type": "p = (pileAssignment input)[x]!"
+        },
+        {
+          "name": "hp_y",
+          "type": "p = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "h_y_at_state",
+          "type": "(pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]!"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_48aa7ef7",
+  "branch_id": "5"
+}
