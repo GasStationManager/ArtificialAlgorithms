@@ -6355,7 +6355,7 @@
         },
         {
           "branch_index": 9,
-          "action": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega"
+          "action": null
         }
       ],
       "history": [
