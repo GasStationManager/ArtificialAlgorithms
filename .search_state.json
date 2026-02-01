@@ -4656,10 +4656,13 @@
         },
         {
           "summary": "Main proof",
-          "possible_actions": [
-            "intro input i hi p hp hp_lt"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "intro input i hi p hp hp_lt": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4705,7 +4708,7 @@
         },
         {
           "branch_index": 11,
-          "action": null
+          "action": "intro input i hi p hp hp_lt"
         }
       ],
       "history": [
@@ -4794,7 +4797,7 @@
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
       "git_action_branches": {
-        "intro input i hi p hp hp_lt": "search_proof_1b1b7b2d_6_8f860886",
+        "intro input i hi p hp hp_lt": "search_proof_1b1b7b2d_11_8f860886",
         "unfold stateAtStep": "search_proof_1b1b7b2d_1_71e19a15",
         "have h_state_i : (stateAfter input (initLISState input) i).processed = i := by rw [stateAfter_processed]; simp [initLISState]; omega": "search_proof_1b1b7b2d_2_0e53b524",
         "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi": "search_proof_1b1b7b2d_3_28706580",
