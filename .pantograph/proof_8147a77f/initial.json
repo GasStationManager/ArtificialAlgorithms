@@ -1,0 +1,21 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h : state.processed < input.length) (p : Nat) (hp : p < state.piles.size), (processElement input state h).piles[p]! \u2264 state.piles[p]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [],
+  "tactic_history": [],
+  "goals": [
+    {
+      "id": "_uniq.120",
+      "target": "\u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h : state.processed < input.length) (p : Nat) (hp : p < state.piles.size), (processElement input state h).piles[p]! \u2264 state.piles[p]!",
+      "variables": [],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_8147a77f",
+  "branch_id": null
+}
