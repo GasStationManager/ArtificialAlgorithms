@@ -4653,6 +4653,17 @@
           "node_status": false,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_10"
+        },
+        {
+          "summary": "Main proof",
+          "possible_actions": [
+            "intro input i hi p hp hp_lt"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_11"
         }
       ],
       "current_path": [
@@ -4691,6 +4702,10 @@
         {
           "branch_index": 9,
           "action": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
+        },
+        {
+          "branch_index": 11,
+          "action": null
         }
       ],
       "history": [
@@ -4743,6 +4758,11 @@
           9,
           "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
           10
+        ],
+        [
+          9,
+          "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
+          11
         ]
       ],
       "parent_map": {
@@ -4755,7 +4775,8 @@
         "7": 6,
         "8": 6,
         "9": 8,
-        "10": 9
+        "10": 9,
+        "11": 9
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -4767,7 +4788,8 @@
         "6,7": "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]",
         "6,8": "intro input i hi p hp hp_lt",
         "8,9": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
-        "9,10": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
+        "9,10": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
+        "9,11": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
