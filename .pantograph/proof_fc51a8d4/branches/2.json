@@ -1,0 +1,427 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (x y : Nat) (hx : x < input.length) (hy : y < input.length) (hxy : x < y) (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!), input[x]! \u2265 input[y]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "by\n  intro input x y hx hy hxy h_same\n  -- Let p be the common pile assignment\n  let p := (pileAssignment input)[x]!\n  have hp_x : p = (pileAssignment input)[x]! := rfl\n  have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]\n  -- By pileAssignment_at_state, y places on pile p via binary search\n  have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! :=\n    pileAssignment_at_state input y hy\n  have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! :=\n    pileAssignment_at_state input x hx\n  have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]\n  -- Binary search gives p <= piles.size\n  have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by\n    rw [h_p_eq_bs]\n    exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)\n  -- Get the step decomposition\n  obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx\n  -- Prove pile p exists at step x+1\n  have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n    sorry\n  -- Prove pile p exists at step y (by monotonicity since y > x+1)\n  have h_p_lt_size_y : p < (stateAtStep input y).piles.size := by\n    sorry\n  -- By binary search spec: input[y]! <= piles[p] at step y\n  have h_y_le_top : input[y]! \u2264 (stateAtStep input y).piles[p]! := by\n    sorry\n  -- By pile_top_nonincreasing: piles[p] at step y <= piles[p] at step x+1\n  have h_top_mono : (stateAtStep input y).piles[p]! \u2264 (stateAtStep input (x + 1)).piles[p]! := by\n    sorry\n  -- By pile_top_after_placement: piles[p] at step x+1 = input[x]!\n  have h_top_eq : (stateAtStep input (x + 1)).piles[p]! = input[x]! := by\n    sorry\n  -- Combine: input[y]! <= piles[p] at step y <= piles[p] at step x+1 = input[x]!\n  calc input[y]! \u2264 (stateAtStep input y).piles[p]! := h_y_le_top\n       _ \u2264 (stateAtStep input (x + 1)).piles[p]! := h_top_mono\n       _ = input[x]! := h_top_eq",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "focus_goal",
+      "tactic": null,
+      "goal_id": null,
+      "focused_goal_id": "_uniq.1497",
+      "focused_goal_index": 0
+    }
+  ],
+  "tactic_history": [
+    "by\n  intro input x y hx hy hxy h_same\n  -- Let p be the common pile assignment\n  let p := (pileAssignment input)[x]!\n  have hp_x : p = (pileAssignment input)[x]! := rfl\n  have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]\n  -- By pileAssignment_at_state, y places on pile p via binary search\n  have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! :=\n    pileAssignment_at_state input y hy\n  have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! :=\n    pileAssignment_at_state input x hx\n  have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]\n  -- Binary search gives p <= piles.size\n  have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by\n    rw [h_p_eq_bs]\n    exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)\n  -- Get the step decomposition\n  obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx\n  -- Prove pile p exists at step x+1\n  have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n    sorry\n  -- Prove pile p exists at step y (by monotonicity since y > x+1)\n  have h_p_lt_size_y : p < (stateAtStep input y).piles.size := by\n    sorry\n  -- By binary search spec: input[y]! <= piles[p] at step y\n  have h_y_le_top : input[y]! \u2264 (stateAtStep input y).piles[p]! := by\n    sorry\n  -- By pile_top_nonincreasing: piles[p] at step y <= piles[p] at step x+1\n  have h_top_mono : (stateAtStep input y).piles[p]! \u2264 (stateAtStep input (x + 1)).piles[p]! := by\n    sorry\n  -- By pile_top_after_placement: piles[p] at step x+1 = input[x]!\n  have h_top_eq : (stateAtStep input (x + 1)).piles[p]! = input[x]! := by\n    sorry\n  -- Combine: input[y]! <= piles[p] at step y <= piles[p] at step x+1 = input[x]!\n  calc input[y]! \u2264 (stateAtStep input y).piles[p]! := h_y_le_top\n       _ \u2264 (stateAtStep input (x + 1)).piles[p]! := h_top_mono\n       _ = input[x]! := h_top_eq"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.1497",
+      "target": "p < (stateAtStep input (x + 1)).piles.size",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "x",
+          "type": "\u2115"
+        },
+        {
+          "name": "y",
+          "type": "\u2115"
+        },
+        {
+          "name": "hx",
+          "type": "x < input.length"
+        },
+        {
+          "name": "hy",
+          "type": "y < input.length"
+        },
+        {
+          "name": "hxy",
+          "type": "x < y"
+        },
+        {
+          "name": "h_same",
+          "type": "(pileAssignment input)[x]! = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_x",
+          "type": "p = (pileAssignment input)[x]!"
+        },
+        {
+          "name": "hp_y",
+          "type": "p = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "h_y_at_state",
+          "type": "(pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]!"
+        },
+        {
+          "name": "h_x_at_state",
+          "type": "(pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_eq_bs",
+          "type": "p = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_le_size_x",
+          "type": "p \u2264 (stateAtStep input x).piles.size"
+        },
+        {
+          "name": "h_proc_x_lt",
+          "type": "(stateAtStep input x).processed < input.length"
+        },
+        {
+          "name": "h_step_x",
+          "type": "stateAtStep input (x + 1) = processElement input (stateAtStep input x) h_proc_x_lt"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.1499",
+      "target": "p < (stateAtStep input y).piles.size",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "x",
+          "type": "\u2115"
+        },
+        {
+          "name": "y",
+          "type": "\u2115"
+        },
+        {
+          "name": "hx",
+          "type": "x < input.length"
+        },
+        {
+          "name": "hy",
+          "type": "y < input.length"
+        },
+        {
+          "name": "hxy",
+          "type": "x < y"
+        },
+        {
+          "name": "h_same",
+          "type": "(pileAssignment input)[x]! = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_x",
+          "type": "p = (pileAssignment input)[x]!"
+        },
+        {
+          "name": "hp_y",
+          "type": "p = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "h_y_at_state",
+          "type": "(pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]!"
+        },
+        {
+          "name": "h_x_at_state",
+          "type": "(pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_eq_bs",
+          "type": "p = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_le_size_x",
+          "type": "p \u2264 (stateAtStep input x).piles.size"
+        },
+        {
+          "name": "h_proc_x_lt",
+          "type": "(stateAtStep input x).processed < input.length"
+        },
+        {
+          "name": "h_step_x",
+          "type": "stateAtStep input (x + 1) = processElement input (stateAtStep input x) h_proc_x_lt"
+        },
+        {
+          "name": "h_p_lt_size_x1",
+          "type": "p < (stateAtStep input (x + 1)).piles.size"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.1503",
+      "target": "input[y]! \u2264 (stateAtStep input y).piles[p]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "x",
+          "type": "\u2115"
+        },
+        {
+          "name": "y",
+          "type": "\u2115"
+        },
+        {
+          "name": "hx",
+          "type": "x < input.length"
+        },
+        {
+          "name": "hy",
+          "type": "y < input.length"
+        },
+        {
+          "name": "hxy",
+          "type": "x < y"
+        },
+        {
+          "name": "h_same",
+          "type": "(pileAssignment input)[x]! = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_x",
+          "type": "p = (pileAssignment input)[x]!"
+        },
+        {
+          "name": "hp_y",
+          "type": "p = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "h_y_at_state",
+          "type": "(pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]!"
+        },
+        {
+          "name": "h_x_at_state",
+          "type": "(pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_eq_bs",
+          "type": "p = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_le_size_x",
+          "type": "p \u2264 (stateAtStep input x).piles.size"
+        },
+        {
+          "name": "h_proc_x_lt",
+          "type": "(stateAtStep input x).processed < input.length"
+        },
+        {
+          "name": "h_step_x",
+          "type": "stateAtStep input (x + 1) = processElement input (stateAtStep input x) h_proc_x_lt"
+        },
+        {
+          "name": "h_p_lt_size_x1",
+          "type": "p < (stateAtStep input (x + 1)).piles.size"
+        },
+        {
+          "name": "h_p_lt_size_y",
+          "type": "p < (stateAtStep input y).piles.size"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.1505",
+      "target": "(stateAtStep input y).piles[p]! \u2264 (stateAtStep input (x + 1)).piles[p]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "x",
+          "type": "\u2115"
+        },
+        {
+          "name": "y",
+          "type": "\u2115"
+        },
+        {
+          "name": "hx",
+          "type": "x < input.length"
+        },
+        {
+          "name": "hy",
+          "type": "y < input.length"
+        },
+        {
+          "name": "hxy",
+          "type": "x < y"
+        },
+        {
+          "name": "h_same",
+          "type": "(pileAssignment input)[x]! = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_x",
+          "type": "p = (pileAssignment input)[x]!"
+        },
+        {
+          "name": "hp_y",
+          "type": "p = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "h_y_at_state",
+          "type": "(pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]!"
+        },
+        {
+          "name": "h_x_at_state",
+          "type": "(pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_eq_bs",
+          "type": "p = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_le_size_x",
+          "type": "p \u2264 (stateAtStep input x).piles.size"
+        },
+        {
+          "name": "h_proc_x_lt",
+          "type": "(stateAtStep input x).processed < input.length"
+        },
+        {
+          "name": "h_step_x",
+          "type": "stateAtStep input (x + 1) = processElement input (stateAtStep input x) h_proc_x_lt"
+        },
+        {
+          "name": "h_p_lt_size_x1",
+          "type": "p < (stateAtStep input (x + 1)).piles.size"
+        },
+        {
+          "name": "h_p_lt_size_y",
+          "type": "p < (stateAtStep input y).piles.size"
+        },
+        {
+          "name": "h_y_le_top",
+          "type": "input[y]! \u2264 (stateAtStep input y).piles[p]!"
+        }
+      ],
+      "sibling_dep": null
+    },
+    {
+      "id": "_uniq.1507",
+      "target": "(stateAtStep input (x + 1)).piles[p]! = input[x]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "x",
+          "type": "\u2115"
+        },
+        {
+          "name": "y",
+          "type": "\u2115"
+        },
+        {
+          "name": "hx",
+          "type": "x < input.length"
+        },
+        {
+          "name": "hy",
+          "type": "y < input.length"
+        },
+        {
+          "name": "hxy",
+          "type": "x < y"
+        },
+        {
+          "name": "h_same",
+          "type": "(pileAssignment input)[x]! = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp_x",
+          "type": "p = (pileAssignment input)[x]!"
+        },
+        {
+          "name": "hp_y",
+          "type": "p = (pileAssignment input)[y]!"
+        },
+        {
+          "name": "h_y_at_state",
+          "type": "(pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]!"
+        },
+        {
+          "name": "h_x_at_state",
+          "type": "(pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_eq_bs",
+          "type": "p = binarySearchGE (stateAtStep input x).piles input[x]!"
+        },
+        {
+          "name": "h_p_le_size_x",
+          "type": "p \u2264 (stateAtStep input x).piles.size"
+        },
+        {
+          "name": "h_proc_x_lt",
+          "type": "(stateAtStep input x).processed < input.length"
+        },
+        {
+          "name": "h_step_x",
+          "type": "stateAtStep input (x + 1) = processElement input (stateAtStep input x) h_proc_x_lt"
+        },
+        {
+          "name": "h_p_lt_size_x1",
+          "type": "p < (stateAtStep input (x + 1)).piles.size"
+        },
+        {
+          "name": "h_p_lt_size_y",
+          "type": "p < (stateAtStep input y).piles.size"
+        },
+        {
+          "name": "h_y_le_top",
+          "type": "input[y]! \u2264 (stateAtStep input y).piles[p]!"
+        },
+        {
+          "name": "h_top_mono",
+          "type": "(stateAtStep input y).piles[p]! \u2264 (stateAtStep input (x + 1)).piles[p]!"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": 0,
+  "search_tree_id": "proof_fc51a8d4",
+  "branch_id": "2"
+}
