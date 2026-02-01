@@ -1,5 +1,5 @@
 {
-  "active_tree_id": "proof_1b1b7b2d",
+  "active_tree_id": "proof_de4cf274",
   "trees": {
     "shrinkUntilValid_minimal": {
       "active": true,
@@ -5093,6 +5093,27 @@
         "enable_memory": true,
         "created_at": "now",
         "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_1b1b7b2d/META.md\nPantograph proof search for: \u2200 (input : List Int) (i : Nat) (hi : i < input.length) (p : Nat) (hp : p = (pileAssignment input)[i]!) (hp_lt : p < (stateAtStep input i).piles.size), (stateAtStep input (i + 1)).piles[p]! = input[i]!"
+      }
+    },
+    "proof_de4cf274": {
+      "active": false,
+      "nodes": [],
+      "current_path": [],
+      "history": [],
+      "parent_map": {},
+      "edge_actions": {},
+      "root_branch": "search_proof_1b1b7b2d_bp_21",
+      "search_id": "proof_de4cf274",
+      "git_action_branches": {},
+      "tree_type": "and_or",
+      "metadata": {
+        "show_path": false,
+        "model": null,
+        "reuse_action_branches": false,
+        "tree_type": "and_or",
+        "enable_memory": true,
+        "created_at": "now",
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_de4cf274/META.md"
       }
     }
   }
