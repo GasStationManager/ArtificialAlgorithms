@@ -5597,10 +5597,14 @@
           "summary": "Goal 0: set case, need to simplify and split on p = pos",
           "possible_actions": [
             "simp only [LISState.piles]",
-            "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
             "decide"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5630,7 +5634,7 @@
         },
         {
           "branch_index": 5,
-          "action": null
+          "action": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]"
         }
       ],
       "history": [
@@ -5680,7 +5684,8 @@
         "intro input state h_sorted h p hp": "search_proof_8147a77f_0_962eff87",
         "unfold processElement": "search_proof_8147a77f_1_c3441894",
         "simp only": "search_proof_8147a77f_2_e10d0797",
-        "split_ifs with h_pos": "search_proof_8147a77f_3_ea551f4f"
+        "split_ifs with h_pos": "search_proof_8147a77f_3_ea551f4f",
+        "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]": "search_proof_8147a77f_5_da6b5f18"
       },
       "tree_type": "and_or",
       "metadata": {
