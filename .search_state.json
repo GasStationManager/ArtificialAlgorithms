@@ -5134,6 +5134,19 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_de4cf274_bp_1"
+        },
+        {
+          "summary": "Substitute l = k + d and induct on d",
+          "possible_actions": [
+            "subst hd",
+            "rw [hd]",
+            "clear l hkl hd"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_2"
         }
       ],
       "current_path": [
@@ -5144,6 +5157,10 @@
         {
           "branch_index": 1,
           "action": "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9"
+        },
+        {
+          "branch_index": 2,
+          "action": null
         }
       ],
       "history": [
@@ -5151,13 +5168,20 @@
           0,
           "intro input p k l hkl hp_at_k",
           1
+        ],
+        [
+          1,
+          "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9",
+          2
         ]
       ],
       "parent_map": {
-        "1": 0
+        "1": 0,
+        "2": 1
       },
       "edge_actions": {
-        "0,1": "intro input p k l hkl hp_at_k"
+        "0,1": "intro input p k l hkl hp_at_k",
+        "1,2": "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9"
       },
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
