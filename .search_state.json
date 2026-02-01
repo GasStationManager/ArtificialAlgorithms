@@ -4409,7 +4409,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "draft: by\n  intro input i hi\n  unfold pileAssignment stat...": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4427,7 +4432,9 @@
       "edge_actions": {},
       "root_branch": "search_proof_dd7c3967_bp_2",
       "search_id": "proof_1e1869e8",
-      "git_action_branches": {},
+      "git_action_branches": {
+        "draft: by\n  intro input i hi\n  unfold pileAssignment stat...": "search_proof_1e1869e8_0_1570fa35"
+      },
       "tree_type": "and_or",
       "metadata": {
         "show_path": false,
