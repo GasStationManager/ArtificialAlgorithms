@@ -4615,7 +4615,12 @@
             "simp only [stateAtStep]",
             "unfold stateAtStep"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -4653,7 +4658,7 @@
         },
         {
           "branch_index": 8,
-          "action": null
+          "action": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega"
         }
       ],
       "history": [
@@ -4729,7 +4734,8 @@
         "have h_unfold : stateAfter input (initLISState input) (i + 1) = stateAfter input (processElement input (initLISState input) (by simp [initLISState])) i := stateAfter_succ input (initLISState input) i (by simp [initLISState])": "search_proof_1b1b7b2d_4_14c217b0",
         "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]": "search_proof_1b1b7b2d_4_9110f5ad",
         "have h_init_lt : (initLISState input).processed < input.length := by simp [initLISState]; omega": "search_proof_1b1b7b2d_5_11698fac",
-        "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]": "search_proof_1b1b7b2d_6_fc7d04c5"
+        "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]": "search_proof_1b1b7b2d_6_fc7d04c5",
+        "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": "search_proof_1b1b7b2d_8_6e6f3a8e"
       },
       "tree_type": "and_or",
       "metadata": {
