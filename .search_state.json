@@ -5816,6 +5816,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_8147a77f_bp_17"
+        },
+        {
+          "summary": "After 'rw [Array.getElem!_set_eq]'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_8147a77f_bp_18"
         }
       ],
       "current_path": [
@@ -5890,6 +5904,10 @@
         {
           "branch_index": 17,
           "action": "rw [Array.getElem!_set_eq]"
+        },
+        {
+          "branch_index": 18,
+          "action": null
         }
       ],
       "history": [
@@ -5977,6 +5995,11 @@
           16,
           "simp only [LISState.piles]",
           17
+        ],
+        [
+          17,
+          "rw [Array.getElem!_set_eq]",
+          18
         ]
       ],
       "parent_map": {
@@ -5996,7 +6019,8 @@
         "14": 13,
         "15": 14,
         "16": 15,
-        "17": 16
+        "17": 16,
+        "18": 17
       },
       "edge_actions": {
         "0,1": "intro input state h_sorted h p hp",
@@ -6015,7 +6039,8 @@
         "13,14": "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos",
         "14,15": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
         "15,16": "subst hp_eq",
-        "16,17": "simp only [LISState.piles]"
+        "16,17": "simp only [LISState.piles]",
+        "17,18": "rw [Array.getElem!_set_eq]"
       },
       "root_branch": "search_proof_de4cf274_bp_11",
       "search_id": "proof_8147a77f",
