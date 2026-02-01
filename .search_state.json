@@ -3816,7 +3816,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "intro input i hi": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -3826,7 +3831,7 @@
       "current_path": [
         {
           "branch_index": 0,
-          "action": null
+          "action": "intro input i hi"
         }
       ],
       "history": [],
@@ -3834,7 +3839,9 @@
       "edge_actions": {},
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
-      "git_action_branches": {},
+      "git_action_branches": {
+        "intro input i hi": "search_proof_392e67b9_0_633425c4"
+      },
       "tree_type": "and_or",
       "metadata": {
         "show_path": false,
