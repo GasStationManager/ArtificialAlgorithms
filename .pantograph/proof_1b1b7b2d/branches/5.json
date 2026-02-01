@@ -1,0 +1,96 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (i : Nat) (hi : i < input.length) (p : Nat) (hp : p = (pileAssignment input)[i]!) (hp_lt : p < (stateAtStep input i).piles.size), (stateAtStep input (i + 1)).piles[p]! = input[i]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input i hi p hp hp_lt",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "unfold stateAtStep",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have h_state_i : (stateAfter input (initLISState input) i).processed = i := by rw [stateAfter_processed]; simp [initLISState]; omega",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input i hi p hp hp_lt",
+    "unfold stateAtStep",
+    "have h_state_i : (stateAfter input (initLISState input) i).processed = i := by rw [stateAfter_processed]; simp [initLISState]; omega",
+    "have h_proc_lt : (stateAfter input (initLISState input) i).processed < input.length := by rw [h_state_i]; exact hi",
+    "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.8311",
+      "target": "(if h : (initLISState input).processed < input.length then\n        stateAfter input (processElement input (initLISState input) h) (i + 1 - 1)\n      else initLISState input).piles[p]! =\n  input[i]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "i",
+          "type": "\u2115"
+        },
+        {
+          "name": "hi",
+          "type": "i < input.length"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp",
+          "type": "p = (pileAssignment input)[i]!"
+        },
+        {
+          "name": "hp_lt",
+          "type": "p < (stateAtStep input i).piles.size"
+        },
+        {
+          "name": "h_state_i",
+          "type": "(stateAfter input (initLISState input) i).processed = i"
+        },
+        {
+          "name": "h_proc_lt",
+          "type": "(stateAfter input (initLISState input) i).processed < input.length"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_1b1b7b2d",
+  "branch_id": "5"
+}
