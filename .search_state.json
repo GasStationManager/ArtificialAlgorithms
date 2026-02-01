@@ -5221,6 +5221,40 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_de4cf274_bp_6"
+        },
+        {
+          "summary": "Try a cleaner draft tactic approach",
+          "possible_actions": [],
+          "taken_actions": {
+            "rw [show k + (d + 1) = k + 1 + d by ring]": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": false,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_7"
+        },
+        {
+          "summary": "Set up transitivity and single step proof",
+          "possible_actions": [
+            "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := sorry"
+          ],
+          "taken_actions": {
+            "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := by\n  unfold stateAtStep at hp_at_k \u22a2\n  have h := stateAfter_piles_size_mono input (initLISState input) k 1 pilesSorted_empty\n  exact Nat.lt_of_lt_of_le hp_at_k h": {
+              "result": false,
+              "note": null
+            },
+            "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := by\n  by_cases hk : k < input.length\n  \u00b7 obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk\n    rw [h_step]\n    exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)\n  \u00b7 have h_eq : stateAtStep input (k + 1) = stateAtStep input k := by\n      unfold stateAtStep\n      conv_lhs => rw [stateAfter_succ_done]\n      have h_proc : (stateAfter input (initLISState input) k).processed = k := by\n        rw [stateAfter_processed]; simp [initLISState]; omega\n      simp only [h_proc]\n      exact Nat.not_lt.mp hk\n    rw [h_eq]\n    exact hp_at_k": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_8"
         }
       ],
       "current_path": [
@@ -5279,6 +5313,16 @@
           5,
           "rw [show k + (d + 1) = (k + 1) + d by omega]",
           6
+        ],
+        [
+          5,
+          "rw [show k + (d + 1) = (k + 1) + d by omega]",
+          7
+        ],
+        [
+          7,
+          "rw [show k + (d + 1) = k + 1 + d by ring]",
+          8
         ]
       ],
       "parent_map": {
@@ -5287,7 +5331,9 @@
         "3": 2,
         "4": 3,
         "5": 4,
-        "6": 5
+        "6": 5,
+        "7": 5,
+        "8": 7
       },
       "edge_actions": {
         "0,1": "intro input p k l hkl hp_at_k",
@@ -5295,7 +5341,9 @@
         "2,3": "subst hd",
         "3,4": "clear hkl",
         "4,5": "induction d generalizing k with | zero => simp | succ d ih => ?_",
-        "5,6": "rw [show k + (d + 1) = (k + 1) + d by omega]"
+        "5,6": "rw [show k + (d + 1) = (k + 1) + d by omega]",
+        "5,7": "rw [show k + (d + 1) = (k + 1) + d by omega]",
+        "7,8": "rw [show k + (d + 1) = k + 1 + d by ring]"
       },
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
@@ -5307,7 +5355,10 @@
         "induction d generalizing k with | zero => simp | succ d ih => ?_": "search_proof_de4cf274_4_e9054451",
         "rw [show k + (d + 1) = (k + 1) + d by omega]": "search_proof_de4cf274_5_c091dec3",
         "have h_single : \u2200 k : Nat, \u2200 p : Nat, p < (stateAtStep input k).piles.size \u2192 (stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]! := by\n  intro m q hq\n  by_cases hm : m < input.length\n  \u00b7 -- m < input.length: one step happens\n    obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input m hm\n    rw [h_step]\n    unfold processElement\n    have h_proc_eq : (stateAtStep input m).processed = m := by\n      rw [stateAtStep_processed]; simp; omega\n    simp only [h_proc_eq]\n    set pos := binarySearchGE (stateAtStep input m).piles input[m] with hpos\n    by_cases h_pos_lt : pos < (stateAtStep input m).piles.size\n    \u00b7 -- Replace case\n      simp only [h_pos_lt, \u2193reduceDIte]\n      by_cases h_eq : q = pos\n      \u00b7 -- q = pos: new value is input[m], need input[m] \u2264 old piles[q]\n        subst h_eq\n        rw [Array.getElem!_set_eq _ _ _ h_pos_lt]\n        have h_bs := binarySearchGE_spec (stateAtStep input m).piles input[m] (stateAtStep_pilesSorted input m)\n        obtain \u27e8_, _, h_above\u27e9 := h_bs\n        have := h_above h_pos_lt\n        rw [Array.getElem!_eq _ _ h_pos_lt] at this\n        rw [List.getElem!_eq_getElem input m hm]\n        exact this\n      \u00b7 -- q \u2260 pos: pile q unchanged\n        rw [Array.getElem!_set_ne _ _ _ _ h_pos_lt h_eq hq]\n    \u00b7 -- Push case: q < old size, so pile q unchanged\n      simp only [h_pos_lt, \u2193reduceDIte]\n      rw [Array.getElem!_push_lt _ _ _ hq]\n  \u00b7 -- m >= input.length: no step happens\n    have h_same : stateAtStep input (m + 1) = stateAtStep input m := by\n      unfold stateAtStep\n      rw [stateAfter_succ_done]\n      have h_proc : (stateAfter input (initLISState input) m).processed = m := by\n        rw [stateAfter_processed]; simp [initLISState]; omega\n      rw [h_proc]; exact Nat.not_lt.mp hm\n    rw [h_same]": "search_proof_de4cf274_6_76b28ef0",
-        "have h_single : (stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]! := by\n  by_cases hk : k < input.length\n  \u00b7 -- k < input.length: one step happens\n    obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk\n    rw [h_step]\n    unfold processElement\n    have h_proc_eq : (stateAtStep input k).processed = k := by\n      rw [stateAtStep_processed]; exact Nat.min_eq_left (Nat.le_of_lt hk)\n    simp only [h_proc_eq]\n    set pos := binarySearchGE (stateAtStep input k).piles input[k] with hpos\n    by_cases h_pos_lt : pos < (stateAtStep input k).piles.size\n    \u00b7 -- Replace case\n      simp only [h_pos_lt, \u2193reduceDIte]\n      by_cases h_eq : p = pos\n      \u00b7 -- p = pos: new value is input[k], need input[k] \u2264 old piles[p]\n        subst h_eq\n        rw [Array.getElem!_set_eq _ _ _ h_pos_lt]\n        have h_bs := binarySearchGE_spec (stateAtStep input k).piles input[k] (stateAtStep_pilesSorted input k)\n        obtain \u27e8_, _, h_above\u27e9 := h_bs\n        have := h_above h_pos_lt\n        rw [Array.getElem!_eq _ _ h_pos_lt] at this\n        rw [List.getElem!_eq_getElem input k hk]\n        exact this\n      \u00b7 -- p \u2260 pos: pile p unchanged\n        rw [Array.getElem!_set_ne _ _ _ _ h_pos_lt h_eq hp_at_k]\n    \u00b7 -- Push case: p < old size, so pile p unchanged\n      simp only [h_pos_lt, \u2193reduceDIte]\n      rw [Array.getElem!_push_lt _ _ _ hp_at_k]\n  \u00b7 -- k >= input.length: state at k+1 = state at k\n    have h_proc_ge : (stateAtStep input k).processed = input.length := by\n      rw [stateAtStep_processed]\n      exact Nat.min_eq_right (Nat.not_lt.mp hk)\n    unfold stateAtStep\n    rw [stateAfter_succ_done]\n    \u00b7 rfl\n    \u00b7 rw [stateAfter_processed]; simp [initLISState]\n      omega": "search_proof_de4cf274_6_f621646a"
+        "have h_single : (stateAtStep input (k + 1)).piles[p]! \u2264 (stateAtStep input k).piles[p]! := by\n  by_cases hk : k < input.length\n  \u00b7 -- k < input.length: one step happens\n    obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk\n    rw [h_step]\n    unfold processElement\n    have h_proc_eq : (stateAtStep input k).processed = k := by\n      rw [stateAtStep_processed]; exact Nat.min_eq_left (Nat.le_of_lt hk)\n    simp only [h_proc_eq]\n    set pos := binarySearchGE (stateAtStep input k).piles input[k] with hpos\n    by_cases h_pos_lt : pos < (stateAtStep input k).piles.size\n    \u00b7 -- Replace case\n      simp only [h_pos_lt, \u2193reduceDIte]\n      by_cases h_eq : p = pos\n      \u00b7 -- p = pos: new value is input[k], need input[k] \u2264 old piles[p]\n        subst h_eq\n        rw [Array.getElem!_set_eq _ _ _ h_pos_lt]\n        have h_bs := binarySearchGE_spec (stateAtStep input k).piles input[k] (stateAtStep_pilesSorted input k)\n        obtain \u27e8_, _, h_above\u27e9 := h_bs\n        have := h_above h_pos_lt\n        rw [Array.getElem!_eq _ _ h_pos_lt] at this\n        rw [List.getElem!_eq_getElem input k hk]\n        exact this\n      \u00b7 -- p \u2260 pos: pile p unchanged\n        rw [Array.getElem!_set_ne _ _ _ _ h_pos_lt h_eq hp_at_k]\n    \u00b7 -- Push case: p < old size, so pile p unchanged\n      simp only [h_pos_lt, \u2193reduceDIte]\n      rw [Array.getElem!_push_lt _ _ _ hp_at_k]\n  \u00b7 -- k >= input.length: state at k+1 = state at k\n    have h_proc_ge : (stateAtStep input k).processed = input.length := by\n      rw [stateAtStep_processed]\n      exact Nat.min_eq_right (Nat.not_lt.mp hk)\n    unfold stateAtStep\n    rw [stateAfter_succ_done]\n    \u00b7 rfl\n    \u00b7 rw [stateAfter_processed]; simp [initLISState]\n      omega": "search_proof_de4cf274_6_f621646a",
+        "rw [show k + (d + 1) = k + 1 + d by ring]": "search_proof_de4cf274_7_abd0de35",
+        "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := by\n  unfold stateAtStep at hp_at_k \u22a2\n  have h := stateAfter_piles_size_mono input (initLISState input) k 1 pilesSorted_empty\n  exact Nat.lt_of_lt_of_le hp_at_k h": "search_proof_de4cf274_8_44fcb728",
+        "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := by\n  by_cases hk : k < input.length\n  \u00b7 obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk\n    rw [h_step]\n    exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)\n  \u00b7 have h_eq : stateAtStep input (k + 1) = stateAtStep input k := by\n      unfold stateAtStep\n      conv_lhs => rw [stateAfter_succ_done]\n      have h_proc : (stateAfter input (initLISState input) k).processed = k := by\n        rw [stateAfter_processed]; simp [initLISState]; omega\n      simp only [h_proc]\n      exact Nat.not_lt.mp hk\n    rw [h_eq]\n    exact hp_at_k": "search_proof_de4cf274_8_f9ef8b38"
       },
       "tree_type": "and_or",
       "metadata": {
