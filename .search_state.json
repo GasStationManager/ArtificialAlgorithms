@@ -4761,6 +4761,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_17"
+        },
+        {
+          "summary": "Establish processed < length",
+          "possible_actions": [
+            "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_18"
         }
       ],
       "current_path": [
@@ -4827,6 +4838,10 @@
         {
           "branch_index": 17,
           "action": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega"
+        },
+        {
+          "branch_index": 18,
+          "action": null
         }
       ],
       "history": [
@@ -4914,6 +4929,11 @@
           16,
           "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt",
           17
+        ],
+        [
+          17,
+          "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
+          18
         ]
       ],
       "parent_map": {
@@ -4933,7 +4953,8 @@
         "14": 13,
         "15": 14,
         "16": 15,
-        "17": 16
+        "17": 16,
+        "18": 17
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -4952,7 +4973,8 @@
         "13,14": "let pos := binarySearchGE (stateAtStep input i).piles input[i]!",
         "14,15": "show (stateAtStep input (i + 1)).piles[pos]! = input[i]!",
         "15,16": "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]",
-        "16,17": "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt"
+        "16,17": "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt",
+        "17,18": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
