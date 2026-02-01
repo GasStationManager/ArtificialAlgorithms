@@ -3952,7 +3952,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "induction d using Nat.strong_induction_on generalizing state assignments h_sorted": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -3986,7 +3991,7 @@
         },
         {
           "branch_index": 8,
-          "action": null
+          "action": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted"
         }
       ],
       "history": [
@@ -4059,7 +4064,8 @@
         "induction i using Nat.strong_induction_on generalizing input": "search_proof_392e67b9_3_f454ee3f",
         "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)": "search_proof_392e67b9_5_28b2047c",
         "intro state assignments h_sorted h_size h_le": "search_proof_392e67b9_6_c46562f9",
-        "generalize h_term : input.length - state.processed = d": "search_proof_392e67b9_7_476693d4"
+        "generalize h_term : input.length - state.processed = d": "search_proof_392e67b9_7_476693d4",
+        "induction d using Nat.strong_induction_on generalizing state assignments h_sorted": "search_proof_392e67b9_8_f66a67e6"
       },
       "tree_type": "and_or",
       "metadata": {
