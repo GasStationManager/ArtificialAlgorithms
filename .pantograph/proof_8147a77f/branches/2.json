@@ -1,0 +1,64 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h : state.processed < input.length) (p : Nat) (hp : p < state.piles.size), (processElement input state h).piles[p]! \u2264 state.piles[p]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input state h_sorted h p hp",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    },
+    {
+      "step_type": "tactic",
+      "tactic": "unfold processElement",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input state h_sorted h p hp",
+    "unfold processElement"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.139",
+      "target": "(let elem := input[state.processed];\n      let pos := binarySearchGE state.piles elem;\n      let pred := if pos > 0 then \u2191state.pileIndices[pos - 1]! else -1;\n      let newPreds := state.predecessors.push pred;\n      if h_pos : pos < state.piles.size then\n        have h_idx := \u22ef;\n        let newPiles := state.piles.set pos elem h_pos;\n        let newIndices := state.pileIndices.set pos state.processed h_idx;\n        { processed := state.processed + 1, piles := newPiles, predecessors := newPreds, pileIndices := newIndices,\n          h_processed := \u22ef, h_piles_size := \u22ef, h_pred_size := \u22ef }\n      else\n        let newPiles := state.piles.push elem;\n        let newIndices := state.pileIndices.push state.processed;\n        { processed := state.processed + 1, piles := newPiles, predecessors := newPreds, pileIndices := newIndices,\n          h_processed := \u22ef, h_piles_size := \u22ef, h_pred_size := \u22ef }).piles[p]! \u2264\n  state.piles[p]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "state",
+          "type": "LISState input"
+        },
+        {
+          "name": "h_sorted",
+          "type": "PilesSorted state.piles"
+        },
+        {
+          "name": "h",
+          "type": "state.processed < input.length"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp",
+          "type": "p < state.piles.size"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_8147a77f",
+  "branch_id": "2"
+}
