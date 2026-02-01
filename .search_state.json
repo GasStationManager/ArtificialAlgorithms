@@ -4632,7 +4632,7 @@
         },
         {
           "branch_index": 6,
-          "action": "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]"
+          "action": null
         }
       ],
       "history": [
