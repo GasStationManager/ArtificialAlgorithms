@@ -5274,10 +5274,13 @@
         },
         {
           "summary": "Prove hp_at_k1: p < (stateAtStep input (k+1)).piles.size",
-          "possible_actions": [
-            "by_cases hk : k < input.length"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "by_cases hk : k < input.length": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5315,7 +5318,7 @@
         },
         {
           "branch_index": 10,
-          "action": null
+          "action": "by_cases hk : k < input.length"
         }
       ],
       "history": [
@@ -5408,7 +5411,8 @@
         "rw [show k + (d + 1) = k + 1 + d by ring]": "search_proof_de4cf274_7_abd0de35",
         "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := by\n  unfold stateAtStep at hp_at_k \u22a2\n  have h := stateAfter_piles_size_mono input (initLISState input) k 1 pilesSorted_empty\n  exact Nat.lt_of_lt_of_le hp_at_k h": "search_proof_de4cf274_8_44fcb728",
         "have hp_at_k1 : p < (stateAtStep input (k + 1)).piles.size := by\n  by_cases hk : k < input.length\n  \u00b7 obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk\n    rw [h_step]\n    exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)\n  \u00b7 have h_eq : stateAtStep input (k + 1) = stateAtStep input k := by\n      unfold stateAtStep\n      conv_lhs => rw [stateAfter_succ_done]\n      have h_proc : (stateAfter input (initLISState input) k).processed = k := by\n        rw [stateAfter_processed]; simp [initLISState]; omega\n      simp only [h_proc]\n      exact Nat.not_lt.mp hk\n    rw [h_eq]\n    exact hp_at_k": "search_proof_de4cf274_8_f9ef8b38",
-        "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h...": "search_proof_de4cf274_9_fd106bed"
+        "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h...": "search_proof_de4cf274_9_fd106bed",
+        "by_cases hk : k < input.length": "search_proof_de4cf274_10_1f839b18"
       },
       "tree_type": "and_or",
       "metadata": {
