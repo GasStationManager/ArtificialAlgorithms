@@ -5759,6 +5759,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_8147a77f_bp_14"
+        },
+        {
+          "summary": "After 'by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_8147a77f_bp_15"
         }
       ],
       "current_path": [
@@ -5821,6 +5835,10 @@
         {
           "branch_index": 14,
           "action": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]"
+        },
+        {
+          "branch_index": 15,
+          "action": null
         }
       ],
       "history": [
@@ -5893,6 +5911,11 @@
           13,
           "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos",
           14
+        ],
+        [
+          14,
+          "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
+          15
         ]
       ],
       "parent_map": {
@@ -5909,7 +5932,8 @@
         "11": 10,
         "12": 11,
         "13": 12,
-        "14": 13
+        "14": 13,
+        "15": 14
       },
       "edge_actions": {
         "0,1": "intro input state h_sorted h p hp",
@@ -5925,7 +5949,8 @@
         "10,11": "Focus on subgoal 0: (state.piles.set (binarySearchGE state.piles input...",
         "11,12": "rw [Array.getElem!_set_eq]",
         "12,13": "Focus on subgoal 0: input[state.processed] \u2264 state.piles[binarySearchG...",
-        "13,14": "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos"
+        "13,14": "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos",
+        "14,15": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]"
       },
       "root_branch": "search_proof_de4cf274_bp_11",
       "search_id": "proof_8147a77f",
