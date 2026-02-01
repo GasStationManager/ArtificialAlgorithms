@@ -4811,7 +4811,12 @@
           "possible_actions": [
             "rw [hp, pileAssignment_at_state input i hi]\n let pos := binarySearchGE (stateAtStep input i).piles input[i]!\n show (stateAtStep input (i + 1)).piles[pos]! = input[i]!\n have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega\n have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi\n have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [pileAssignment_at_state input i hi] at hp_lt; exact hp_lt\n -- Key: stateAtStep (i+1) = processElement (stateAtStep i)\n -- When pos < piles.size, processElement uses set, so piles[pos] = input[i]\n simp only [stateAtStep]\n rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "draft: by\n  rw [hp, pileAssignment_at_state input i hi]\n ...": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5076,7 +5081,8 @@
         "have h_pos_eq : pos = p := by rw [hp, pileAssignment_at_state input i hi]": "search_proof_1b1b7b2d_15_6b471f8d",
         "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt": "search_proof_1b1b7b2d_16_7f22abfd",
         "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_18_fbaa7611",
-        "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]": "search_proof_1b1b7b2d_19_42b2fc0c"
+        "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]": "search_proof_1b1b7b2d_19_42b2fc0c",
+        "draft: by\n  rw [hp, pileAssignment_at_state input i hi]\n ...": "search_proof_1b1b7b2d_21_3c5adfcd"
       },
       "tree_type": "and_or",
       "metadata": {
