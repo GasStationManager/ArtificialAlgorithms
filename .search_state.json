@@ -6523,9 +6523,29 @@
       }
     },
     "proof_fc51a8d4": {
-      "active": false,
-      "nodes": [],
-      "current_path": [],
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: \u2200 (input : List Int) (x y : Nat) (hx : x < input.length) (hy : y < input.length) (hxy : x < y) (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!), input[x]! \u2265 input[y]!",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_fc51a8d4_bp_0"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": null
+        }
+      ],
       "history": [],
       "parent_map": {},
       "edge_actions": {},
@@ -6540,7 +6560,7 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_fc51a8d4/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_fc51a8d4/META.md\nPantograph proof search for: \u2200 (input : List Int) (x y : Nat) (hx : x < input.length) (hy : y < input.length) (hxy : x < y) (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!), input[x]! \u2265 input[y]!"
       }
     }
   }
