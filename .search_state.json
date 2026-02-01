@@ -5120,12 +5120,16 @@
         {
           "summary": "Introduce d = l - k for induction",
           "possible_actions": [
-            "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9",
             "induction l generalizing k with",
             "have hd : l = k + (l - k) := by omega",
             "revert k hkl hp_at_k"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5139,7 +5143,7 @@
         },
         {
           "branch_index": 1,
-          "action": null
+          "action": "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9"
         }
       ],
       "history": [
@@ -5158,7 +5162,8 @@
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
       "git_action_branches": {
-        "intro input p k l hkl hp_at_k": "search_proof_de4cf274_0_f85767d3"
+        "intro input p k l hkl hp_at_k": "search_proof_de4cf274_0_f85767d3",
+        "obtain \u27e8d, hd\u27e9 : \u2203 d, l = k + d := \u27e8l - k, by omega\u27e9": "search_proof_de4cf274_1_0e4278df"
       },
       "tree_type": "and_or",
       "metadata": {
