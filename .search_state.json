@@ -6101,7 +6101,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "let p := (pileAssignment input)[x]!": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -6115,7 +6120,7 @@
         },
         {
           "branch_index": 1,
-          "action": null
+          "action": "let p := (pileAssignment input)[x]!"
         }
       ],
       "history": [
@@ -6134,7 +6139,8 @@
       "root_branch": "",
       "search_id": "proof_48aa7ef7",
       "git_action_branches": {
-        "intro input x y hx hy hxy h_same": "search_proof_48aa7ef7_0_91edbb0d"
+        "intro input x y hx hy hxy h_same": "search_proof_48aa7ef7_0_91edbb0d",
+        "let p := (pileAssignment input)[x]!": "search_proof_48aa7ef7_1_84893f81"
       },
       "tree_type": "and_or",
       "metadata": {
