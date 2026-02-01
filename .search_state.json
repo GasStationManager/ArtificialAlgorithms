@@ -3990,11 +3990,35 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "unfold pileAssignmentGo": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_392e67b9_bp_10"
+        },
+        {
+          "summary": "After 'unfold pileAssignmentGo'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {
+            "split_ifs with h_proc": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_392e67b9_bp_11"
         }
       ],
       "current_path": [
@@ -4032,7 +4056,7 @@
         },
         {
           "branch_index": 10,
-          "action": null
+          "action": "unfold pileAssignmentGo"
         }
       ],
       "history": [
@@ -4085,6 +4109,11 @@
           9,
           "rename_i ih",
           10
+        ],
+        [
+          10,
+          "unfold pileAssignmentGo",
+          11
         ]
       ],
       "parent_map": {
@@ -4097,7 +4126,8 @@
         "7": 6,
         "8": 7,
         "9": 8,
-        "10": 9
+        "10": 9,
+        "11": 10
       },
       "edge_actions": {
         "0,1": "intro input i hi",
@@ -4109,7 +4139,8 @@
         "6,7": "intro state assignments h_sorted h_size h_le",
         "7,8": "generalize h_term : input.length - state.processed = d",
         "8,9": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted",
-        "9,10": "rename_i ih"
+        "9,10": "rename_i ih",
+        "10,11": "unfold pileAssignmentGo"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
@@ -4121,7 +4152,9 @@
         "intro state assignments h_sorted h_size h_le": "search_proof_392e67b9_6_c46562f9",
         "generalize h_term : input.length - state.processed = d": "search_proof_392e67b9_7_476693d4",
         "induction d using Nat.strong_induction_on generalizing state assignments h_sorted": "search_proof_392e67b9_8_f66a67e6",
-        "rename_i ih": "search_proof_392e67b9_9_ed2bdf56"
+        "rename_i ih": "search_proof_392e67b9_9_ed2bdf56",
+        "unfold pileAssignmentGo": "search_proof_392e67b9_10_a1d58e8b",
+        "split_ifs with h_proc": "search_proof_392e67b9_11_0a5c84fe"
       },
       "tree_type": "and_or",
       "metadata": {
