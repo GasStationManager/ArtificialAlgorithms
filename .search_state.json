@@ -6569,7 +6569,12 @@
           "possible_actions": [
             "unfold processElement approach"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "rw [h_step_x, h_p_eq_bs]\nhave h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega\nhave h_bs_le := binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)\nunfold processElement\nsimp only\nby_cases h_pos : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] < (stateAtStep input x).piles.size\n\u00b7 simp only [h_pos, dif_pos, Array.size_set]\n  have h_eq : input[(stateAtStep input x).processed]! = input[x]! := by rw [h_proc_x]\n  have h_eq2 : input[(stateAtStep input x).processed] = input[x] := by\n    rw [h_proc_x]; exact (List.getElem!_eq_getElem input x hx)\n  have h_eq3 : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] = binarySearchGE (stateAtStep input x).piles input[x]! := by\n    congr 1; rw [h_eq2]; exact (List.getElem!_eq_getElem input x hx).symm\n  rw [h_eq3] at h_pos; exact h_pos\n\u00b7 simp only [h_pos, dif_neg, Array.size_push]\n  push_neg at h_pos\n  have h_eq2 : input[(stateAtStep input x).processed] = input[x] := by\n    rw [h_proc_x]; exact (List.getElem!_eq_getElem input x hx)\n  have h_eq3 : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] = binarySearchGE (stateAtStep input x).piles input[x]! := by\n    congr 1; rw [h_eq2]; exact (List.getElem!_eq_getElem input x hx).symm\n  have h_bs_le' : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] \u2264 (stateAtStep input x).piles.size := by\n    rw [h_eq3]; exact h_bs_le\n  have h_eq_size : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] = (stateAtStep input x).piles.size := by omega\n  rw [h_eq3, \u2190 h_eq_size]; omega (goal_id=_uniq.1497)": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -6613,7 +6618,8 @@
       "root_branch": "search_proof_48aa7ef7_bp_13",
       "search_id": "proof_fc51a8d4",
       "git_action_branches": {
-        "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b...": "search_proof_fc51a8d4_0_b68802ef"
+        "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b...": "search_proof_fc51a8d4_0_b68802ef",
+        "rw [h_step_x, h_p_eq_bs]\nhave h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega\nhave h_bs_le := binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)\nunfold processElement\nsimp only\nby_cases h_pos : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] < (stateAtStep input x).piles.size\n\u00b7 simp only [h_pos, dif_pos, Array.size_set]\n  have h_eq : input[(stateAtStep input x).processed]! = input[x]! := by rw [h_proc_x]\n  have h_eq2 : input[(stateAtStep input x).processed] = input[x] := by\n    rw [h_proc_x]; exact (List.getElem!_eq_getElem input x hx)\n  have h_eq3 : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] = binarySearchGE (stateAtStep input x).piles input[x]! := by\n    congr 1; rw [h_eq2]; exact (List.getElem!_eq_getElem input x hx).symm\n  rw [h_eq3] at h_pos; exact h_pos\n\u00b7 simp only [h_pos, dif_neg, Array.size_push]\n  push_neg at h_pos\n  have h_eq2 : input[(stateAtStep input x).processed] = input[x] := by\n    rw [h_proc_x]; exact (List.getElem!_eq_getElem input x hx)\n  have h_eq3 : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] = binarySearchGE (stateAtStep input x).piles input[x]! := by\n    congr 1; rw [h_eq2]; exact (List.getElem!_eq_getElem input x hx).symm\n  have h_bs_le' : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] \u2264 (stateAtStep input x).piles.size := by\n    rw [h_eq3]; exact h_bs_le\n  have h_eq_size : binarySearchGE (stateAtStep input x).piles input[(stateAtStep input x).processed] = (stateAtStep input x).piles.size := by omega\n  rw [h_eq3, \u2190 h_eq_size]; omega (goal_id=_uniq.1497)": "search_proof_fc51a8d4_2_c7ea2229"
       },
       "tree_type": "and_or",
       "metadata": {
