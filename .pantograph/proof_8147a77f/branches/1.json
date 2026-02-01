@@ -1,0 +1,56 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (state : LISState input) (h_sorted : PilesSorted state.piles) (h : state.processed < input.length) (p : Nat) (hp : p < state.piles.size), (processElement input state h).piles[p]! \u2264 state.piles[p]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [
+    {
+      "step_type": "tactic",
+      "tactic": "intro input state h_sorted h p hp",
+      "goal_id": null,
+      "focused_goal_id": null,
+      "focused_goal_index": null
+    }
+  ],
+  "tactic_history": [
+    "intro input state h_sorted h p hp"
+  ],
+  "goals": [
+    {
+      "id": "_uniq.137",
+      "target": "(processElement input state h).piles[p]! \u2264 state.piles[p]!",
+      "variables": [
+        {
+          "name": "input",
+          "type": "List \u2124"
+        },
+        {
+          "name": "state",
+          "type": "LISState input"
+        },
+        {
+          "name": "h_sorted",
+          "type": "PilesSorted state.piles"
+        },
+        {
+          "name": "h",
+          "type": "state.processed < input.length"
+        },
+        {
+          "name": "p",
+          "type": "\u2115"
+        },
+        {
+          "name": "hp",
+          "type": "p < state.piles.size"
+        }
+      ],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_8147a77f",
+  "branch_id": "1"
+}
