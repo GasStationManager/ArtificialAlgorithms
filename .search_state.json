@@ -5565,7 +5565,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "split_ifs with h_pos": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5587,7 +5592,7 @@
         },
         {
           "branch_index": 3,
-          "action": null
+          "action": "split_ifs with h_pos"
         }
       ],
       "history": [
@@ -5622,7 +5627,8 @@
       "git_action_branches": {
         "intro input state h_sorted h p hp": "search_proof_8147a77f_0_962eff87",
         "unfold processElement": "search_proof_8147a77f_1_c3441894",
-        "simp only": "search_proof_8147a77f_2_e10d0797"
+        "simp only": "search_proof_8147a77f_2_e10d0797",
+        "split_ifs with h_pos": "search_proof_8147a77f_3_ea551f4f"
       },
       "tree_type": "and_or",
       "metadata": {
