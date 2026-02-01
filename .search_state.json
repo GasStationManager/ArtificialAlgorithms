@@ -4667,6 +4667,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_11"
+        },
+        {
+          "summary": "Continue proof",
+          "possible_actions": [
+            "simp only [stateAtStep, pileAssignment_at_state hi]"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_12"
         }
       ],
       "current_path": [
@@ -4709,6 +4720,10 @@
         {
           "branch_index": 11,
           "action": "intro input i hi p hp hp_lt"
+        },
+        {
+          "branch_index": 12,
+          "action": null
         }
       ],
       "history": [
@@ -4766,6 +4781,11 @@
           9,
           "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
           11
+        ],
+        [
+          11,
+          "intro input i hi p hp hp_lt",
+          12
         ]
       ],
       "parent_map": {
@@ -4779,7 +4799,8 @@
         "8": 6,
         "9": 8,
         "10": 9,
-        "11": 9
+        "11": 9,
+        "12": 11
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -4792,7 +4813,8 @@
         "6,8": "intro input i hi p hp hp_lt",
         "8,9": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
         "9,10": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
-        "9,11": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
+        "9,11": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
+        "11,12": "intro input i hi p hp hp_lt"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
