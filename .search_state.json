@@ -3889,6 +3889,18 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_392e67b9_bp_4"
+        },
+        {
+          "summary": "Try direct approaches with existing theorems",
+          "possible_actions": [
+            "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
+            "have h_proc := stateAtStep_processed input i"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_392e67b9_bp_5"
         }
       ],
       "current_path": [
@@ -3903,6 +3915,10 @@
         {
           "branch_index": 3,
           "action": "induction i using Nat.strong_induction_on generalizing input"
+        },
+        {
+          "branch_index": 5,
+          "action": null
         }
       ],
       "history": [
@@ -3925,19 +3941,26 @@
           3,
           "induction i using Nat.strong_induction_on generalizing input",
           4
+        ],
+        [
+          3,
+          "induction i using Nat.strong_induction_on generalizing input",
+          5
         ]
       ],
       "parent_map": {
         "1": 0,
         "2": 1,
         "3": 1,
-        "4": 3
+        "4": 3,
+        "5": 3
       },
       "edge_actions": {
         "0,1": "intro input i hi",
         "1,2": "unfold pileAssignment stateAtStep",
         "1,3": "unfold pileAssignment stateAtStep",
-        "3,4": "induction i using Nat.strong_induction_on generalizing input"
+        "3,4": "induction i using Nat.strong_induction_on generalizing input",
+        "3,5": "induction i using Nat.strong_induction_on generalizing input"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
