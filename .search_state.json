@@ -3835,11 +3835,30 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "unfold pileAssignment stateAtStep": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_392e67b9_bp_1"
+        },
+        {
+          "summary": "After 'unfold pileAssignment stateAtStep'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_392e67b9_bp_2"
         }
       ],
       "current_path": [
@@ -3849,7 +3868,7 @@
         },
         {
           "branch_index": 1,
-          "action": null
+          "action": "unfold pileAssignment stateAtStep"
         }
       ],
       "history": [
@@ -3857,18 +3876,26 @@
           0,
           "intro input i hi",
           1
+        ],
+        [
+          1,
+          "unfold pileAssignment stateAtStep",
+          2
         ]
       ],
       "parent_map": {
-        "1": 0
+        "1": 0,
+        "2": 1
       },
       "edge_actions": {
-        "0,1": "intro input i hi"
+        "0,1": "intro input i hi",
+        "1,2": "unfold pileAssignment stateAtStep"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
       "git_action_branches": {
-        "intro input i hi": "search_proof_392e67b9_0_633425c4"
+        "intro input i hi": "search_proof_392e67b9_0_633425c4",
+        "unfold pileAssignment stateAtStep": "search_proof_392e67b9_1_e45c40b3"
       },
       "tree_type": "and_or",
       "metadata": {
