@@ -6215,7 +6215,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -6253,7 +6258,7 @@
         },
         {
           "branch_index": 7,
-          "action": null
+          "action": "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)"
         }
       ],
       "history": [
@@ -6320,7 +6325,8 @@
         "have hp_y : p = (pileAssignment input)[y]! := by rw [hp_x, h_same]": "search_proof_48aa7ef7_3_54eb4d35",
         "have h_y_at_state : (pileAssignment input)[y]! = binarySearchGE (stateAtStep input y).piles input[y]! := pileAssignment_at_state input y hy": "search_proof_48aa7ef7_4_f5913b7c",
         "have h_x_at_state : (pileAssignment input)[x]! = binarySearchGE (stateAtStep input x).piles input[x]! := pileAssignment_at_state input x hx": "search_proof_48aa7ef7_5_ec76d0dd",
-        "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]": "search_proof_48aa7ef7_6_bc767bd4"
+        "have h_p_eq_bs : p = binarySearchGE (stateAtStep input x).piles input[x]! := by rw [hp_x, h_x_at_state]": "search_proof_48aa7ef7_6_bc767bd4",
+        "have h_p_le_size_x : p \u2264 (stateAtStep input x).piles.size := by rw [h_p_eq_bs]; exact binarySearchGE_le_size (stateAtStep input x).piles input[x]! (stateAtStep_pilesSorted input x)": "search_proof_48aa7ef7_7_82dd5a9a"
       },
       "tree_type": "and_or",
       "metadata": {
