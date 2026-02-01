@@ -4628,14 +4628,31 @@
         },
         {
           "summary": "Continue building hypotheses",
-          "possible_actions": [
-            "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
-          ],
-          "taken_actions": {},
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": {
+              "result": false,
+              "note": null
+            }
+          },
           "node_type": "OR",
-          "node_status": null,
+          "node_status": false,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_9"
+        },
+        {
+          "summary": "Prove the main goal",
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_step : stateAtStep input (i + 1) = processElement input (stateAtStep input i) h_proc_lt := by unfold stateAtStep; rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": false,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_10"
         }
       ],
       "current_path": [
@@ -4673,7 +4690,7 @@
         },
         {
           "branch_index": 9,
-          "action": null
+          "action": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
         }
       ],
       "history": [
@@ -4721,6 +4738,11 @@
           8,
           "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
           9
+        ],
+        [
+          9,
+          "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
+          10
         ]
       ],
       "parent_map": {
@@ -4732,7 +4754,8 @@
         "6": 5,
         "7": 6,
         "8": 6,
-        "9": 8
+        "9": 8,
+        "10": 9
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -4743,7 +4766,8 @@
         "5,6": "have h_init_lt : (initLISState input).processed < input.length := by simp [initLISState]; omega",
         "6,7": "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]",
         "6,8": "intro input i hi p hp hp_lt",
-        "8,9": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega"
+        "8,9": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
+        "9,10": "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
@@ -4757,7 +4781,9 @@
         "conv_lhs => rw [show i + 1 = i + 1 from rfl]; unfold stateAfter; simp only [Nat.add_one_ne_zero, \u2193reduceIte]": "search_proof_1b1b7b2d_4_9110f5ad",
         "have h_init_lt : (initLISState input).processed < input.length := by simp [initLISState]; omega": "search_proof_1b1b7b2d_5_11698fac",
         "simp only [h_init_lt, dif_pos, Nat.add_sub_cancel]": "search_proof_1b1b7b2d_6_fc7d04c5",
-        "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": "search_proof_1b1b7b2d_8_6e6f3a8e"
+        "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega": "search_proof_1b1b7b2d_8_6e6f3a8e",
+        "have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi": "search_proof_1b1b7b2d_9_fadecb0a",
+        "have h_step : stateAtStep input (i + 1) = processElement input (stateAtStep input i) h_proc_lt := by unfold stateAtStep; rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]": "search_proof_1b1b7b2d_10_580774cd"
       },
       "tree_type": "and_or",
       "metadata": {
