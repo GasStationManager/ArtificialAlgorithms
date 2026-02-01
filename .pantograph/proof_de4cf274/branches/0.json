@@ -1,0 +1,21 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (p k l : Nat), k \u2264 l \u2192 p < (stateAtStep input k).piles.size \u2192 (stateAtStep input l).piles[p]! \u2264 (stateAtStep input k).piles[p]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [],
+  "tactic_history": [],
+  "goals": [
+    {
+      "id": "_uniq.117",
+      "target": "\u2200 (input : List Int) (p k l : Nat), k \u2264 l \u2192 p < (stateAtStep input k).piles.size \u2192 (stateAtStep input l).piles[p]! \u2264 (stateAtStep input k).piles[p]!",
+      "variables": [],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_de4cf274",
+  "branch_id": "0"
+}
