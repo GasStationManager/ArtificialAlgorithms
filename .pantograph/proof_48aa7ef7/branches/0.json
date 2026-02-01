@@ -1,0 +1,21 @@
+{
+  "initial_expr": "\u2200 (input : List Int) (x y : Nat) (hx : x < input.length) (hy : y < input.length) (hxy : x < y) (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!), input[x]! \u2265 input[y]!",
+  "initial_sketch": null,
+  "initial_imports": [
+    "ArtificialAlgorithms.DynamicProgramming.VerifiedLIS"
+  ],
+  "proof_steps": [],
+  "tactic_history": [],
+  "goals": [
+    {
+      "id": "_uniq.198",
+      "target": "\u2200 (input : List Int) (x y : Nat) (hx : x < input.length) (hy : y < input.length) (hxy : x < y) (h_same : (pileAssignment input)[x]! = (pileAssignment input)[y]!), input[x]! \u2265 input[y]!",
+      "variables": [],
+      "sibling_dep": null
+    }
+  ],
+  "is_solved": false,
+  "current_goal_index": null,
+  "search_tree_id": "proof_48aa7ef7",
+  "branch_id": "0"
+}
