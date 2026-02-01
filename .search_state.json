@@ -6130,6 +6130,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_48aa7ef7_bp_2"
+        },
+        {
+          "summary": "After 'have hp_x : p = (pileAssignment input)[x]! := rfl'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_48aa7ef7_bp_3"
         }
       ],
       "current_path": [
@@ -6144,6 +6158,10 @@
         {
           "branch_index": 2,
           "action": "have hp_x : p = (pileAssignment input)[x]! := rfl"
+        },
+        {
+          "branch_index": 3,
+          "action": null
         }
       ],
       "history": [
@@ -6156,15 +6174,22 @@
           1,
           "let p := (pileAssignment input)[x]!",
           2
+        ],
+        [
+          2,
+          "have hp_x : p = (pileAssignment input)[x]! := rfl",
+          3
         ]
       ],
       "parent_map": {
         "1": 0,
-        "2": 1
+        "2": 1,
+        "3": 2
       },
       "edge_actions": {
         "0,1": "intro input x y hx hy hxy h_same",
-        "1,2": "let p := (pileAssignment input)[x]!"
+        "1,2": "let p := (pileAssignment input)[x]!",
+        "2,3": "have hp_x : p = (pileAssignment input)[x]! := rfl"
       },
       "root_branch": "",
       "search_id": "proof_48aa7ef7",
