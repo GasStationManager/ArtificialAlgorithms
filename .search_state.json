@@ -6563,6 +6563,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_fc51a8d4_bp_1"
+        },
+        {
+          "summary": "Prove subgoal 0: pile exists at x+1",
+          "possible_actions": [
+            "unfold processElement approach"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_fc51a8d4_bp_2"
         }
       ],
       "current_path": [
@@ -6573,6 +6584,10 @@
         {
           "branch_index": 1,
           "action": "Focus on subgoal 0: p < (stateAtStep input (x + 1)).piles.size..."
+        },
+        {
+          "branch_index": 2,
+          "action": null
         }
       ],
       "history": [
@@ -6580,13 +6595,20 @@
           0,
           "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b...",
           1
+        ],
+        [
+          1,
+          "Focus on subgoal 0: p < (stateAtStep input (x + 1)).piles.size...",
+          2
         ]
       ],
       "parent_map": {
-        "1": 0
+        "1": 0,
+        "2": 1
       },
       "edge_actions": {
-        "0,1": "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b..."
+        "0,1": "draft: by\n  intro input x y hx hy hxy h_same\n  -- Let p b...",
+        "1,2": "Focus on subgoal 0: p < (stateAtStep input (x + 1)).piles.size..."
       },
       "root_branch": "search_proof_48aa7ef7_bp_13",
       "search_id": "proof_fc51a8d4",
