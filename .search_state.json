@@ -6335,6 +6335,10 @@
             "have h_p_lt_succ : p < (stateAtStep input (x + 1)).piles.size := by rw [h_step_x]; omega": {
               "result": false,
               "note": null
+            },
+            "have h_pile_exists : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  calc p \u2264 (stateAtStep input x).piles.size := h_p_le_size_x\n       _ \u2264 (processElement input (stateAtStep input x) h_proc_x_lt).piles.size := h_mono_pile": {
+              "result": false,
+              "note": null
             }
           },
           "node_type": "OR",
@@ -6504,7 +6508,8 @@
         "have h_p_lt_size_x1 : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  rw [h_p_eq_bs]\n  have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega\n  have h_elem_eq : input[(stateAtStep input x).processed] = input[x] := by rw [h_proc_x]\n  have h_elem_eq' : input[(stateAtStep input x).processed]! = input[x]! := by rw [h_proc_x]\n  unfold processElement\n  simp only [h_elem_eq, h_elem_eq']\n  by_cases h_pos : binarySearchGE (stateAtStep input x).piles input[x] < (stateAtStep input x).piles.size\n  \u00b7 simp only [h_pos, dif_pos]\n    simp only [Array.size_set]\n    have h_eq : binarySearchGE (stateAtStep input x).piles input[x] = binarySearchGE (stateAtStep input x).piles input[x]! := by\n      congr; exact (List.getElem!_eq_getElem input x hx).symm\n    rw [\u2190 h_eq]; exact h_pos\n  \u00b7 simp only [h_pos, dif_neg]\n    simp only [Array.size_push]\n    have h_le := binarySearchGE_le_size (stateAtStep input x).piles input[x] (stateAtStep_pilesSorted input x)\n    have h_eq_size : binarySearchGE (stateAtStep input x).piles input[x] = (stateAtStep input x).piles.size := by omega\n    have h_eq : binarySearchGE (stateAtStep input x).piles input[x] = binarySearchGE (stateAtStep input x).piles input[x]! := by\n      congr; exact (List.getElem!_eq_getElem input x hx).symm\n    rw [\u2190 h_eq, h_eq_size]; omega": "search_proof_48aa7ef7_12_52d2f3d6",
         "have h_p_lt_succ : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  exact lt_of_le_of_lt h_p_le_size_x (Nat.lt_succ_of_le (processElement_piles_size_mono input (stateAtStep input x) h_proc_x_lt))": "search_proof_48aa7ef7_9_af3cfefe",
         "have h_mono_pile := processElement_piles_size_mono input (stateAtStep input x) h_proc_x_lt": "search_proof_48aa7ef7_9_fc088a1e",
-        "have h_p_lt_succ : p < (stateAtStep input (x + 1)).piles.size := by rw [h_step_x]; omega": "search_proof_48aa7ef7_13_1bbf62ad"
+        "have h_p_lt_succ : p < (stateAtStep input (x + 1)).piles.size := by rw [h_step_x]; omega": "search_proof_48aa7ef7_13_1bbf62ad",
+        "have h_pile_exists : p < (stateAtStep input (x + 1)).piles.size := by\n  rw [h_step_x]\n  calc p \u2264 (stateAtStep input x).piles.size := h_p_le_size_x\n       _ \u2264 (processElement input (stateAtStep input x) h_proc_x_lt).piles.size := h_mono_pile": "search_proof_48aa7ef7_13_a0d6c808"
       },
       "tree_type": "and_or",
       "metadata": {
