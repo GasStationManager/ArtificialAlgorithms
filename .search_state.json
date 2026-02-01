@@ -5806,7 +5806,12 @@
             "decide +kernel",
             "aesop"
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "rw [Array.getElem!_set_eq]": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "OR",
           "node_status": null,
           "git_branch": null,
@@ -5884,7 +5889,7 @@
         },
         {
           "branch_index": 17,
-          "action": null
+          "action": "rw [Array.getElem!_set_eq]"
         }
       ],
       "history": [
@@ -6022,7 +6027,7 @@
         "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]": "search_proof_8147a77f_14_da6b5f18",
         "subst hp_eq": "search_proof_8147a77f_15_f4c633ee",
         "simp only [LISState.piles]": "search_proof_8147a77f_16_e40cf041",
-        "rw [Array.getElem!_set_eq]": "search_proof_8147a77f_11_5060a844",
+        "rw [Array.getElem!_set_eq]": "search_proof_8147a77f_17_5060a844",
         "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos": "search_proof_8147a77f_13_319f003a"
       },
       "tree_type": "and_or",
