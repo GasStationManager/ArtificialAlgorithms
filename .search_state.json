@@ -3981,6 +3981,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_392e67b9_bp_9"
+        },
+        {
+          "summary": "After 'rename_i ih'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_392e67b9_bp_10"
         }
       ],
       "current_path": [
@@ -4015,6 +4029,10 @@
         {
           "branch_index": 9,
           "action": "rename_i ih"
+        },
+        {
+          "branch_index": 10,
+          "action": null
         }
       ],
       "history": [
@@ -4062,6 +4080,11 @@
           8,
           "induction d using Nat.strong_induction_on generalizing state assignments h_sorted",
           9
+        ],
+        [
+          9,
+          "rename_i ih",
+          10
         ]
       ],
       "parent_map": {
@@ -4073,7 +4096,8 @@
         "6": 5,
         "7": 6,
         "8": 7,
-        "9": 8
+        "9": 8,
+        "10": 9
       },
       "edge_actions": {
         "0,1": "intro input i hi",
@@ -4084,7 +4108,8 @@
         "5,6": "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
         "6,7": "intro state assignments h_sorted h_size h_le",
         "7,8": "generalize h_term : input.length - state.processed = d",
-        "8,9": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted"
+        "8,9": "induction d using Nat.strong_induction_on generalizing state assignments h_sorted",
+        "9,10": "rename_i ih"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
