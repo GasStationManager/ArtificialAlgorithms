@@ -6553,7 +6553,12 @@
             "Subgoal 4: (stateAtStep input y).piles[p]! \u2264 (stateAtStep inp...",
             "Subgoal 5: (stateAtStep input (x + 1)).piles[p]! = input[x]!..."
           ],
-          "taken_actions": {},
+          "taken_actions": {
+            "Focus on subgoal 0: p < (stateAtStep input (x + 1)).piles.size...": {
+              "result": null,
+              "note": null
+            }
+          },
           "node_type": "AND",
           "node_status": null,
           "git_branch": null,
@@ -6567,7 +6572,7 @@
         },
         {
           "branch_index": 1,
-          "action": null
+          "action": "Focus on subgoal 0: p < (stateAtStep input (x + 1)).piles.size..."
         }
       ],
       "history": [
