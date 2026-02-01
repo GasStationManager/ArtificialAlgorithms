@@ -5096,9 +5096,29 @@
       }
     },
     "proof_de4cf274": {
-      "active": false,
-      "nodes": [],
-      "current_path": [],
+      "active": true,
+      "nodes": [
+        {
+          "summary": "Prove: \u2200 (input : List Int) (p k l : Nat), k \u2264 l \u2192 p < (stateAtStep input k).piles.size \u2192 (stateAtStep input l).piles[p]! \u2264 (stateAtStep input k).piles[p]!",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_0"
+        }
+      ],
+      "current_path": [
+        {
+          "branch_index": 0,
+          "action": null
+        }
+      ],
       "history": [],
       "parent_map": {},
       "edge_actions": {},
@@ -5113,7 +5133,7 @@
         "tree_type": "and_or",
         "enable_memory": true,
         "created_at": "now",
-        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_de4cf274/META.md"
+        "meta": "See /home/gsm/src/ArtificialAlgorithms/.search_memory/proof_de4cf274/META.md\nPantograph proof search for: \u2200 (input : List Int) (p k l : Nat), k \u2264 l \u2192 p < (stateAtStep input k).piles.size \u2192 (stateAtStep input l).piles[p]! \u2264 (stateAtStep input k).piles[p]!"
       }
     }
   }
