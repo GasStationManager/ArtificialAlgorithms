@@ -5285,6 +5285,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_de4cf274_bp_10"
+        },
+        {
+          "summary": "Goal 0: k < input.length case",
+          "possible_actions": [
+            "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_11"
         }
       ],
       "current_path": [
@@ -5319,6 +5330,10 @@
         {
           "branch_index": 10,
           "action": "by_cases hk : k < input.length"
+        },
+        {
+          "branch_index": 11,
+          "action": null
         }
       ],
       "history": [
@@ -5371,6 +5386,11 @@
           9,
           "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h...",
           10
+        ],
+        [
+          10,
+          "by_cases hk : k < input.length",
+          11
         ]
       ],
       "parent_map": {
@@ -5383,7 +5403,8 @@
         "7": 5,
         "8": 7,
         "9": 5,
-        "10": 9
+        "10": 9,
+        "11": 10
       },
       "edge_actions": {
         "0,1": "intro input p k l hkl hp_at_k",
@@ -5395,7 +5416,8 @@
         "5,7": "rw [show k + (d + 1) = (k + 1) + d by omega]",
         "7,8": "rw [show k + (d + 1) = k + 1 + d by ring]",
         "5,9": "rw [show k + (d + 1) = (k + 1) + d by omega]",
-        "9,10": "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h..."
+        "9,10": "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h...",
+        "10,11": "by_cases hk : k < input.length"
       },
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
