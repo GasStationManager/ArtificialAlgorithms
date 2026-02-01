@@ -5626,6 +5626,19 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_8147a77f_bp_6"
+        },
+        {
+          "summary": "Case p = pos: need to show input[state.processed] <= state.piles[p]!",
+          "possible_actions": [
+            "subst hp_eq",
+            "simp only [LISState.piles]",
+            "rw [Array.getElem!_set_eq]"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_8147a77f_bp_7"
         }
       ],
       "current_path": [
@@ -5656,6 +5669,10 @@
         {
           "branch_index": 6,
           "action": "Focus on subgoal 0: { processed := state.processed + 1,\n        piles ..."
+        },
+        {
+          "branch_index": 7,
+          "action": null
         }
       ],
       "history": [
@@ -5688,6 +5705,11 @@
           5,
           "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
           6
+        ],
+        [
+          6,
+          "Focus on subgoal 0: { processed := state.processed + 1,\n        piles ...",
+          7
         ]
       ],
       "parent_map": {
@@ -5696,7 +5718,8 @@
         "3": 2,
         "4": 3,
         "5": 4,
-        "6": 5
+        "6": 5,
+        "7": 6
       },
       "edge_actions": {
         "0,1": "intro input state h_sorted h p hp",
@@ -5704,7 +5727,8 @@
         "2,3": "simp only",
         "3,4": "split_ifs with h_pos",
         "4,5": "Focus on subgoal 0: { processed := state.processed + 1,\n        piles ...",
-        "5,6": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]"
+        "5,6": "by_cases hp_eq : p = binarySearchGE state.piles input[state.processed]",
+        "6,7": "Focus on subgoal 0: { processed := state.processed + 1,\n        piles ..."
       },
       "root_branch": "search_proof_de4cf274_bp_11",
       "search_id": "proof_8147a77f",
