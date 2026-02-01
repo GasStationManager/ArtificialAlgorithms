@@ -5556,6 +5556,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_8147a77f_bp_2"
+        },
+        {
+          "summary": "After 'simp only'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_8147a77f_bp_3"
         }
       ],
       "current_path": [
@@ -5570,6 +5584,10 @@
         {
           "branch_index": 2,
           "action": "simp only"
+        },
+        {
+          "branch_index": 3,
+          "action": null
         }
       ],
       "history": [
@@ -5582,15 +5600,22 @@
           1,
           "unfold processElement",
           2
+        ],
+        [
+          2,
+          "simp only",
+          3
         ]
       ],
       "parent_map": {
         "1": 0,
-        "2": 1
+        "2": 1,
+        "3": 2
       },
       "edge_actions": {
         "0,1": "intro input state h_sorted h p hp",
-        "1,2": "unfold processElement"
+        "1,2": "unfold processElement",
+        "2,3": "simp only"
       },
       "root_branch": "search_proof_de4cf274_bp_11",
       "search_id": "proof_8147a77f",
