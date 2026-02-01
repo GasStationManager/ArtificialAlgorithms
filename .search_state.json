@@ -5827,12 +5827,12 @@
           ],
           "taken_actions": {
             "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos": {
-              "result": null,
+              "result": true,
               "note": null
             }
           },
           "node_type": "OR",
-          "node_status": null,
+          "node_status": true,
           "git_branch": null,
           "branch_point_branch": "search_proof_8147a77f_bp_18"
         }
@@ -5912,7 +5912,7 @@
         },
         {
           "branch_index": 18,
-          "action": "exact processElement_placed_le_top input state h_sorted h (binarySearchGE state.piles input[state.processed]) rfl h_pos"
+          "action": null
         }
       ],
       "history": [
