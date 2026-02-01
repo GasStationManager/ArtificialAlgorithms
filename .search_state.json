@@ -5315,6 +5315,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_de4cf274_bp_12"
+        },
+        {
+          "summary": "Prove k >= input.length case for Goal 0",
+          "possible_actions": [],
+          "taken_actions": {
+            "have h_done : \u00ac(stateAfter input (initLISState input) k).processed < input.length := by rw [stateAfter_processed]; simp only [initLISState, zero_add]; intro h; exact hk (Nat.lt_of_lt_of_le h (Nat.min_le_right k input.length)); unfold stateAtStep; rw [stateAfter_succ_done input (initLISState input) k h_done]; exact hp_at_k": {
+              "result": false,
+              "note": null
+            }
+          },
+          "node_type": "OR",
+          "node_status": false,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_de4cf274_bp_13"
         }
       ],
       "current_path": [
@@ -5415,6 +5429,11 @@
           11,
           "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)",
           12
+        ],
+        [
+          11,
+          "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)",
+          13
         ]
       ],
       "parent_map": {
@@ -5429,7 +5448,8 @@
         "9": 5,
         "10": 9,
         "11": 10,
-        "12": 11
+        "12": 11,
+        "13": 11
       },
       "edge_actions": {
         "0,1": "intro input p k l hkl hp_at_k",
@@ -5443,7 +5463,8 @@
         "5,9": "rw [show k + (d + 1) = (k + 1) + d by omega]",
         "9,10": "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h...",
         "10,11": "by_cases hk : k < input.length",
-        "11,12": "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)"
+        "11,12": "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)",
+        "11,13": "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)"
       },
       "root_branch": "search_proof_1b1b7b2d_bp_21",
       "search_id": "proof_de4cf274",
@@ -5462,7 +5483,8 @@
         "draft: by\n  rw [show k + (d + 1) = k + 1 + d by ring]\n  h...": "search_proof_de4cf274_9_fd106bed",
         "by_cases hk : k < input.length": "search_proof_de4cf274_10_1f839b18",
         "obtain \u27e8h_proc_lt, h_step\u27e9 := stateAtStep_succ input k hk; rw [h_step]; exact Nat.lt_of_lt_of_le hp_at_k (processElement_piles_size_mono input _ h_proc_lt)": "search_proof_de4cf274_11_b64b49ae",
-        "have h_done : \u00ac(stateAfter input (initLISState input) k).processed < input.length := by rw [stateAfter_processed]; simp only [initLISState, zero_add]; exact fun h => hk (Nat.lt_of_lt_of_le h (Nat.min_le_left k input.length))": "search_proof_de4cf274_12_11264361"
+        "have h_done : \u00ac(stateAfter input (initLISState input) k).processed < input.length := by rw [stateAfter_processed]; simp only [initLISState, zero_add]; exact fun h => hk (Nat.lt_of_lt_of_le h (Nat.min_le_left k input.length))": "search_proof_de4cf274_12_11264361",
+        "have h_done : \u00ac(stateAfter input (initLISState input) k).processed < input.length := by rw [stateAfter_processed]; simp only [initLISState, zero_add]; intro h; exact hk (Nat.lt_of_lt_of_le h (Nat.min_le_right k input.length)); unfold stateAtStep; rw [stateAfter_succ_done input (initLISState input) k h_done]; exact hp_at_k": "search_proof_de4cf274_13_ad228378"
       },
       "tree_type": "and_or",
       "metadata": {
