@@ -6322,6 +6322,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_48aa7ef7_bp_12"
+        },
+        {
+          "summary": "After 'have h_mono_pile := processElement_piles_size_mono input (stateAtStep input x) h_proc_x_lt'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_48aa7ef7_bp_13"
         }
       ],
       "current_path": [
@@ -6364,6 +6378,10 @@
         {
           "branch_index": 9,
           "action": "have h_mono_pile := processElement_piles_size_mono input (stateAtStep input x) h_proc_x_lt"
+        },
+        {
+          "branch_index": 13,
+          "action": null
         }
       ],
       "history": [
@@ -6426,6 +6444,11 @@
           9,
           "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
           12
+        ],
+        [
+          9,
+          "have h_mono_pile := processElement_piles_size_mono input (stateAtStep input x) h_proc_x_lt",
+          13
         ]
       ],
       "parent_map": {
@@ -6440,7 +6463,8 @@
         "9": 8,
         "10": 9,
         "11": 9,
-        "12": 9
+        "12": 9,
+        "13": 9
       },
       "edge_actions": {
         "0,1": "intro input x y hx hy hxy h_same",
@@ -6454,7 +6478,8 @@
         "8,9": "obtain \u27e8h_proc_x_lt, h_step_x\u27e9 := stateAtStep_succ input x hx",
         "9,10": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
         "9,11": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
-        "9,12": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega"
+        "9,12": "have h_proc_x : (stateAtStep input x).processed = x := by rw [stateAtStep_processed]; simp; omega",
+        "9,13": "have h_mono_pile := processElement_piles_size_mono input (stateAtStep input x) h_proc_x_lt"
       },
       "root_branch": "",
       "search_id": "proof_48aa7ef7",
