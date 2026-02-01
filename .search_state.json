@@ -3924,6 +3924,20 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_392e67b9_bp_6"
+        },
+        {
+          "summary": "After 'intro state assignments h_sorted h_size h_le'",
+          "possible_actions": [
+            "grind +suggestions",
+            "exact?",
+            "decide +kernel",
+            "aesop"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_392e67b9_bp_7"
         }
       ],
       "current_path": [
@@ -3946,6 +3960,10 @@
         {
           "branch_index": 6,
           "action": "intro state assignments h_sorted h_size h_le"
+        },
+        {
+          "branch_index": 7,
+          "action": null
         }
       ],
       "history": [
@@ -3978,6 +3996,11 @@
           5,
           "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
           6
+        ],
+        [
+          6,
+          "intro state assignments h_sorted h_size h_le",
+          7
         ]
       ],
       "parent_map": {
@@ -3986,7 +4009,8 @@
         "3": 1,
         "4": 3,
         "5": 3,
-        "6": 5
+        "6": 5,
+        "7": 6
       },
       "edge_actions": {
         "0,1": "intro input i hi",
@@ -3994,7 +4018,8 @@
         "1,3": "unfold pileAssignment stateAtStep",
         "3,4": "induction i using Nat.strong_induction_on generalizing input",
         "3,5": "induction i using Nat.strong_induction_on generalizing input",
-        "5,6": "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)"
+        "5,6": "suffices h : \u2200 (state : LISState input) (assignments : Array Nat) (h_sorted : PilesSorted state.piles) (h_size : assignments.size = state.processed), state.processed \u2264 i \u2192 (pileAssignmentGo input state assignments h_sorted)[i]! = binarySearchGE (stateAfter input state (i - state.processed)).piles input[i]! by unfold pileAssignment stateAtStep; exact h (initLISState input) #[] pilesSorted_empty rfl (Nat.zero_le i)",
+        "6,7": "intro state assignments h_sorted h_size h_le"
       },
       "root_branch": "v4.26.0",
       "search_id": "proof_392e67b9",
