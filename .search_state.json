@@ -4805,6 +4805,17 @@
           "node_status": null,
           "git_branch": null,
           "branch_point_branch": "search_proof_1b1b7b2d_bp_20"
+        },
+        {
+          "summary": "Direct unfold proof",
+          "possible_actions": [
+            "rw [hp, pileAssignment_at_state input i hi]\n let pos := binarySearchGE (stateAtStep input i).piles input[i]!\n show (stateAtStep input (i + 1)).piles[pos]! = input[i]!\n have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega\n have h_proc_lt : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi\n have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [pileAssignment_at_state input i hi] at hp_lt; exact hp_lt\n -- Key: stateAtStep (i+1) = processElement (stateAtStep i)\n -- When pos < piles.size, processElement uses set, so piles[pos] = input[i]\n simp only [stateAtStep]\n rw [stateAfter_succ _ _ i h_proc_lt, stateAfter_zero]"
+          ],
+          "taken_actions": {},
+          "node_type": "OR",
+          "node_status": null,
+          "git_branch": null,
+          "branch_point_branch": "search_proof_1b1b7b2d_bp_21"
         }
       ],
       "current_path": [
@@ -4883,6 +4894,10 @@
         {
           "branch_index": 20,
           "action": "intro input i hi p hp hp_lt"
+        },
+        {
+          "branch_index": 21,
+          "action": null
         }
       ],
       "history": [
@@ -4985,6 +5000,11 @@
           19,
           "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]",
           20
+        ],
+        [
+          20,
+          "intro input i hi p hp hp_lt",
+          21
         ]
       ],
       "parent_map": {
@@ -5007,7 +5027,8 @@
         "17": 16,
         "18": 17,
         "19": 18,
-        "20": 19
+        "20": 19,
+        "21": 20
       },
       "edge_actions": {
         "0,1": "intro input i hi p hp hp_lt",
@@ -5029,7 +5050,8 @@
         "16,17": "have h_pos_lt : pos < (stateAtStep input i).piles.size := by rw [h_pos_eq]; exact hp_lt",
         "17,18": "have h_proc : (stateAtStep input i).processed = i := by rw [stateAtStep_processed]; simp; omega",
         "18,19": "have h_proc_lt_len : (stateAtStep input i).processed < input.length := by rw [h_proc]; exact hi",
-        "19,20": "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]"
+        "19,20": "simp only [stateAtStep, stateAfter_succ _ _ 0 h_proc_lt_len, stateAfter_zero]",
+        "20,21": "intro input i hi p hp hp_lt"
       },
       "root_branch": "search_proof_1e1869e8_bp_0",
       "search_id": "proof_1b1b7b2d",
