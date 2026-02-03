@@ -1,6 +1,21 @@
 /-
 Verified O(n log n) Longest Increasing Subsequence using Patience Sorting
 Uses binary search for pile placement and predecessor tracking for reconstruction.
+
+## Quick Reference
+
+**Specification** (lines 16-30):
+- `StrictlyIncreasing` : List is a chain with `· < ·`
+- `Subseq` : Subsequence relation (maintains relative order)
+- `IsLIS` : Full specification (increasing ∧ subsequence ∧ maximal length)
+
+**Main Function** (line 2051):
+- `longestIncreasingSubsequence` : Returns `{result // StrictlyIncreasing result ∧ Subseq result input ∧ result.length = piles.size}`
+
+**Key Theorems**:
+- `lis_length_le_piles_size` (line 3069): Upper bound - any IS has length ≤ piles.size
+- `exists_lis_of_length_piles_size` (line 3136): Lower bound - algorithm achieves piles.size
+- `piles_size_eq_lis_length_full` (line 3145): Main theorem - LIS length = piles.size
 -/
 
 import Mathlib.Tactic
@@ -1730,6 +1745,93 @@ theorem reconstructLIS_length_eq_chainLength (input : List Int) (preds : Array I
   simp only [List.append_nil, List.length_map]
   exact (chainLength_eq_reconstructGoIndices_length input preds startIdx input.length).symm
 
+/-- chainLength is unchanged by push when starting index is in old range and predecessors are valid -/
+theorem chainLength_push_lt (input : List Int) (preds : Array Int) (newPred : Int)
+    (idx : Int) (fuel : Nat)
+    (h_valid : ∀ i, i < preds.size → i < input.length → ValidPredecessor input preds i)
+    (h_idx : 0 ≤ idx → idx.toNat < preds.size) :
+    chainLength input (preds.push newPred) idx fuel = chainLength input preds idx fuel := by
+  induction fuel generalizing idx with
+  | zero => unfold chainLength; simp
+  | succ n ih =>
+    unfold chainLength
+    simp only [Nat.succ_ne_zero, ↓reduceIte, Nat.add_sub_cancel]
+    by_cases h_idx_valid : idx >= 0 ∧ idx.toNat < input.length
+    · simp only [h_idx_valid, ↓reduceIte]
+      have h_idx_lt_preds : idx.toNat < preds.size := h_idx h_idx_valid.1
+      have h_idx_lt_push : idx.toNat < (preds.push newPred).size := by simp; omega
+      simp only [h_idx_lt_push, h_idx_lt_preds, ↓reduceIte]
+      have h_lookup_eq : (preds.push newPred)[idx.toNat]! = preds[idx.toNat]! :=
+        Array.getElem!_push_lt preds newPred idx.toNat h_idx_lt_preds
+      rw [h_lookup_eq]
+      have h_pred_bound : 0 ≤ preds[idx.toNat]! → preds[idx.toNat]!.toNat < preds.size := by
+        intro h_pred_nonneg
+        have h_vp := h_valid idx.toNat h_idx_lt_preds h_idx_valid.2
+        unfold ValidPredecessor at h_vp
+        have h_vp' := h_vp h_idx_lt_preds
+        cases h_vp' with
+        | inl h_neg1 => simp only [h_neg1] at h_pred_nonneg; omega
+        | inr h_pos => have : preds[idx.toNat]!.toNat < idx.toNat := h_pos.2.1; omega
+      rw [ih (preds[idx.toNat]!) h_pred_bound]
+    · simp only [h_idx_valid, ↓reduceIte]
+
+/-- chainLength is bounded by fuel -/
+theorem chainLength_le_fuel (input : List Int) (preds : Array Int) (idx : Int) (fuel : Nat) :
+    chainLength input preds idx fuel ≤ fuel := by
+  induction fuel generalizing idx with
+  | zero => unfold chainLength; simp
+  | succ n ih =>
+    unfold chainLength
+    simp only [Nat.succ_ne_zero, not_false_eq_true, ↓reduceIte, Nat.add_sub_cancel]
+    split_ifs with hc hpred
+    · have := ih preds[idx.toNat]!; omega
+    · have := ih (-1); omega
+    · omega
+
+/-- chainLength is monotonic in fuel -/
+theorem chainLength_mono_fuel (input : List Int) (preds : Array Int) (idx : Int) (fuel1 fuel2 : Nat)
+    (h : fuel1 ≤ fuel2) : chainLength input preds idx fuel1 ≤ chainLength input preds idx fuel2 := by
+  induction fuel2 generalizing idx fuel1 with
+  | zero => simp at h; simp [h]
+  | succ n ih =>
+    cases fuel1 with
+    | zero => unfold chainLength; simp
+    | succ m =>
+      unfold chainLength
+      simp only [Nat.succ_ne_zero, not_false_eq_true, ↓reduceIte, Nat.add_sub_cancel]
+      split_ifs with hc hpred
+      · have h_ih := ih preds[idx.toNat]! m (by omega); omega
+      · have h_ih := ih (-1) m (by omega); omega
+      · omega
+
+/-- chainLength with more fuel gives same result when result <= smaller fuel -/
+theorem chainLength_fuel_sufficient (input : List Int) (preds : Array Int) (idx : Int) (fuel1 fuel2 : Nat)
+    (h1 : fuel1 ≤ fuel2) (h2 : chainLength input preds idx fuel2 ≤ fuel1) :
+    chainLength input preds idx fuel1 = chainLength input preds idx fuel2 := by
+  have h_le := chainLength_mono_fuel input preds idx fuel1 fuel2 h1
+  have h_ge : chainLength input preds idx fuel2 ≤ chainLength input preds idx fuel1 := by
+    induction fuel1 generalizing idx fuel2 with
+    | zero =>
+      have h_zero : chainLength input preds idx fuel2 = 0 := by omega
+      rw [h_zero]; exact Nat.zero_le _
+    | succ m ih =>
+      cases fuel2 with
+      | zero => unfold chainLength; simp
+      | succ n =>
+        unfold chainLength at h2 ⊢
+        simp only [Nat.succ_ne_zero, not_false_eq_true, ↓reduceIte, Nat.add_sub_cancel] at h2 ⊢
+        split_ifs with hc hpred
+        · simp only [hc, hpred, and_self, ↓reduceIte] at h2
+          have h_bound : chainLength input preds preds[idx.toNat]! n ≤ m := by omega
+          have h1' : m ≤ n := by have := chainLength_le_fuel input preds preds[idx.toNat]! n; omega
+          have h_ih := ih preds[idx.toNat]! n h1' h_bound; omega
+        · simp only [hc, hpred, and_self, ↓reduceIte] at h2
+          have h_bound : chainLength input preds (-1) n ≤ m := by omega
+          have h1' : m ≤ n := by have := chainLength_le_fuel input preds (-1) n; omega
+          have h_ih := ih (-1) n h1' h_bound; omega
+        · rfl
+  omega
+
 /-- Key invariant: For element at index i placed on pile p, chainLength from i equals p + 1.
     This is tracked via the pilePositions implicit in the algorithm structure. -/
 def ChainLengthInvariant (input : List Int) (state : LISState input) : Prop :=
@@ -1744,35 +1846,170 @@ theorem initState_chainLengthInvariant (input : List Int) :
   unfold ChainLengthInvariant initLISState
   simp
 
+/-- Helper: chainLength from new element equals pos + 1 -/
+private theorem chainLength_new_element (input : List Int) (state : LISState input)
+    (h_inv : ChainLengthInvariant input state)
+    (h_preds_valid : AllPredecessorsValid input state.predecessors state.processed)
+    (h_indices_range : PileIndicesInRange state)
+    (h_piles_le : state.piles.size ≤ state.processed)
+    (h_lt : state.processed < input.length)
+    (pos : Nat) (h_pos_le : pos ≤ state.piles.size) (h_pos_lt_len : pos < input.length) :
+    let pred : Int := if pos > 0 then state.pileIndices[pos - 1]! else -1
+    let newPreds := state.predecessors.push pred
+    chainLength input newPreds state.processed input.length = pos + 1 := by
+  intro pred newPreds
+  have h_preds_size : state.predecessors.size = state.processed := state.h_pred_size
+  have h_proc_lt_newPreds : state.processed < newPreds.size := by
+    simp only [newPreds, Array.size_push, h_preds_size]; omega
+  have h_toNat_id : (state.processed : Int).toNat = state.processed := Int.toNat_natCast state.processed
+  -- First step of chainLength
+  unfold chainLength
+  simp only [Nat.succ_ne_zero, not_false_eq_true, ge_iff_le, Int.natCast_nonneg, h_lt, and_self,
+             ↓reduceIte, h_toNat_id, h_proc_lt_newPreds, Nat.add_sub_cancel]
+  have h_lookup : newPreds[state.processed]! = pred := by
+    simp only [newPreds]
+    have h_eq : state.processed = state.predecessors.size := by rw [h_preds_size]
+    rw [h_eq]
+    exact Array.getElem!_push_last state.predecessors pred
+  rw [h_lookup]
+  by_cases h_pos : pos > 0
+  · -- pos > 0: pred = pileIndices[pos-1]
+    have h_pred_def : pred = (state.pileIndices[pos - 1]! : Int) := by simp only [pred, h_pos, ↓reduceIte]
+    have h_pm1 : pos - 1 < state.piles.size := by omega
+    have h_pm1_idx : pos - 1 < state.pileIndices.size := by rw [state.h_piles_size]; exact h_pm1
+    have h_pred_lt_proc : state.pileIndices[pos - 1]! < state.processed := h_indices_range (pos - 1) h_pm1_idx
+    have h_pred_nonneg : pred >= 0 := by rw [h_pred_def]; omega
+    have h_valid_for_push : ∀ i, i < state.predecessors.size → i < input.length →
+        ValidPredecessor input state.predecessors i := by
+      intro i hi _; rw [h_preds_size] at hi; exact h_preds_valid i hi
+    have h_pred_lt_preds : 0 ≤ pred → pred.toNat < state.predecessors.size := by
+      intro _; rw [h_pred_def, Int.toNat_natCast, h_preds_size]; exact h_pred_lt_proc
+    rw [chainLength_push_lt input state.predecessors _ pred _ h_valid_for_push h_pred_lt_preds]
+    have h_inv_pm1 := h_inv (pos - 1) h_pm1
+    simp only at h_inv_pm1
+    have h_top_valid' : state.pileIndices[pos - 1]! < input.length := by omega
+    have h_chain_eq := h_inv_pm1 h_top_valid'
+    have h_len_ne : input.length ≠ 0 := by omega
+    simp only [h_len_ne, ↓reduceIte, h_pred_def]
+    have h_chain_val : chainLength input state.predecessors (state.pileIndices[pos - 1]!) input.length = pos := by omega
+    have h_fuel_suff : chainLength input state.predecessors (state.pileIndices[pos - 1]!) (input.length - 1) =
+        chainLength input state.predecessors (state.pileIndices[pos - 1]!) input.length := by
+      apply chainLength_fuel_sufficient
+      · omega
+      · rw [h_chain_val]; omega
+    rw [h_fuel_suff, h_chain_val]; omega
+  · -- pos = 0: pred = -1
+    push_neg at h_pos
+    have h_pos_eq : pos = 0 := Nat.eq_zero_of_le_zero h_pos
+    subst h_pos_eq
+    simp only [pred, Nat.lt_irrefl, ↓reduceIte]
+    have h_len_ne : input.length ≠ 0 := by omega
+    simp only [h_len_ne, ↓reduceIte]
+    unfold chainLength
+    simp only [Nat.succ_ne_zero, Nat.add_sub_cancel, ge_iff_le,
+               Int.reduceNeg, Int.reduceLT, Int.reduceLE, false_and,
+               not_true_eq_false, ↓reduceIte, ite_self]
+
 /-- ChainLengthInvariant is preserved by processElement -/
 theorem chainLengthInvariant_preserved (input : List Int) (state : LISState input)
     (h_inv : ChainLengthInvariant input state)
     (h_sorted : PilesSorted state.piles)
+    (h_preds_valid : AllPredecessorsValid input state.predecessors state.processed)
+    (h_indices_range : PileIndicesInRange state)
+    (h_piles_le : state.piles.size ≤ state.processed)
     (h_lt : state.processed < input.length) :
     ChainLengthInvariant input (processElement input state h_lt) := by
-  -- The proof strategy:
-  -- For the new element at state.processed placed at pile position pos:
-  -- - If pos = 0: predecessor is -1, so chainLength = 1 = pos + 1
-  -- - If pos > 0: predecessor is pileIndices[pos-1], and by IH on pile pos-1,
-  --   chainLength from that = pos, so chainLength from state.processed = pos + 1
-  -- For existing piles p ≠ pos:
-  -- - pileIndices[p] is unchanged (or in bounds for push)
-  -- - Indices in chain are all < state.processed (they were placed earlier)
-  -- - So chainLength using newPreds equals chainLength using old preds
-  -- This requires proving that chainLength is unchanged when we push to predecessors
-  -- for indices that are < state.processed.
-  sorry
+  unfold ChainLengthInvariant processElement
+  simp only
+  -- Common setup
+  have h_preds_size : state.predecessors.size = state.processed := state.h_pred_size
+  have h_valid_for_push : ∀ i, i < state.predecessors.size → i < input.length →
+      ValidPredecessor input state.predecessors i := by
+    intro i hi _; rw [h_preds_size] at hi; exact h_preds_valid i hi
+  have h_spec := binarySearchGE_spec state.piles input[state.processed] h_sorted
+  set pos := binarySearchGE state.piles input[state.processed] with hpos
+  -- Split on whether we replace or push
+  by_cases h_pos_lt : pos < state.piles.size
+  · -- Case: modify existing pile (pos < piles.size)
+    simp only [← hpos, h_pos_lt, ↓reduceDIte]
+    intro p hp h_top_valid
+    simp only [Array.size_set] at hp
+    have h_p_lt_orig : p < state.piles.size := hp
+    by_cases h_p_eq : p = pos
+    · -- p = pos
+      subst h_p_eq
+      have h_pos_idx : pos < state.pileIndices.size := by rw [state.h_piles_size]; exact h_pos_lt
+      simp only [Array.getElem!_set_eq state.pileIndices pos state.processed h_pos_idx] at h_top_valid ⊢
+      exact chainLength_new_element input state h_inv h_preds_valid h_indices_range h_piles_le h_lt
+        pos (Nat.le_of_lt h_pos_lt) (by omega)
+    · -- p ≠ pos
+      have h_p_idx : p < state.pileIndices.size := by rw [state.h_piles_size]; exact h_p_lt_orig
+      have h_pos_idx : pos < state.pileIndices.size := by rw [state.h_piles_size]; exact h_pos_lt
+      simp only [Array.getElem!_set_ne state.pileIndices pos p state.processed h_pos_idx h_p_eq h_p_idx] at h_top_valid ⊢
+      have h_old_idx_lt : state.pileIndices[p]! < state.processed := h_indices_range p h_p_idx
+      have h_idx_bound : 0 ≤ (state.pileIndices[p]! : Int) → (state.pileIndices[p]! : Int).toNat < state.predecessors.size := by
+        intro _; simp only [Int.toNat_natCast]; rw [h_preds_size]; exact h_old_idx_lt
+      rw [chainLength_push_lt input state.predecessors _ _ _ h_valid_for_push h_idx_bound]
+      exact h_inv p h_p_lt_orig (by omega)
+  · -- Case: push new pile (pos >= piles.size, hence pos = piles.size)
+    push_neg at h_pos_lt
+    have h_pos_eq : pos = state.piles.size := Nat.le_antisymm h_spec.1 h_pos_lt
+    simp only [← hpos, h_pos_lt, not_lt.mpr h_pos_lt, ↓reduceDIte]
+    intro p hp h_top_valid
+    simp only [Array.size_push] at hp
+    have h_p_bound : p < state.piles.size + 1 := hp
+    by_cases h_p_eq : p = state.piles.size
+    · -- p = new pile
+      subst h_p_eq
+      -- Both h_top_valid and goal have state.piles.size as index
+      -- Convert state.piles.size → state.pileIndices.size for Array.getElem!_push_last in both
+      rw [← state.h_piles_size] at h_top_valid ⊢
+      -- Now use Array.getElem!_push_last in both
+      rw [Array.getElem!_push_last] at h_top_valid ⊢
+      -- Goal RHS: state.pileIndices.size + 1, convert to pos + 1
+      rw [state.h_piles_size, ← h_pos_eq]
+      -- Now goal has pos + 1 which matches chainLength_new_element
+      exact chainLength_new_element input state h_inv h_preds_valid h_indices_range h_piles_le h_lt
+        pos (by omega) (by omega)
+    · -- p < state.piles.size
+      have h_p_lt : p < state.piles.size := by omega
+      have h_p_idx : p < state.pileIndices.size := by rw [state.h_piles_size]; exact h_p_lt
+      simp only [Array.getElem!_push_lt state.pileIndices state.processed p h_p_idx] at h_top_valid ⊢
+      have h_old_idx_lt : state.pileIndices[p]! < state.processed := h_indices_range p h_p_idx
+      have h_idx_bound : 0 ≤ (state.pileIndices[p]! : Int) → (state.pileIndices[p]! : Int).toNat < state.predecessors.size := by
+        intro _; simp only [Int.toNat_natCast]; rw [h_preds_size]; exact h_old_idx_lt
+      rw [chainLength_push_lt input state.predecessors _ _ _ h_valid_for_push h_idx_bound]
+      exact h_inv p h_p_lt (by omega)
+
+/-- Helper: piles.size ≤ processed is preserved -/
+theorem piles_size_le_processed_preserved (input : List Int) (state : LISState input)
+    (h_inv : state.piles.size ≤ state.processed)
+    (h_lt : state.processed < input.length) :
+    (processElement input state h_lt).piles.size ≤ (processElement input state h_lt).processed := by
+  unfold processElement
+  simp only
+  split_ifs with h_pos
+  all_goals simp only [Array.size_set, Array.size_push]; omega
 
 /-- runPatience.go preserves ChainLengthInvariant -/
 theorem runPatience_go_chainLengthInvariant (input : List Int) (state : LISState input)
     (h_inv : ChainLengthInvariant input state)
-    (h_sorted : PilesSorted state.piles) :
+    (h_sorted : PilesSorted state.piles)
+    (h_preds_valid : AllPredecessorsValid input state.predecessors state.processed)
+    (h_indices_range : PileIndicesInRange state)
+    (h_piles_le : state.piles.size ≤ state.processed)
+    (h_tops_match : PileTopsMatch input state) :
     ChainLengthInvariant input (runPatience.go input state) := by
   unfold runPatience.go
   split_ifs with h
   · have h_sorted' := pilesSorted_preserved input state h_sorted h
+    have h_preds_valid' := allPredecessorsValid_preserved input state h_preds_valid h_sorted h_tops_match h_indices_range h
+    have h_indices_range' := pileIndicesInRange_preserved input state h_indices_range h
+    have h_piles_le' := piles_size_le_processed_preserved input state h_piles_le h
+    have h_tops_match' := pileTopsMatch_preserved input state h_tops_match h
     exact runPatience_go_chainLengthInvariant input (processElement input state h)
-      (chainLengthInvariant_preserved input state h_inv h_sorted h) h_sorted'
+      (chainLengthInvariant_preserved input state h_inv h_sorted h_preds_valid h_indices_range h_piles_le h)
+      h_sorted' h_preds_valid' h_indices_range' h_piles_le' h_tops_match'
   · exact h_inv
 termination_by input.length - state.processed
 decreasing_by exact processElement_decreases input state h
@@ -1783,6 +2020,8 @@ theorem runPatience_chainLengthInvariant (input : List Int) :
   unfold runPatience
   exact runPatience_go_chainLengthInvariant input (initLISState input)
     (initState_chainLengthInvariant input) pilesSorted_empty
+    (initState_allPredecessorsValid input) (initState_pileIndicesInRange input)
+    (by simp [initLISState]) (initState_pileTopsMatch input)
 
 /-- Key theorem: reconstructLIS length equals piles.size -/
 theorem reconstructLIS_from_runPatience_length (input : List Int)
