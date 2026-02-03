@@ -56,8 +56,8 @@ def my_insert (x : Nat) (l : List Nat) (hl: l.Sorted (· ≤ ·))
               intro b hb
               cases hb with
               | head => exact hcomp
-              | tail _ hb' => 
-                have h_le_b : h ≤ b := List.rel_of_sorted_cons hl b hb'
+              | tail _ hb' =>
+                have h_le_b : h ≤ b := List.rel_of_pairwise_cons hl hb'
                 exact Nat.le_trans hcomp h_le_b
             · -- h :: t is sorted
               exact hl
@@ -85,7 +85,7 @@ def my_insert (x : Nat) (l : List Nat) (hl: l.Sorted (· ≤ ·))
               exact Nat.le_of_lt h_lt_x
             | tail _ hb_in_t =>
               -- b ∈ t, and since h :: t is sorted, h ≤ b
-              exact List.rel_of_sorted_cons hl b hb_in_t
+              exact List.rel_of_pairwise_cons hl hb_in_t
           · -- res.val is sorted
             exact res.2.1
         · -- Prove h :: res.val ~ x :: h :: t

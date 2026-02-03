@@ -717,7 +717,7 @@ lemma accumulation_point_drift_zero
           _ ≤ ‖∑ k ∈ Finset.Ico s e, (-(γ (k + 1)) • h (X k ω))‖ +
                 ‖∑ k ∈ Finset.Ico s e, U k‖ := norm_add_le _ _
           _ ≤ C_h * (∑ k ∈ Finset.Ico s e, γ (k + 1)) + ‖∑ k ∈ Finset.Ico s e, U k‖ := by
-                exact add_le_add_right h_drift_sum _
+                exact add_le_add h_drift_sum (le_refl _)
 
       -- Step 6: Noise bound (Cauchy partial sums)
       have h_noise_bound : ‖∑ k ∈ Finset.Ico s e, U k‖ < δ / 4 := by
@@ -1049,7 +1049,7 @@ theorem convergence_simplified
       · apply mul_pos (sq_pos_of_pos hσ_pos)
         have h_shift : Summable (fun k => (γ (k + 1))^2) :=
           (summable_nat_add_iff 1).mpr asm.base.gamma_sq_sum_fin
-        exact tsum_pos h_shift (fun k => sq_nonneg _) 0 (sq_pos_of_pos (asm.base.gamma_pos 1))
+        exact h_shift.tsum_pos (fun k => sq_nonneg _) 0 (sq_pos_of_pos (asm.base.gamma_pos 1))
       · intro n
         -- E[‖S_n‖²] = E[‖∑_{k<n} U_{k+1}‖²] = ∑_{k<n} E[‖U_{k+1}‖²] (orthogonality)
         -- ≤ ∑_{k<n} γ_{k+1}² σ² ≤ σ² ∑_k γ_k²
@@ -1266,7 +1266,7 @@ theorem convergence_simplified
                   _ = ∫ ω, ‖U (m + 1) ω‖^2 ∂μ + ∫ ω, ‖Sm ω‖^2 ∂μ := by ring
                   _ ≤ ∫ ω, ‖U (m + 1) ω‖^2 ∂μ + ∑ x ∈ Finset.range m, ∫ ω, ‖U (x + 1) ω‖^2 ∂μ := by
                       simp only [hSm_def]
-                      apply add_le_add_left ih
+                      apply add_le_add_right ih
           _ ≤ ∑ k ∈ Finset.range n, (γ (k + 1))^2 * σ^2 := by
               apply Finset.sum_le_sum
               intro k _
