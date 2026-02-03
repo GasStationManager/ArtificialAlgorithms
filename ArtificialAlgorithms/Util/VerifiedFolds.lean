@@ -474,5 +474,691 @@ def findMinArrFin (a : Array Int) (h : 0 < a.size) :
   let ⟨result, hresult⟩ := Fin.dfoldl a.size motive step init
   ⟨result, fun i => hresult i (by simp [Fin.last])⟩
 
+/-! ## Alternative: Direct foldl with Manual Induction
+
+This section demonstrates an alternative pattern for verified folds using direct
+`List.foldl` with manual induction on the list suffix. This approach is cleaner than
+`ListFoldAcc` when:
+
+- The invariant depends on indices into the original list (e.g., `prices.getD i 0`)
+- You don't need permutation reasoning
+- You're processing a list suffix with `foldl`
+
+**Example: Maximum Stock Profit**
+
+Given a list of stock prices where `prices[i]` is the price on day `i`, find the
+maximum profit from buying on one day and selling on a later day. The algorithm
+maintains:
+- `minPrice`: minimum price seen so far (can buy at this price)
+- `maxProfit`: best profit achievable (max of `price - minPrice` seen so far)
+
+**Key Pattern:**
+1. Define an invariant structure with `k_bound : k ≤ list.length` and properties for indices `< k`
+2. Prove `init`: invariant holds at k=1 after processing first element
+3. Prove `step`: invariant preservation from k to k+1
+4. Prove `foldl_invariant_aux`: induction on suffix with `h_suffix : list.drop k = suffix`
+5. Final theorem applying the aux lemma
+-/
+
+/-- State for max profit calculation: tracks minimum price seen and best profit so far -/
+structure MaxProfitState where
+  minPrice : Int
+  maxProfit : Int
+  deriving Repr, DecidableEq
+
+/-- Minimum of first k elements of prices (prices[0..k)) -/
+def minOfFirstK (prices : List Int) (k : Nat) : Int :=
+  if k = 0 then 0  -- vacuous case
+  else (List.range k).foldl (fun acc i => min acc (prices.getD i 0)) (prices.getD 0 0)
+
+/-- Invariant after processing k prices from the list.
+
+The key insight is that we track:
+- `minPrice`: the minimum of prices[0..k), so we can "buy" at this price
+- `maxProfit`: the maximum achievable profit considering all buy/sell pairs in [0, k)
+
+The property `maxP_ge` captures: for any day j < k, if we sell on day j, the best
+profit (buying at the minimum price up to and including day j) is bounded by maxProfit.
+-/
+structure MaxProfitInv (prices : List Int) (state : MaxProfitState) (k : Nat) : Prop where
+  k_bound : k ≤ prices.length
+  -- minPrice equals minimum of prices[0..k)
+  minP_eq : k > 0 → state.minPrice = minOfFirstK prices k
+  -- maxProfit is non-negative (we can always choose not to trade)
+  maxP_nonneg : 0 ≤ state.maxProfit
+  -- maxProfit bounds the profit of selling on any day j < k
+  -- (buying at the running minimum up to that point)
+  maxP_ge : ∀ j, j < k → prices.getD j 0 - minOfFirstK prices (j + 1) ≤ state.maxProfit
+
+/-- Step function: update state with the next price -/
+def maxProfitStep (state : MaxProfitState) (price : Int) : MaxProfitState :=
+  { minPrice := min state.minPrice price
+    maxProfit := max state.maxProfit (price - state.minPrice) }
+
+/-- Initialize state with the first price: minPrice = price, maxProfit = 0 -/
+def maxProfitInit (price : Int) : MaxProfitState :=
+  { minPrice := price, maxProfit := 0 }
+
+/-! ### Key Lemmas -/
+
+/-- Helper: minOfFirstK for k+1 equals min of minOfFirstK k and prices[k] -/
+theorem minOfFirstK_succ (prices : List Int) (k : Nat) (hk_pos : k > 0) (_hk : k < prices.length) :
+    minOfFirstK prices (k + 1) = min (minOfFirstK prices k) (prices.getD k 0) := by
+  simp only [minOfFirstK]
+  have hk1 : k + 1 ≠ 0 := by omega
+  have hkne : k ≠ 0 := by omega
+  simp only [hk1, hkne, ↓reduceIte, List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- Init lemma: After processing the first element, the invariant holds at k=1 -/
+theorem maxProfitInv_init (prices : List Int) (h : prices.length > 0) :
+    MaxProfitInv prices (maxProfitInit (prices.getD 0 0)) 1 := by
+  constructor
+  · -- k_bound: 1 ≤ prices.length
+    exact h
+  · -- minP_eq: minPrice = minOfFirstK prices 1
+    intro _
+    simp only [maxProfitInit, minOfFirstK]
+    have h1 : (1 : Nat) ≠ 0 := by omega
+    simp only [h1, ↓reduceIte, List.range_one, List.foldl_cons, List.foldl_nil, min_self]
+  · -- maxP_nonneg: 0 ≤ maxProfit
+    simp [maxProfitInit]
+  · -- maxP_ge: for all j < 1, profit bound holds
+    intro j hj
+    have hj0 : j = 0 := Nat.lt_one_iff.mp hj
+    subst hj0
+    simp only [maxProfitInit, minOfFirstK, Nat.zero_add]
+    have h1 : (1 : Nat) ≠ 0 := by omega
+    simp only [h1, ↓reduceIte, List.range_one, List.foldl_cons, List.foldl_nil, min_self, sub_self, le_refl]
+
+/-- Step lemma: If invariant holds at k with k > 0, it holds at k+1 after processing prices[k] -/
+theorem maxProfitInv_step (prices : List Int) (state : MaxProfitState) (k : Nat)
+    (hinv : MaxProfitInv prices state k) (hk_pos : k > 0) (hk : k < prices.length) :
+    MaxProfitInv prices (maxProfitStep state (prices.getD k 0)) (k + 1) := by
+  constructor
+  · -- k_bound: k + 1 ≤ prices.length
+    omega
+  · -- minP_eq: new minPrice = minOfFirstK prices (k+1)
+    intro _
+    simp only [maxProfitStep]
+    have hmin := hinv.minP_eq hk_pos
+    rw [hmin, minOfFirstK_succ prices k hk_pos hk]
+  · -- maxP_nonneg: 0 ≤ max state.maxProfit (price - state.minPrice)
+    simp only [maxProfitStep]
+    exact le_max_of_le_left hinv.maxP_nonneg
+  · -- maxP_ge: for all j < k+1, profit bound holds
+    intro j hj
+    simp only [maxProfitStep]
+    -- Case split: j < k or j = k
+    by_cases hjlt : j < k
+    · -- Case j < k: use hinv.maxP_ge
+      have h := hinv.maxP_ge j hjlt
+      calc prices.getD j 0 - minOfFirstK prices (j + 1)
+          ≤ state.maxProfit := h
+        _ ≤ max state.maxProfit (prices.getD k 0 - state.minPrice) := le_max_left _ _
+    · -- Case j = k: need to show prices[k] - minOfFirstK(k+1) ≤ max(...)
+      have hjk : j = k := by omega
+      subst hjk
+      -- state.minPrice = minOfFirstK prices j
+      have hmin := hinv.minP_eq hk_pos
+      -- minOfFirstK prices (j+1) = min (minOfFirstK prices j) (prices.getD j 0)
+      rw [minOfFirstK_succ prices j hk_pos hk, ← hmin]
+      -- Now goal has state.minPrice instead of minOfFirstK prices j
+      -- Case split on whether state.minPrice ≤ prices[j]
+      by_cases hle : state.minPrice ≤ prices.getD j 0
+      · -- Case state.minPrice ≤ prices[j]: min = state.minPrice
+        rw [min_eq_left hle]
+        exact le_max_right _ _
+      · -- Case state.minPrice > prices[j]: min = prices[j], so diff = 0
+        push_neg at hle
+        rw [min_eq_right (Int.le_of_lt hle)]
+        simp only [sub_self]
+        exact le_max_of_le_left hinv.maxP_nonneg
+
+/-- Auxiliary lemma: foldl over suffix maintains invariant.
+    This uses induction on the suffix with the connection `suffix = prices.drop k`. -/
+theorem maxProfitInv_foldl_aux (prices : List Int) (state : MaxProfitState) (k : Nat)
+    (suffix : List Int) (h_suffix : suffix = prices.drop k)
+    (hinv : MaxProfitInv prices state k) (hk_pos : k > 0) :
+    MaxProfitInv prices (suffix.foldl maxProfitStep state) (k + suffix.length) := by
+  induction suffix generalizing k state with
+  | nil => simp [hinv]
+  | cons x xs ih =>
+    simp only [List.foldl_cons, List.length_cons]
+    have hk : k < prices.length := by
+      have hlen : (x :: xs).length = (prices.drop k).length := by rw [h_suffix]
+      simp only [List.length_cons, List.length_drop] at hlen
+      omega
+    have hdrop_form : prices.drop k = prices[k] :: prices.drop (k + 1) := List.drop_eq_getElem_cons hk
+    rw [hdrop_form] at h_suffix
+    injection h_suffix with hx_eq hxs_eq
+    have hx_getD : x = prices.getD k 0 := by rw [hx_eq, ← List.getD_eq_getElem prices 0 hk]
+    have hinv_next : MaxProfitInv prices (maxProfitStep state (prices.getD k 0)) (k + 1) :=
+      maxProfitInv_step prices state k hinv hk_pos hk
+    -- Need to use IH: xs = prices.drop (k+1), state' = maxProfitStep state x, start at k+1
+    rw [hx_getD]
+    have hk1_pos : k + 1 > 0 := by omega
+    have h_result := ih (maxProfitStep state (prices.getD k 0)) (k + 1) hxs_eq hinv_next hk1_pos
+    -- Fix the arithmetic: k + (xs.length + 1) = (k + 1) + xs.length
+    convert h_result using 1
+    omega
+
+/-- Main computation: fold over the list to compute max profit -/
+def maxProfitCompute (prices : List Int) : MaxProfitState :=
+  match prices with
+  | [] => { minPrice := 0, maxProfit := 0 }
+  | p :: ps => ps.foldl maxProfitStep (maxProfitInit p)
+
+/-- Final theorem: maxProfitCompute satisfies the full invariant -/
+theorem maxProfitCompute_spec (prices : List Int) (h : prices.length > 0) :
+    MaxProfitInv prices (maxProfitCompute prices) prices.length := by
+  match prices with
+  | [] => simp at h
+  | p :: ps =>
+    simp only [maxProfitCompute, List.length_cons]
+    -- Initial state after first element
+    have h_init : MaxProfitInv (p :: ps) (maxProfitInit p) 1 := by
+      have : (p :: ps).getD 0 0 = p := by simp
+      rw [← this]
+      exact maxProfitInv_init (p :: ps) (by simp)
+    -- Apply the auxiliary lemma with suffix = ps = (p :: ps).drop 1
+    have h_suffix : ps = (p :: ps).drop 1 := by simp
+    have h_result := maxProfitInv_foldl_aux (p :: ps) (maxProfitInit p) 1 ps h_suffix h_init (by omega)
+    -- 1 + ps.length = ps.length + 1
+    rw [Nat.add_comm] at h_result
+    exact h_result
+
+/-- Extract max profit value with correctness guarantee -/
+def maxProfit (prices : List Int) (h : prices.length > 0) :
+    { profit : Int // profit ≥ 0 ∧
+      ∀ j, j < prices.length →
+        prices.getD j 0 - minOfFirstK prices (j + 1) ≤ profit } :=
+  let state := maxProfitCompute prices
+  let spec := maxProfitCompute_spec prices h
+  ⟨state.maxProfit, spec.maxP_nonneg, spec.maxP_ge⟩
+
+/-! ### Documentation: When to Use This Pattern
+
+**Use direct foldl with manual induction when:**
+- Your invariant references indices into the original list (e.g., `list.getD i default`)
+- You need to track progress via index `k` rather than a `seen` list
+- The fold processes elements in order and you need "prefix" properties
+
+**Use `ListFoldAcc` instead when:**
+- You need permutation proofs (the `seen` list tracks exactly what was processed)
+- The order of processing doesn't matter for the property
+- You're computing something like a minimum/maximum where membership matters
+
+**Key differences:**
+- `ListFoldAcc` uses a `seen : List α` field that builds up the processed elements
+- Direct foldl uses an index `k : Nat` representing "processed first k elements"
+- `ListFoldAcc` requires proving `acc.seen.Perm original_list` at the end
+- Direct foldl requires proving the induction step connects `suffix = list.drop k`
+-/
+
+/-! ## Stateful Folds with Auxiliary Data
+
+This section demonstrates how to track multiple auxiliary values through a fold while
+maintaining provable invariants. The key pattern is:
+
+1. **Bundle all tracked state into a single structure** with explicit invariants
+2. **Use `Array (Option α)` instead of `HashMap`** for bounded categories
+3. **Prove invariants about each tracked value** and show how they compose
+
+### Why Array over HashMap
+
+Using `Array (Option Int)` instead of `HashMap Nat Int`:
+1. Array indexing is total for valid indices (no `Option` wrapping for known-present keys)
+2. Size invariant (`arr.size = k`) is easy to maintain
+3. Avoids HashMap-specific proof obligations
+4. Aligns with existing `ArrayFoldAcc` patterns
+
+### Example: Maximum Subarray Sum Divisible by k
+
+Given an array of integers, find the maximum subarray sum where the subarray length
+is divisible by `k`. The algorithm uses prefix sums and modular arithmetic:
+
+- `subarraySum[i..j] = prefixSum[j] - prefixSum[i-1]`
+- Length `(j - i + 1)` is divisible by `k` iff `j % k == (i - 1) % k`
+- Track `minPrefixByMod[m]` = minimum prefix sum among indices with `index % k == m`
+- Max subarray sum = max over all `j` of `prefixSum[j] - minPrefixByMod[j % k]`
+
+Note: We track prefix sums at indices 0, 1, ..., n where prefixSum[0] = 0 and
+prefixSum[i] = arr[0] + ... + arr[i-1] for i > 0. A subarray arr[i..j] has
+sum prefixSum[j+1] - prefixSum[i], and length (j - i + 1).
+-/
+
+/-- Prefix sum up to index i: sum of arr[0..i) -/
+def prefixSumAt (arr : List Int) (i : Nat) : Int :=
+  (arr.take i).sum
+
+/-- Minimum of a list of integers, or none if empty -/
+def listMinOpt (l : List Int) : Option Int :=
+  l.foldl (fun acc x => match acc with
+    | none => some x
+    | some m => some (min m x)) none
+
+/-- Maximum of a list of integers, or none if empty -/
+def listMaxOpt (l : List Int) : Option Int :=
+  l.foldl (fun acc x => match acc with
+    | none => some x
+    | some m => some (max m x)) none
+
+theorem listMinOpt_nil : listMinOpt [] = none := rfl
+theorem listMinOpt_singleton (x : Int) : listMinOpt [x] = some x := rfl
+theorem listMaxOpt_nil : listMaxOpt [] = none := rfl
+theorem listMaxOpt_singleton (x : Int) : listMaxOpt [x] = some x := rfl
+
+/-- Adding an element to listMaxOpt -/
+theorem listMaxOpt_append_singleton (l : List Int) (x : Int) :
+    listMaxOpt (l ++ [x]) = match listMaxOpt l with
+      | none => some x
+      | some m => some (max m x) := by
+  simp only [listMaxOpt, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- Combining two Options with max -/
+def optionMax (a b : Option Int) : Option Int :=
+  match a, b with
+  | none, none => none
+  | some m, none => some m
+  | none, some c => some c
+  | some m, some c => some (max m c)
+
+theorem listMaxOpt_append (l1 l2 : List Int) :
+    listMaxOpt (l1 ++ l2) = optionMax (listMaxOpt l1) (listMaxOpt l2) := by
+  induction l2 using List.reverseRecOn generalizing l1 with
+  | nil =>
+    simp [listMaxOpt_nil, optionMax]
+    cases listMaxOpt l1 <;> rfl
+  | append_singleton l2 x ih =>
+    rw [← List.append_assoc, listMaxOpt_append_singleton, ih, listMaxOpt_append_singleton]
+    cases listMaxOpt l1 <;> cases listMaxOpt l2 <;> simp [optionMax, max_assoc]
+
+/-- Adding an element to listMinOpt -/
+theorem listMinOpt_append_singleton (l : List Int) (x : Int) :
+    listMinOpt (l ++ [x]) = match listMinOpt l with
+      | none => some x
+      | some m => some (min m x) := by
+  simp only [listMinOpt, List.foldl_append, List.foldl_cons, List.foldl_nil]
+
+/-- prefixSumAt step lemma -/
+theorem prefixSumAt_succ (arr : List Int) (idx : Nat) (hidx : idx < arr.length) :
+    prefixSumAt arr (idx + 1) = prefixSumAt arr idx + arr[idx] := by
+  simp only [prefixSumAt]
+  rw [List.take_add_one]
+  -- arr[idx]? = some arr[idx] when idx < arr.length
+  have hgetElem? : arr[idx]? = some arr[idx] := List.getElem?_eq_getElem hidx
+  rw [hgetElem?]
+  simp only [Option.toList, List.sum_append, List.sum_singleton]
+
+/-- prefixSumAt step lemma using getD -/
+theorem prefixSumAt_succ' (arr : List Int) (idx : Nat) (hidx : idx < arr.length) :
+    prefixSumAt arr (idx + 1) = prefixSumAt arr idx + arr.getD idx 0 := by
+  rw [prefixSumAt_succ arr idx hidx]
+  simp only [List.getD, List.getElem?_eq_getElem hidx, Option.getD_some]
+
+/-- Helper: updating Option Int with min -/
+def updateMinOpt (old : Option Int) (x : Int) : Option Int :=
+  match old with
+  | none => some x
+  | some m => some (min m x)
+
+/-- Helper: updating Option Int with max -/
+def updateMaxOpt (old : Option Int) (x : Int) : Option Int :=
+  match old with
+  | none => some x
+  | some m => some (max m x)
+
+/-- State for max subarray sum calculation where length is divisible by k.
+
+Tracks:
+- `idx`: number of elements processed (0 to arr.length)
+- `prefixSum`: current prefix sum = arr[0] + ... + arr[idx-1]
+- `minByMod`: array of size k where minByMod[m] = min prefix sum among indices with index % k = m
+- `maxSum`: best subarray sum found so far (None if no valid subarray yet)
+-/
+structure MaxSubarraySumState (arr : List Int) (k : Nat) where
+  idx : Nat
+  prefixSum : Int
+  minByMod : Array (Option Int)  -- size k
+  maxSum : Option Int
+  deriving Repr
+
+/-- Minimum prefix sum among indices ≤ n with index % k = m -/
+def minPrefixByMod (arr : List Int) (k : Nat) (n : Nat) (m : Nat) : Option Int :=
+  listMinOpt ((List.range (n + 1)).filter (· % k = m) |>.map (prefixSumAt arr))
+
+/-- minPrefixByMod step for different mod class (unchanged) -/
+theorem minPrefixByMod_step_ne' (arr : List Int) (k : Nat) (_hk : k > 0) (idx : Nat) (m : Nat)
+    (_hm : m < k) (hne : m ≠ (idx + 1) % k) :
+    minPrefixByMod arr k (idx + 1) m = minPrefixByMod arr k idx m := by
+  simp only [minPrefixByMod]
+  congr 1
+  rw [List.range_succ]
+  simp only [List.filter_append, List.map_append, List.filter_singleton]
+  have hne' : ¬((idx + 1) % k = m) := fun h => hne h.symm
+  simp only [hne', decide_false, cond_false, List.map_nil, List.append_nil]
+
+/-- minPrefixByMod step for same mod class (adds new element with min) -/
+theorem minPrefixByMod_step_eq' (arr : List Int) (k : Nat) (_hk : k > 0) (idx : Nat) (m : Nat)
+    (_hm : m < k) (heq : m = (idx + 1) % k) :
+    minPrefixByMod arr k (idx + 1) m = match minPrefixByMod arr k idx m with
+      | none => some (prefixSumAt arr (idx + 1))
+      | some oldMin => some (min oldMin (prefixSumAt arr (idx + 1))) := by
+  simp only [minPrefixByMod]
+  rw [List.range_succ]
+  simp only [List.filter_append, List.map_append, List.filter_singleton]
+  have heq' : (idx + 1) % k = m := heq.symm
+  simp only [heq', decide_true, cond_true, List.map_singleton]
+  rw [listMinOpt_append_singleton]
+
+/-- Maximum subarray sum with length divisible by k, considering subarrays ending at positions ≤ n -/
+def maxSubarraySumSpec (arr : List Int) (k : Nat) (n : Nat) : Option Int :=
+  -- For each ending position j in [1, n], compute the best sum if we have a matching start
+  let candidates := (List.range n).filterMap fun j =>
+    -- j+1 is the ending prefix index; we need a start with same mod class
+    match minPrefixByMod arr k j ((j + 1) % k) with
+    | none => none
+    | some minP => some (prefixSumAt arr (j + 1) - minP)
+  listMaxOpt candidates
+
+/-- The candidate at position idx for maxSubarraySumSpec -/
+def maxSubarraySumCandidate (arr : List Int) (k : Nat) (idx : Nat) : Option Int :=
+  match minPrefixByMod arr k idx ((idx + 1) % k) with
+  | none => none
+  | some minP => some (prefixSumAt arr (idx + 1) - minP)
+
+/-- Step lemma for maxSubarraySumSpec: adding one more position -/
+theorem maxSubarraySumSpec_step (arr : List Int) (k : Nat) (idx : Nat) :
+    maxSubarraySumSpec arr k (idx + 1) =
+      optionMax (maxSubarraySumSpec arr k idx) (maxSubarraySumCandidate arr k idx) := by
+  simp only [maxSubarraySumSpec, maxSubarraySumCandidate]
+  rw [List.range_succ, List.filterMap_append, listMaxOpt_append]
+  simp only [List.filterMap_cons, List.filterMap_nil]
+  cases minPrefixByMod arr k idx ((idx + 1) % k) <;> rfl
+
+/-- Invariant for MaxSubarraySumState after processing idx prefix sums (indices 0..idx).
+
+The key properties are:
+1. `idx_bound`: we haven't processed more than arr.length + 1 prefix indices
+2. `minByMod_size`: the modular tracking array has exactly k entries
+3. `prefix_correct`: prefixSum equals the actual prefix sum at idx
+4. `min_correct`: minByMod[m] tracks minimum prefix sum with index % k = m, for indices ≤ idx
+5. `maxSum_correct`: maxSum equals the best subarray sum found so far
+-/
+structure MaxSubarraySumInv (arr : List Int) (k : Nat) (_hk : k > 0)
+    (state : MaxSubarraySumState arr k) (idx : Nat) : Prop where
+  idx_eq : state.idx = idx
+  idx_bound : idx ≤ arr.length
+  minByMod_size : state.minByMod.size = k
+  prefix_correct : state.prefixSum = prefixSumAt arr idx
+  -- minByMod[m] equals the minimum prefix sum spec (using getD with none default)
+  min_correct : ∀ m < k, state.minByMod.getD m none = minPrefixByMod arr k idx m
+  maxSum_correct : state.maxSum = maxSubarraySumSpec arr k idx
+
+/-- Step function: process the next element arr[idx] -/
+def maxSubarraySumStep (arr : List Int) (k : Nat) (hk : k > 0)
+    (state : MaxSubarraySumState arr k) (hsize : state.minByMod.size = k)
+    (_hidx : state.idx < arr.length) : MaxSubarraySumState arr k :=
+  let newIdx := state.idx + 1
+  let newPrefixSum := state.prefixSum + arr.getD state.idx 0
+  let modClass := newIdx % k
+  have hmod : modClass < k := Nat.mod_lt newIdx hk
+  have hmod' : modClass < state.minByMod.size := by rw [hsize]; exact hmod
+  -- Update minByMod for the new prefix sum
+  let oldMin := state.minByMod[modClass]'hmod'
+  let newMin := match oldMin with
+    | none => newPrefixSum
+    | some m => min m newPrefixSum
+  let newMinByMod := state.minByMod.set modClass (some newMin) hmod'
+  -- Compute candidate max sum: newPrefixSum - minByMod[modClass]
+  -- This represents a subarray ending at newIdx with length divisible by k
+  let candidateSum := match oldMin with
+    | none => none  -- No previous prefix with same mod class
+    | some minPrev => some (newPrefixSum - minPrev)
+  -- Update maxSum
+  let newMaxSum := match state.maxSum, candidateSum with
+    | none, none => none
+    | some m, none => some m
+    | none, some c => some c
+    | some m, some c => some (max m c)
+  { idx := newIdx
+    prefixSum := newPrefixSum
+    minByMod := newMinByMod
+    maxSum := newMaxSum }
+
+/-- Initial state: idx=0, prefixSum=0, minByMod[0]=Some 0, others=None -/
+def maxSubarraySumInit (arr : List Int) (k : Nat) (_hk : k > 0) :
+    MaxSubarraySumState arr k :=
+  { idx := 0
+    prefixSum := 0
+    -- Initialize: minByMod[0] = Some 0 (prefix sum at index 0), others = None
+    minByMod := (Array.range k).map (fun i => if i = 0 then some 0 else none)
+    maxSum := none }
+
+theorem maxSubarraySumInit_minByMod_size (arr : List Int) (k : Nat) (hk : k > 0) :
+    (maxSubarraySumInit arr k hk).minByMod.size = k := by
+  simp [maxSubarraySumInit]
+
+/-- Init lemma: initial state satisfies invariant at idx=0 -/
+theorem maxSubarraySumInv_init (arr : List Int) (k : Nat) (hk : k > 0) :
+    MaxSubarraySumInv arr k hk (maxSubarraySumInit arr k hk) 0 := by
+  constructor
+  · -- idx_eq
+    rfl
+  · -- idx_bound
+    exact Nat.zero_le _
+  · -- minByMod_size
+    exact maxSubarraySumInit_minByMod_size arr k hk
+  · -- prefix_correct
+    simp [maxSubarraySumInit, prefixSumAt]
+  · -- min_correct
+    intro m hm
+    simp only [maxSubarraySumInit, minPrefixByMod]
+    simp
+    by_cases hm0 : m = 0
+    · subst hm0
+      simp [listMinOpt, prefixSumAt, hk]
+    · simp [listMinOpt, hm, hm0]
+      have h0mod : (0 : Nat) % k = 0 := Nat.zero_mod k
+      grind
+  · -- maxSum_correct
+    simp [maxSubarraySumInit, maxSubarraySumSpec, listMaxOpt]
+
+/-- Helper: Array.getD after Array.set at the same index -/
+theorem Array.getD_set_eq' (arr : Array α) (i : Nat) (v : α) (hi : i < arr.size) (d : α) :
+    (arr.set i v hi).getD i d = v := by
+  simp [Array.getD, Array.size_set, hi]
+
+/-- Helper: Array.getD after Array.set at a different index -/
+theorem Array.getD_set_ne' (arr : Array α) (i j : Nat) (v : α) (hi : i < arr.size) (d : α)
+    (hne : j ≠ i) (hj : j < arr.size) :
+    (arr.set i v hi).getD j d = arr.getD j d := by
+  simp only [Array.getD, Array.size_set, hj, dite_true]
+  exact Array.getElem_set_ne hi hj hne.symm
+
+/-- Step lemma: invariant preserved when processing next element -/
+theorem maxSubarraySumInv_step (arr : List Int) (k : Nat) (hk : k > 0)
+    (state : MaxSubarraySumState arr k) (idx : Nat)
+    (hinv : MaxSubarraySumInv arr k hk state idx) (hidx : idx < arr.length) :
+    MaxSubarraySumInv arr k hk
+      (maxSubarraySumStep arr k hk state hinv.minByMod_size (by rw [hinv.idx_eq]; exact hidx)) (idx + 1) := by
+  -- Useful abbreviations
+  let modClass := (idx + 1) % k
+  have hmod : modClass < k := Nat.mod_lt (idx + 1) hk
+  have hmod_size : modClass < state.minByMod.size := by rw [hinv.minByMod_size]; exact hmod
+  have hidx' : state.idx < arr.length := by rw [hinv.idx_eq]; exact hidx
+  -- Construct the invariant
+  constructor
+  · -- idx_eq: newIdx = idx + 1
+    simp only [maxSubarraySumStep]
+    rw [hinv.idx_eq]
+  · -- idx_bound: idx + 1 ≤ arr.length
+    omega
+  · -- minByMod_size: size preserved by Array.set
+    simp only [maxSubarraySumStep]
+    rw [Array.size_set]
+    exact hinv.minByMod_size
+  · -- prefix_correct: newPrefixSum = prefixSumAt arr (idx + 1)
+    simp only [maxSubarraySumStep]
+    rw [hinv.prefix_correct, hinv.idx_eq]
+    exact (prefixSumAt_succ' arr idx hidx).symm
+  · -- min_correct: updated minByMod matches minPrefixByMod spec at idx + 1
+    intro m hm
+    simp only [maxSubarraySumStep]
+    -- We have state.minByMod.set modClass (some newMin)
+    -- where modClass = (state.idx + 1) % k = (idx + 1) % k
+    have hmod_eq : (state.idx + 1) % k = modClass := by rw [hinv.idx_eq]
+    by_cases hmeq : m = modClass
+    · -- Case: m = modClass (the updated index)
+      subst hmeq
+      simp only [hmod_eq]
+      rw [Array.getD_set_eq']
+      -- Now need to show: some newMin = minPrefixByMod arr k (idx + 1) modClass
+      rw [minPrefixByMod_step_eq' arr k hk idx modClass hmod rfl]
+      -- Show the min computation matches
+      have hprev := hinv.min_correct modClass hmod
+      -- oldMin = state.minByMod[modClass] via getElem
+      have holdMin : state.minByMod[modClass]'hmod_size = state.minByMod.getD modClass none := by
+        simp [Array.getD, hmod_size]
+      rw [holdMin, hprev]
+      -- newPrefixSum = prefixSumAt arr (idx + 1)
+      have hnewPfx : state.prefixSum + arr.getD state.idx 0 = prefixSumAt arr (idx + 1) := by
+        rw [hinv.prefix_correct, hinv.idx_eq, prefixSumAt_succ' arr idx hidx]
+      rw [hnewPfx]
+      -- The match cases align
+      cases hcase : minPrefixByMod arr k idx modClass
+      · simp
+      · simp
+    · -- Case: m ≠ modClass (unchanged index)
+      have hm_size : m < state.minByMod.size := by rw [hinv.minByMod_size]; exact hm
+      simp only [hmod_eq]
+      rw [Array.getD_set_ne' _ _ _ _ hmod_size _ hmeq hm_size]
+      rw [minPrefixByMod_step_ne' arr k hk idx m hm hmeq]
+      exact hinv.min_correct m hm
+  · -- maxSum_correct: updated maxSum matches maxSubarraySumSpec at idx + 1
+    simp only [maxSubarraySumStep]
+    rw [maxSubarraySumSpec_step arr k idx]
+    rw [hinv.maxSum_correct]
+    have hmod_eq : (state.idx + 1) % k = (idx + 1) % k := by rw [hinv.idx_eq]
+    have hmod_size : (state.idx + 1) % k < state.minByMod.size := by
+      rw [hinv.minByMod_size]; exact Nat.mod_lt (state.idx + 1) hk
+    have hmc : (idx + 1) % k < k := Nat.mod_lt (idx + 1) hk
+    have hmin_inv : state.minByMod.getD ((idx + 1) % k) none = minPrefixByMod arr k idx ((idx + 1) % k) :=
+      hinv.min_correct ((idx + 1) % k) hmc
+    have hnewPfx : state.prefixSum + arr.getD state.idx 0 = prefixSumAt arr (idx + 1) := by
+      rw [hinv.prefix_correct, hinv.idx_eq, prefixSumAt_succ' arr idx hidx]
+    have hgetD_eq : state.minByMod[(state.idx + 1) % k]'hmod_size =
+        state.minByMod.getD ((state.idx + 1) % k) none := by simp [Array.getD, hmod_size]
+    have hmin_eq : state.minByMod[(state.idx + 1) % k]'hmod_size =
+        minPrefixByMod arr k idx ((idx + 1) % k) := by rw [hgetD_eq, hmod_eq, hmin_inv]
+    simp only [hmod_eq, hnewPfx, maxSubarraySumCandidate, optionMax]
+    -- Case on minPrefixByMod, and use hmin_eq to relate
+    cases hcase : minPrefixByMod arr k idx ((idx + 1) % k) with
+    | none =>
+      have hstate_none : state.minByMod[(state.idx + 1) % k]'hmod_size = none := by
+        rw [hmin_eq]; exact hcase
+      simp only [hmod_eq] at hstate_none
+      simp only [hstate_none]
+    | some val =>
+      have hstate_some : state.minByMod[(state.idx + 1) % k]'hmod_size = some val := by
+        rw [hmin_eq]; exact hcase
+      simp only [hmod_eq] at hstate_some
+      simp only [hstate_some]
+
+/-- Compute max subarray sum by folding over the array -/
+def maxSubarraySumCompute (arr : List Int) (k : Nat) (hk : k > 0) :
+    MaxSubarraySumState arr k :=
+  let rec loop (state : MaxSubarraySumState arr k)
+      (hinv : MaxSubarraySumInv arr k hk state state.idx) :
+      MaxSubarraySumState arr k :=
+    if h : state.idx < arr.length then
+      let state' := maxSubarraySumStep arr k hk state hinv.minByMod_size h
+      have hinv' : MaxSubarraySumInv arr k hk state' state'.idx := by
+        have heq : state.idx = state.idx := rfl
+        have := maxSubarraySumInv_step arr k hk state state.idx
+          (heq ▸ hinv) h
+        have hidx_eq : state'.idx = state.idx + 1 := by simp [maxSubarraySumStep, state']
+        rw [hidx_eq]
+        exact this
+      loop state' hinv'
+    else
+      state
+  termination_by arr.length - state.idx
+  decreasing_by simp [maxSubarraySumStep]; omega
+  loop (maxSubarraySumInit arr k hk) (maxSubarraySumInv_init arr k hk)
+
+/-- Helper: loop returns state with invariant at arr.length -/
+theorem maxSubarraySumCompute_loop_spec (arr : List Int) (k : Nat) (hk : k > 0)
+    (state : MaxSubarraySumState arr k) (hinv : MaxSubarraySumInv arr k hk state state.idx) :
+    MaxSubarraySumInv arr k hk (maxSubarraySumCompute.loop arr k hk state hinv) arr.length := by
+  unfold maxSubarraySumCompute.loop
+  split
+  · -- state.idx < arr.length: recursive case
+    rename_i h
+    let state' := maxSubarraySumStep arr k hk state hinv.minByMod_size h
+    have hinv' : MaxSubarraySumInv arr k hk state' state'.idx := by
+      have heq : state.idx = state.idx := rfl
+      have := maxSubarraySumInv_step arr k hk state state.idx (heq ▸ hinv) h
+      have hidx_eq : state'.idx = state.idx + 1 := by simp [maxSubarraySumStep, state']
+      rw [hidx_eq]
+      exact this
+    exact maxSubarraySumCompute_loop_spec arr k hk state' hinv'
+  · -- state.idx >= arr.length: base case
+    rename_i h
+    have hge : state.idx ≥ arr.length := Nat.ge_of_not_lt h
+    have heq : state.idx = arr.length := Nat.le_antisymm hinv.idx_bound hge
+    rw [← heq, ← hinv.idx_eq]
+    exact hinv
+termination_by arr.length - state.idx
+decreasing_by simp [maxSubarraySumStep]; omega
+
+/-- Final specification theorem -/
+theorem maxSubarraySumCompute_spec (arr : List Int) (k : Nat) (hk : k > 0) :
+    MaxSubarraySumInv arr k hk (maxSubarraySumCompute arr k hk) arr.length := by
+  unfold maxSubarraySumCompute
+  exact maxSubarraySumCompute_loop_spec arr k hk _ (maxSubarraySumInv_init arr k hk)
+
+/-- Extract the result with correctness proof -/
+def maxSubarraySum (arr : List Int) (k : Nat) (hk : k > 0) :
+    { result : Option Int // result = maxSubarraySumSpec arr k arr.length } :=
+  let state := maxSubarraySumCompute arr k hk
+  let spec := maxSubarraySumCompute_spec arr k hk
+  ⟨state.maxSum, spec.maxSum_correct⟩
+
+/-! ### Documentation: Design Choices
+
+**Why `Array (Option Int)` over `HashMap Nat Int`:**
+
+```lean
+-- DON'T: HashMap makes invariants hard to prove
+structure BadState where
+  minByMod : Std.HashMap Nat Int  -- Hard to reason about
+
+-- DO: Array with bounded size
+structure GoodState (k : Nat) where
+  minByMod : Array (Option Int)
+  minByMod_size : minByMod.size = k  -- Easy invariant
+```
+
+Problems with HashMap:
+1. `HashMap.find?` returns `Option` even for keys that "should" be present
+2. Proving `∀ m < k, HashMap.find? m = ...` requires reasoning about HashMap internals
+3. No simple lemmas connecting HashMap state to pure functional specifications
+
+Benefits of Array:
+1. `arr[m]?` is `some x` iff `m < arr.size` and `arr[m] = x`
+2. Size invariant `arr.size = k` is trivial to maintain through `Array.set`
+3. Direct correspondence between array state and mathematical specification
+
+**Composing Multiple Invariants:**
+
+The `MaxSubarraySumInv` structure demonstrates bundling multiple related invariants:
+- `prefix_correct`: relates `prefixSum` to actual prefix sums
+- `min_correct`: relates `minByMod` array to minimum computations
+- `maxSum_correct`: relates `maxSum` to the optimization objective
+
+Each invariant can be proven independently in the step lemma, then composed.
+-/
+
 end Coding
 end RMP

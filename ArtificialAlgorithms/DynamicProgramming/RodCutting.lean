@@ -73,7 +73,7 @@ def DPArray_push {ftarget: Nat → β} {n: Nat}
   ⟨newArr, And.intro hsize hind⟩
 
 def rodCutMap(prices:List (Nat×Nat))(n:Nat):Nat:=
-  match hn:n with
+  match n with
   |0=>0
   |n'+1=>
     let pred := fun (p:Nat×Nat) =>  0 < p.fst ∧ p.fst ≤ n'+1
@@ -108,7 +108,7 @@ def step (prices: List (Nat×Nat)) {n: Nat} (arr: DPArray (rodCutMap prices) n):
   let newCell : Cell (rodCutMap prices) :=
     ⟨(n+1, maxVal), by
       rw [rodCutMap]
-      simp [n']
+      simp only []
       -- For each candidate, array lookup gives same result as recursive call
       have h_lookup : ∀ (p: Subtype pred),
         let remaining := n'+1-(p.val.fst)
@@ -155,9 +155,8 @@ def rodDP (prices:List (Nat×Nat)) (n:Nat):{x:Nat // rodCutMap prices n=x} :=
     have hsize : initArr.size = 0 + 1 := by grind
     have hind : ∀ i: Fin initArr.size, i = initArr[i].val.fst := by
       intro i
-      have : i.val = 0 := by simp
-      rw [this]
-      simp [Array.get]
+      have hi : i = ⟨0, Nat.one_pos⟩ := Fin.ext (Nat.lt_one_iff.mp i.isLt)
+      subst hi
       rfl
     let arr0 : DPArray (rodCutMap prices) 0 := ⟨initArr, And.intro hsize hind⟩
 

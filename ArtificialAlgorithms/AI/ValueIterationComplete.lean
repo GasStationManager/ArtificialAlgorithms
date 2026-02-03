@@ -109,7 +109,7 @@ lemma sup_lipschitz (f g : A → ℝ) :
       -- Apply the induction hypothesis to s
       have ih_s := ih h_s
       -- Use Finset.sup'_insert to decompose the supremum
-      rw [Finset.sup'_insert, Finset.sup'_insert, Finset.sup'_insert]
+      rw [Finset.sup'_insert (H := h_s), Finset.sup'_insert (H := h_s), Finset.sup'_insert (H := h_s)]
       -- The supremum over insert a s is max(f(a), sup(s, f))
       -- Apply the key lemma: |max(x₁, y₁) - max(x₂, y₂)| ≤ max(|x₁ - x₂|, |y₁ - y₂|)
       calc |f a ⊔ s.sup' h_s f - (g a ⊔ s.sup' h_s g)|

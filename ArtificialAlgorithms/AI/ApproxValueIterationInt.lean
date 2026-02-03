@@ -167,7 +167,7 @@ lemma T_int_affine_contraction (mdp : MDP S A) (γ : ℚ) (hγ_nonneg : 0 ≤ γ
       simpa [dist_comm] using dist_triangle_right (b) (c) (d)
     have habc : dist a c ≤ dist a b + dist b c := by
       simpa [dist_comm] using dist_triangle_right (a) (c) (b)
-    exact le_trans habc (by exact add_le_add_left hbdc (dist a b))
+    exact le_trans habc (by exact add_le_add_right hbdc (dist a b))
   -- Plug the bounds and simplify
   refine le_trans htriangle ?_
   -- Bound each term
@@ -206,7 +206,7 @@ lemma unroll_affine_recur
 
     -- Combine the recurrence and inductive hypothesis
     have combined : e (k + 1) ≤ γr * (γr^k * e 0 + c * ∑ i ∈ Finset.range k, γr^i) + c :=
-      le_trans rec_step (add_le_add_right ih_bound c)
+      le_trans rec_step (add_le_add ih_bound (le_refl c))
 
     -- Now we need to show that the RHS equals γr^(k+1) * e 0 + c * ∑ i ∈ Finset.range (k+1), γr^i
     have key_eq : γr * (γr^k * e 0 + c * ∑ i ∈ Finset.range k, γr^i) + c =
@@ -348,7 +348,7 @@ theorem INT_VALUE_ITERATION_APPROX
         ≤ γr^n * e 0 + (1 : ℝ) / 2 * (∑ i ∈ Finset.range n, γr^i) := Hunroll
     _ ≤ γr^n * e 0 + (1 : ℝ) / 2 * (1 / (1 - γr)) := by
       have h := Hscaled
-      exact add_le_add_left h (γr^n * e 0)
+      exact add_le_add_right h (γr^n * e 0)
     _ = γr^n * dist (castZtoR v₀) v_star + ((1 : ℝ) / 2) / (1 - γr) := by
       simp [e, div_eq_mul_inv]
 
@@ -388,7 +388,7 @@ theorem INT_VALUE_ITERATION_EVENTUAL_BALL
     intro n hgeom
     have hbound := Hbound n
     have hsum : γr^n * dist (castZtoR v₀) v_star + M ≤ (ε - M) + M :=
-      add_le_add_right hgeom M
+      add_le_add hgeom (le_refl M)
     have : γr^n * dist (castZtoR v₀) v_star + M ≤ ε := by
       simpa [sub_add_cancel] using hsum
     exact le_trans hbound this

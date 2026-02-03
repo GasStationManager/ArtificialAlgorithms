@@ -1284,7 +1284,7 @@ lemma eLpNorm_Scomp_trunc_stop_bdd
           = eLpNorm ((fun ω => f ω + g ω) - h) 1 μ := rfl
       _ ≤ eLpNorm (fun ω => f ω + g ω) 1 μ + eLpNorm h 1 μ := h_sub
       _ ≤ (eLpNorm f 1 μ + eLpNorm g 1 μ) + eLpNorm h 1 μ := by
-            exact add_le_add_right h_add _
+            exact add_le_add h_add (le_refl _)
       _ = eLpNorm f 1 μ + eLpNorm g 1 μ + eLpNorm h 1 μ := by
             ac_rfl
   -- Bound each term by R's components
@@ -2072,7 +2072,7 @@ theorem robbinsSiegmund_expBound
               ≤ (∫ ω, scaledS X Y W n ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := this
           _ ≤ (∫ ω, scaledS X Y W 0 ω ∂μ)
                 + Finset.sum (Finset.range n) (fun k => ∫ ω, Z (k + 1) ω ∂μ)
-                + (∫ ω, Z (n + 1) ω ∂μ) := by exact add_le_add_right ih _
+                + (∫ ω, Z (n + 1) ω ∂μ) := by exact add_le_add ih (le_refl _)
           _ = (∫ ω, scaledS X Y W 0 ω ∂μ)
                 + Finset.sum (Finset.range (n + 1)) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
                 simp [Finset.sum_range_succ, add_comm, add_left_comm, add_assoc]
@@ -2178,7 +2178,7 @@ theorem robbinsSiegmund_expBound
     -- bound eLpNorm(scaledS t)
     have hS_int_le : (∫ ω, scaledS X Y W t ω ∂μ) ≤ E0 + EZsum := by
       have := h_scaledS_bound t
-      exact le_trans this (add_le_add_left (hsum_le_tsum t) E0)
+      exact le_trans this (add_le_add_right (hsum_le_tsum t) E0)
     have hZs_int_le : (∫ ω, Zsum Y Z t ω ∂μ) ≤ EZsum := by
       exact le_trans (h_Zsum_bound t) (hsum_le_tsum t)
     have hS_eLp : eLpNorm (scaledS X Y W t) 1 μ ≤ ENNReal.ofReal (E0 + EZsum) := by
@@ -2407,7 +2407,7 @@ theorem robbinsSiegmund_expBound
         have step₁ :
             Finset.sum (Finset.range n) (fun k => ENNReal.ofReal (a k)) + ENNReal.ofReal (a n)
               ≤ ENNReal.ofReal (Finset.sum (Finset.range n) a) + ENNReal.ofReal (a n) :=
-          add_le_add_right ih _
+          add_le_add ih (le_refl _)
         have step₂ :
             ENNReal.ofReal (Finset.sum (Finset.range n) a) + ENNReal.ofReal (a n)
               = ENNReal.ofReal (Finset.sum (Finset.range n) a + a n) := by
@@ -2525,7 +2525,7 @@ theorem robbinsSiegmund_expBound
                       + ENNReal.ofReal (scaledZ Y Z n ω) := by
                     simpa [ENNReal.ofReal_add, hsum_nn, hlast_nn]
               _ ≤ S n ω + ENNReal.ofReal (scaledZ Y Z n ω) := by
-                    exact add_le_add_right ih _
+                    exact add_le_add ih (le_refl _)
               _ = S (n + 1) ω := by
                     simp [S, F, Finset.sum_range_succ]
         have h2 : S t ω ≤ (⨆ t, S t ω) := by
@@ -2885,7 +2885,7 @@ lemma scaledS_sup_integral_bdd
             ≤ (∫ ω, scaledS X Y W n ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := h_step_int n
         _ ≤ (∫ ω, scaledS X Y W 0 ω ∂μ)
               + Finset.sum (Finset.range n) (fun k => ∫ ω, Z (k + 1) ω ∂μ)
-              + (∫ ω, Z (n + 1) ω ∂μ) := add_le_add_right ih _
+              + (∫ ω, Z (n + 1) ω ∂μ) := add_le_add ih (le_refl _)
         _ = (∫ ω, scaledS X Y W 0 ω ∂μ)
               + Finset.sum (Finset.range (n + 1)) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
               simp [Finset.sum_range_succ, add_comm, add_left_comm, add_assoc]
@@ -2929,7 +2929,7 @@ lemma scaledS_sup_integral_bdd
     calc
       ∫ ω, scaledS X Y W t ω ∂μ
           ≤ E0 + Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := h_scaledS_bound t
-      _ ≤ E0 + EZsum := add_le_add_left (hsum_le_tsum t) E0
+      _ ≤ E0 + EZsum := add_le_add_right (hsum_le_tsum t) E0
   refine ⟨E0 + EZsum, ?_⟩
   intro x ⟨t, ht⟩
   simp only at ht
@@ -3127,7 +3127,7 @@ lemma scaledS_converges_ae
           calc (∫ ω, scaledS X Y W (n + 1) ω ∂μ)
               ≤ (∫ ω, scaledS X Y W n ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := h_step_int n
             _ ≤ E0 + Finset.sum (Finset.range n) (fun k => ∫ ω, Z (k + 1) ω ∂μ) + (∫ ω, Z (n + 1) ω ∂μ) := by
-                exact add_le_add_right ih _
+                exact add_le_add ih (le_refl _)
             _ = E0 + Finset.sum (Finset.range (n + 1)) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := by
                 simp [Finset.sum_range_succ, add_comm, add_left_comm, add_assoc]
       -- Bound partial sums by tsum
@@ -3159,7 +3159,7 @@ lemma scaledS_converges_ae
         exact h_le_prefix.trans hsum_full
       calc ∫ ω, scaledS X Y W t ω ∂μ
           ≤ E0 + Finset.sum (Finset.range t) (fun k => ∫ ω, Z (k + 1) ω ∂μ) := h_scaledS_bound t
-        _ ≤ E0 + EZsum := add_le_add_left (hsum_le_tsum t) E0
+        _ ≤ E0 + EZsum := add_le_add_right (hsum_le_tsum t) E0
     -- Bound for Zsum
     have hZsum_int_le : ∫ ω, Zsum Y Z t ω ∂μ ≤ EZsum := by
       have hsplit : ∫ ω, Zsum Y Z t ω ∂μ
@@ -3327,7 +3327,7 @@ lemma scaledS_converges_ae
         have step1 :
             Finset.sum (Finset.range n) (fun k => ENNReal.ofReal (a k)) + ENNReal.ofReal (a n)
               ≤ ENNReal.ofReal (Finset.sum (Finset.range n) a) + ENNReal.ofReal (a n) :=
-          add_le_add_right ih _
+          add_le_add ih (le_refl _)
         have step2 :
             ENNReal.ofReal (Finset.sum (Finset.range n) a) + ENNReal.ofReal (a n)
               = ENNReal.ofReal (Finset.sum (Finset.range n) a + a n) := by
@@ -3436,7 +3436,7 @@ lemma scaledS_converges_ae
               _ = ENNReal.ofReal ((Finset.range n).sum (fun k => scaledZ Y Z k ω))
                     + ENNReal.ofReal (scaledZ Y Z n ω) := by
                   simpa [ENNReal.ofReal_add, hsum_nn, hlast_nn]
-              _ ≤ S n ω + ENNReal.ofReal (scaledZ Y Z n ω) := add_le_add_right ih _
+              _ ≤ S n ω + ENNReal.ofReal (scaledZ Y Z n ω) := add_le_add ih (le_refl _)
               _ = S (n + 1) ω := by simp [S, F, Finset.sum_range_succ]
         have h2 : S t ω ≤ ⨆ t, S t ω := le_iSup (fun t => S t ω) t
         have hsup_ne : (⨆ t, S t ω) ≠ ⊤ := ne_of_lt hfin

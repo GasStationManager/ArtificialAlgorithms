@@ -3,6 +3,8 @@
 import ArtificialAlgorithms.DynamicProgramming.Memoization
 import ArtificialAlgorithms.DynamicProgramming.RodCutting
 import ArtificialAlgorithms.DynamicProgramming.Knapsack
+import ArtificialAlgorithms.DynamicProgramming.VerifiedLIS
+import ArtificialAlgorithms.DynamicProgramming.VerifiedLCS
 import ArtificialAlgorithms.Sorting.InsertionSort
 import ArtificialAlgorithms.Sorting.SelectionSort
 import ArtificialAlgorithms.DivideConquer.BinarySearch
@@ -17,3 +19,4 @@ import ArtificialAlgorithms.AI.RobbinsSiegmund
 import ArtificialAlgorithms.AI.SGD
 import ArtificialAlgorithms.AI.SGDUniqueMin
 import ArtificialAlgorithms.Util.VerifiedFolds
+import ArtificialAlgorithms.SlidingWindow.MaxLengthSumAtMostK

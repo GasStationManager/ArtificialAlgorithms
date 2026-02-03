@@ -3429,11 +3429,11 @@ theorem convergence_stochastic_gradient_method
         _ = C_incr * (γ (n + 1))^2 * (1 + ∫ ω, V (X n ω) ∂μ) := by
             congr 1
             rw [integral_add (integrable_const 1) (V'_integrable n)]
-            simp only [integral_const, measure_univ, ENNReal.one_toReal, one_smul, V', smul_eq_mul, mul_one,
+            simp only [integral_const, measure_univ, smul_eq_mul, mul_one, V',
               measureReal_univ_eq_one]
         _ ≤ C_incr * (γ (n + 1))^2 * (1 + M_V) := by
             apply mul_le_mul_of_nonneg_left
-            · apply add_le_add_left
+            · apply add_le_add_right
               apply hM_V.2
               exact ⟨n, rfl⟩
             · apply mul_nonneg

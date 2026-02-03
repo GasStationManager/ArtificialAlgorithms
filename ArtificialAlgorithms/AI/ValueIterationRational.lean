@@ -237,15 +237,12 @@ lemma weighted_sum_abs_le {S : Type} (states : List S) (P : S → ℚ) (f : S �
   | cons h t ih =>
     simp only [List.map, List.sum_cons]
     -- Apply triangle inequality: |a + b| ≤ |a| + |b|
-    apply le_trans (abs_add _ _)
-    apply add_le_add
-    · -- First term: |P h * f h| ≤ P h * |f h|
-      rw [abs_mul]
-      rw [abs_of_nonneg (hP h (by simp))]
-    · -- Second term: use induction hypothesis
-      apply ih
-      intro s hs
-      exact hP s (by simp [hs])
+    calc |P h * f h + (t.map (fun s => P s * f s)).sum|
+        _ ≤ |P h * f h| + |(t.map (fun s => P s * f s)).sum| := abs_add_le (P h * f h) _
+        _ ≤ P h * |f h| + (t.map (fun s => P s * |f s|)).sum := by
+          apply add_le_add
+          · rw [abs_mul, abs_of_nonneg (hP h (by simp))]
+          · exact ih (fun s hs => hP s (by simp [hs]))
 
 #check weighted_sum_abs_le
 #print axioms weighted_sum_abs_le
