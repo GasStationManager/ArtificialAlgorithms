@@ -20,3 +20,7 @@ import ArtificialAlgorithms.AI.SGD
 import ArtificialAlgorithms.AI.SGDUniqueMin
 import ArtificialAlgorithms.Util.VerifiedFolds
 import ArtificialAlgorithms.SlidingWindow.MaxLengthSumAtMostK
+import ArtificialAlgorithms.VFA.Perm
+import ArtificialAlgorithms.VFA.Sort
+import ArtificialAlgorithms.VFA.Multiset
+import ArtificialAlgorithms.VFA.Selection
