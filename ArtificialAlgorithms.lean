@@ -24,3 +24,7 @@ import ArtificialAlgorithms.VFA.Perm
 import ArtificialAlgorithms.VFA.Sort
 import ArtificialAlgorithms.VFA.Multiset
 import ArtificialAlgorithms.VFA.Selection
+import ArtificialAlgorithms.VFA.Merge
+import ArtificialAlgorithms.VFA.Maps
+import ArtificialAlgorithms.VFA.SearchTree
+import ArtificialAlgorithms.VFA.ADT
