@@ -29,3 +29,8 @@ import ArtificialAlgorithms.VFA.Maps
 import ArtificialAlgorithms.VFA.SearchTree
 import ArtificialAlgorithms.VFA.ADT
 import ArtificialAlgorithms.VFA.Redblack
+import ArtificialAlgorithms.VFA.Trie
+import ArtificialAlgorithms.VFA.Priqueue
+import ArtificialAlgorithms.VFA.Binom
+import ArtificialAlgorithms.VFA.Decide
+import ArtificialAlgorithms.VFA.Color
