@@ -28,3 +28,4 @@ import ArtificialAlgorithms.VFA.Merge
 import ArtificialAlgorithms.VFA.Maps
 import ArtificialAlgorithms.VFA.SearchTree
 import ArtificialAlgorithms.VFA.ADT
+import ArtificialAlgorithms.VFA.Redblack
