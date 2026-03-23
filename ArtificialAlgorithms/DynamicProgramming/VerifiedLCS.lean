@@ -68,7 +68,7 @@ theorem div_of_idx {m i j : Nat} (hj : j < m + 1) :
   have h3 : (i * (m + 1)) % (m + 1) = 0 := Nat.mul_mod_left i (m + 1)
   have h4 : j % (m + 1) = j := Nat.mod_eq_of_lt hj
   rw [Nat.add_div hm_pos, h1, h2, Nat.add_zero, h3, h4]
-  simp [hj]
+  simp; omega
 
 theorem mod_of_idx {m i j : Nat} (hj : j < m + 1) :
     (i * (m + 1) + j) % (m + 1) = j := by

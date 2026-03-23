@@ -9,11 +9,15 @@ set_option linter.unnecessarySimpa false
 set_option linter.unusedSimpArgs false
 set_option maxHeartbeats 0
 
-open MeasureTheory
+open MeasureTheory Filter
 open scoped ProbabilityTheory BigOperators NNReal
 
 namespace QLS
 namespace Stoch
+
+/-- Cumulative product `∏_{k < t} (1 + Y_{k+1})`. -/
+noncomputable def prodY.{v} {Ω : Type v} (Y : ℕ → Ω → ℝ) (t : ℕ) : Ω → ℝ :=
+  fun ω => (Finset.range t).prod fun k => 1 + Y (k + 1) ω
 
 section Classical
 
@@ -22,10 +26,6 @@ variable (μ : Measure Ω) [IsFiniteMeasure μ]
 variable (ℱ : Filtration ℕ m0)
 
 variable (X Y Z W : ℕ → Ω → ℝ)
-
-/-- Cumulative product `∏_{k < t} (1 + Y_{k+1})`. -/
-noncomputable def prodY (Y : ℕ → Ω → ℝ) (t : ℕ) : Ω → ℝ :=
-  fun ω => (Finset.range t).prod fun k => 1 + Y (k + 1) ω
 
 /-- Cumulative sum of `W`. -/
 def cumW (W : ℕ → Ω → ℝ) (t : ℕ) : Ω → ℝ :=
@@ -218,20 +218,20 @@ lemma scaledS_measurable
   -- Show numerator is measurable
   have h_num : Measurable[ℱ t] fun ω => X t ω + cumW W t ω := by
     apply Measurable.add
-    · exact (adapted_X t).measurable
+    · exact (adapted_X t)
     · -- cumW W t is a finite sum of adapted processes
       unfold cumW
       apply Finset.measurable_sum
       intro k hk
       have hk_le : k ≤ t := by simp at hk; omega
-      exact ((adapted_W k).mono (ℱ.mono hk_le)).measurable
+      exact ((adapted_W k).mono (ℱ.mono hk_le) le_rfl)
   -- Show denominator is measurable
   have h_denom : Measurable[ℱ t] (prodY Y t) := by
     unfold prodY
     apply Finset.measurable_prod
     intro k hk
     have : k + 1 ≤ t := by simp at hk; omega
-    exact ((adapted_Y (k + 1)).mono (ℱ.mono this)).measurable.const_add 1
+    exact Measurable.const_add ((adapted_Y (k + 1)).mono (ℱ.mono this) le_rfl) 1
   -- Apply division measurability
   exact h_num.div h_denom
 
@@ -243,13 +243,13 @@ lemma scaledZ_measurable
   classical
   unfold scaledZ
   apply Measurable.stronglyMeasurable
-  have h_num : Measurable[ℱ t] fun ω => Z (t + 1) ω := (predictable_Z t).measurable
+  have h_num : Measurable[ℱ t] fun ω => Z (t + 1) ω := (predictable_Z t)
   have h_denom : Measurable[ℱ t] (prodY Y t) := by
     unfold prodY
     apply Finset.measurable_prod
     intro k hk
     have : k + 1 ≤ t := by simp at hk; omega
-    exact ((adapted_Y (k + 1)).mono (ℱ.mono this)).measurable.const_add 1
+    exact Measurable.const_add ((adapted_Y (k + 1)).mono (ℱ.mono this) le_rfl) 1
   exact h_num.div h_denom
 
 /-- A pointwise bound comparing `scaledZ` with the original `Z`. -/
@@ -422,11 +422,10 @@ lemma B_trunc_measurable
   have hk_lt : k < Nat.min t N := by simpa using hk
   have hk_le_min : k ≤ Nat.min t N := Nat.le_of_lt hk_lt
   have hk_le_t : k ≤ t := hk_le_min.trans (Nat.min_le_left t N)
-  have h_num_k : StronglyMeasurable[ℱ k] fun ω => Z (k + 1) ω :=
-    (predictable_Z k)
+  have h_num_k : Measurable[ℱ k] fun ω => Z (k + 1) ω := predictable_Z k
   have h_num : Measurable[ℱ t] fun ω => Z (k + 1) ω := by
     have h_le : ℱ k ≤ ℱ t := ℱ.mono hk_le_t
-    exact (h_num_k.mono h_le).measurable
+    exact h_num_k.mono h_le le_rfl
   have h_denom : Measurable[ℱ t] (prodY Y k) := by
     unfold prodY
     apply Finset.measurable_prod
@@ -434,7 +433,7 @@ lemma B_trunc_measurable
     have hj' : j < k := by simp at hj; exact hj
     have hj1 : j + 1 ≤ k := Nat.succ_le_of_lt hj'
     have hj2 : j + 1 ≤ t := Nat.le_trans hj1 hk_le_t
-    exact ((adapted_Y (j + 1)).mono (ℱ.mono hj2)).measurable.const_add 1
+    exact Measurable.const_add ((adapted_Y (j + 1)).mono (ℱ.mono hj2) le_rfl) 1
   exact h_num.div h_denom
 
 /-- Pull-out lemma for conditional expectation with an ℱ_t-measurable factor.
@@ -452,11 +451,11 @@ lemma condexp_mul_left
       (f := c) (g := f) hc hcf_int hf_int)
 
 /-- Placeholder: adaptedness of the compensated process. -/
-lemma Scomp_trunc_adapted
+lemma Scomp_trunc_stronglyAdapted
     (adapted_X : Adapted ℱ X) (adapted_Y : Adapted ℱ Y)
     (adapted_Z : Adapted ℱ Z) (adapted_W : Adapted ℱ W)
     (predictable_Z : Adapted ℱ fun t => Z (t + 1))
-    : ∀ N, Adapted ℱ (Scomp_trunc μ ℱ X Y Z W N) := by
+    : ∀ N, StronglyAdapted ℱ (Scomp_trunc μ ℱ X Y Z W N) := by
   intro N t
   classical
   have h_scaled : StronglyMeasurable[ℱ t] (scaledS X Y W t) :=
@@ -633,10 +632,9 @@ lemma condexp_scaledS_step
       have hk' : k < t + 1 := by simpa using hk
       have hk1 : k ≤ t := Nat.le_of_lt_succ hk'
       -- Y (k+1) is ℱ k-measurable via predictability; lift to ℱ t
-      have hYk : StronglyMeasurable[ℱ k] fun ω => Y (k + 1) ω :=
-        (predictable_Y k)
-      have : Measurable[ℱ t] fun ω => Y (k + 1) ω := (hYk.mono (ℱ.mono hk1)).measurable
-      simpa using this.const_add 1
+      have hYk : Measurable[ℱ k] fun ω => Y (k + 1) ω := predictable_Y k
+      have : Measurable[ℱ t] fun ω => Y (k + 1) ω := hYk.mono (ℱ.mono hk1) le_rfl
+      simpa using Measurable.const_add this 1
     have hc_meas : StronglyMeasurable[ℱ t] c :=
       (Measurable.stronglyMeasurable ((measurable_const).div h_denom_meas))
     -- Integrability of f1 and c * f1
@@ -721,7 +719,7 @@ lemma condexp_scaledS_step
       have hk_le : k ≤ t := by
         have : k < t + 1 := by simpa using hk
         exact Nat.le_of_lt_succ this
-      exact ((adapted_W k).mono (ℱ.mono hk_le)).measurable
+      exact ((adapted_W k).mono (ℱ.mono hk_le) le_rfl)
     have h_cumW_int : Integrable (cumW W t) μ :=
       integrable_cumW (μ := μ) (W := W) integrable_W t
     have h_cum_id : μ[fun ω => cumW W t ω | ℱ t]
@@ -736,7 +734,7 @@ lemma condexp_scaledS_step
       have :=
         MeasureTheory.condExp_of_stronglyMeasurable (μ := μ) (m := ℱ t)
           (hm := ℱ.le t) (f := fun ω => W (t + 1) ω)
-          (hf := predictable_W t) (hfi := integrable_W (t + 1))
+          (hf := (predictable_W t).stronglyMeasurable) (hfi := integrable_W (t + 1))
       exact Filter.EventuallyEq.of_eq this
     -- Apply the assumed drift inequality for μ[X_{t+1}|ℱ t]
     have hX : μ[fun ω => X (t + 1) ω | ℱ t]
@@ -785,7 +783,7 @@ lemma scaledZ_next_measurable
   intro t
   classical
   -- scaledZ_next t = Z_{t+1} / prodY_{t+1}
-  have hZ : StronglyMeasurable[ℱ (t + 1)] (fun ω => Z (t + 1) ω) := adapted_Z (t + 1)
+  have hZ : StronglyMeasurable[ℱ (t + 1)] (fun ω => Z (t + 1) ω) := (adapted_Z (t + 1)).stronglyMeasurable
   -- measurability of prodY at level t+1 via predictability of Y
   have hY : Measurable[ℱ (t + 1)] (prodY Y (t + 1)) := by
     unfold prodY
@@ -793,9 +791,9 @@ lemma scaledZ_next_measurable
     intro k hk
     have hk' : k ≤ t := Nat.le_of_lt_succ (by simpa using hk)
     -- Y (k+1) is ℱ k measurable by predictability, lift to ℱ (t+1)
-    have hYk : StronglyMeasurable[ℱ k] (fun ω => Y (k + 1) ω) := predictable_Y k
+    have hYk : Measurable[ℱ k] (fun ω => Y (k + 1) ω) := predictable_Y k
     have hk'' : k ≤ t + 1 := Nat.le_succ_of_le hk'
-    exact ((hYk.mono (ℱ.mono hk'')).measurable).const_add 1
+    exact Measurable.const_add (hYk.mono (ℱ.mono hk'') le_rfl) 1
   -- quotient is measurable
   exact (Measurable.stronglyMeasurable ((hZ.measurable).div hY))
 
@@ -842,7 +840,7 @@ lemma Zsum_measurable
     have hkm : StronglyMeasurable[ℱ k] (scaledZ Y Z k) :=
       scaledZ_measurable (ℱ := ℱ) (Y := Y) (Z := Z) adapted_Y predictable_Z k
     have hle : k ≤ t := Nat.le_of_lt hk
-    exact (hkm.mono (ℱ.mono hle))
+    exact hkm.mono (ℱ.mono hle)
   have : Zsum Y Z t = fun ω => (Finset.range t).sum (fun k => scaledZ Y Z k ω) := rfl
   -- measurable sum of finitely many strongly measurable terms
   have hmeas : Measurable[ℱ t] (fun ω => (Finset.range t).sum (fun k => scaledZ Y Z k ω)) := by
@@ -1128,19 +1126,19 @@ lemma Mpred_one_step
 /-! Stopped version: after time `N`, the `scaledS` term is frozen at `N`.
 This eliminates the denominator mismatch and yields clean one-step inequalities. -/
 
-/-- Adaptedness of the stopped compensated process. -/
-lemma Scomp_trunc_stop_adapted
+/-- Strong adaptedness of the stopped compensated process. -/
+lemma Scomp_trunc_stop_stronglyAdapted
     (adapted_X : Adapted ℱ X) (adapted_Y : Adapted ℱ Y)
     (adapted_Z : Adapted ℱ Z) (adapted_W : Adapted ℱ W)
     (predictable_Z : Adapted ℱ fun t => Z (t + 1))
-    : ∀ N, Adapted ℱ (Scomp_trunc_stop μ ℱ X Y Z W N) := by
+    : ∀ N, StronglyAdapted ℱ (Scomp_trunc_stop μ ℱ X Y Z W N) := by
   intro N t
   classical
   have h_scaled_min : StronglyMeasurable[ℱ (Nat.min t N)] (scaledS X Y W (Nat.min t N)) :=
     scaledS_measurable (ℱ := ℱ) (X := X) (Y := Y) (W := W)
       adapted_X adapted_Y adapted_W (Nat.min t N)
   have h_scaled : StronglyMeasurable[ℱ t] (scaledS X Y W (Nat.min t N)) :=
-    (h_scaled_min.mono (ℱ.mono (Nat.min_le_left t N)))
+    h_scaled_min.mono (ℱ.mono (Nat.min_le_left t N))
   have h_condexp : StronglyMeasurable[ℱ t]
       (μ[fun ω' => B_trunc Y Z N N ω' | ℱ t]) :=
     MeasureTheory.stronglyMeasurable_condExp
@@ -1588,7 +1586,7 @@ lemma Scomp_trunc_stop_supermartingale
   intro N
   refine And.intro ?adapted (And.intro ?step ?integrable)
   · -- adaptedness
-    exact Scomp_trunc_stop_adapted (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+    exact Scomp_trunc_stop_stronglyAdapted (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
       adapted_X adapted_Y adapted_Z adapted_W predictable_Z N
   · -- step inequality via the one-step lemma and tower-induction (omitted)
     intro i j hij
@@ -1597,7 +1595,7 @@ lemma Scomp_trunc_stop_supermartingale
         =ᵐ[μ] Scomp_trunc_stop μ ℱ X Y Z W N i := by
       -- Equality by adaptedness/strong measurability + integrability
       have h_meas : StronglyMeasurable[ℱ i] (Scomp_trunc_stop μ ℱ X Y Z W N i) :=
-        (Scomp_trunc_stop_adapted (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+        (Scomp_trunc_stop_stronglyAdapted (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
           adapted_X adapted_Y adapted_Z adapted_W predictable_Z N i)
       have h_int : Integrable (Scomp_trunc_stop μ ℱ X Y Z W N i) μ :=
         integrable_Scomp_trunc_stop (μ := μ) (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
@@ -1665,12 +1663,12 @@ lemma Scomp_trunc_stop_supermartingale
         adapted_X adapted_Y adapted_Z adapted_W predictable_Z
         hY_nonneg hZ_nonneg hW_nonneg integrable_X integrable_Z integrable_W N t
 
-/-- Adaptedness of `Mpred`. -/
-lemma Mpred_adapted
+/-- Strong adaptedness of `Mpred`. -/
+lemma Mpred_stronglyAdapted
     (adapted_X : Adapted ℱ X) (adapted_Y : Adapted ℱ Y)
     (adapted_Z : Adapted ℱ Z) (adapted_W : Adapted ℱ W)
     (predictable_Z : Adapted ℱ fun t => Z (t + 1))
-    : Adapted ℱ (Mpred X Y Z W) := by
+    : StronglyAdapted ℱ (Mpred X Y Z W) := by
   intro t
   classical
   have hS : StronglyMeasurable[ℱ t] (scaledS X Y W t) :=
@@ -1747,14 +1745,14 @@ lemma Mpred_supermartingale
     : Supermartingale (Mpred X Y Z W) ℱ μ := by
   -- Structure: adapted + step + integrable
   refine And.intro ?adapted (And.intro ?step ?integrable)
-  · exact Mpred_adapted (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+  · exact Mpred_stronglyAdapted (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
       adapted_X adapted_Y adapted_Z adapted_W predictable_Z
   · intro i j hij
     -- Induct on k = j - i using tower and monotonicity
     have h_base : μ[fun ω => Mpred X Y Z W i ω | ℱ i] =ᵐ[μ] Mpred X Y Z W i := by
       -- meas + integrable at level i
       have hmeas : StronglyMeasurable[ℱ i] (Mpred X Y Z W i) :=
-        (Mpred_adapted (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
+        (Mpred_stronglyAdapted (ℱ := ℱ) (X := X) (Y := Y) (Z := Z) (W := W)
           adapted_X adapted_Y adapted_Z adapted_W predictable_Z i)
       have hint : Integrable (Mpred X Y Z W i) μ := by
         -- reuse integrability lemma
@@ -1923,7 +1921,6 @@ end QLS
 
 namespace QLS
 namespace Stoch
-namespace Classical
 
 open MeasureTheory Filter
 
@@ -1941,8 +1938,8 @@ Conclusions:
 - `X t` converges almost surely to a finite limit
 - `∑ W t` is finite almost surely
 -/
-theorem robbinsSiegmund_expBound
-    {Ω : Type*} [m0 : MeasurableSpace Ω]
+theorem robbinsSiegmund_expBound.{v}
+    {Ω : Type v} [m0 : MeasurableSpace Ω]
     (μ : Measure Ω) [IsFiniteMeasure μ]
     (ℱ : Filtration ℕ m0)
     (X Y Z W : ℕ → Ω → ℝ)
@@ -2742,7 +2739,6 @@ theorem robbinsSiegmund_expBound
     exact this.choose_spec
   exact ⟨Xlim, hX_tend, hW_ae_sum⟩
 
-end Classical
 end Stoch
 end QLS
 
@@ -3551,7 +3547,7 @@ lemma sup_EV_from_sup_ES
     · exact ae_of_all μ h_V_le_CS
   -- Simplify: ∫ C * scaledS = C * ∫ scaledS
   have h_factor : ∫ ω, C * scaledS V α U n ω ∂μ = C * ∫ ω, scaledS V α U n ω ∂μ := by
-    exact MeasureTheory.integral_mul_left C _
+    exact MeasureTheory.integral_const_mul C _
   rw [h_factor] at hint_V_le
   -- Use the bound on E[scaledS_n]
   have hS_bound : ∫ ω, scaledS V α U n ω ∂μ ≤ M := by
@@ -3908,8 +3904,8 @@ Let (V_n), (U_n), (α_n), (β_n) be four sequences of non-negative integrable
 - (a) V_n → V_∞ ∈ L¹ almost surely, and sup_{n≥0} E[V_n] < +∞
 - (b) ∑_{n≥0} U_n < +∞ almost surely
 -/
-theorem robbinsSiegmund_full
-    {Ω : Type*} [m0 : MeasurableSpace Ω]
+theorem robbinsSiegmund_full.{v}
+    {Ω : Type v} [m0 : MeasurableSpace Ω]
     (μ : Measure Ω) [IsProbabilityMeasure μ]
     (ℱ : Filtration ℕ m0)
     (V U α β : ℕ → Ω → ℝ)

@@ -27,6 +27,7 @@ namespace SGDUniqueMin
 variable {Ω : Type*} [m0 : MeasurableSpace Ω]
 variable (μ : Measure Ω) [IsProbabilityMeasure μ]
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
 variable [FiniteDimensional ℝ E]
 
 /-- Additional assumptions for Corollary 2.3.1 (Robbins-Monro with unique minimizer).
@@ -94,7 +95,7 @@ lemma exists_minimizer_of_coercive
         have h_in_K := h_subset h_not_in_s
         exact h_not_in_K h_in_K
       have h_gt : V x₀ < V x := h_in_s
-      exact hx.not_lt h_gt
+      exact hx.not_gt h_gt
     exact hK_compact.isBounded.subset hS_sub_K
   -- S is compact (closed + bounded in proper space)
   have hS_compact : IsCompact S := Metric.isCompact_of_isClosed_isBounded hS_closed hS_bdd
@@ -534,7 +535,7 @@ lemma accumulation_point_drift_zero
         -- hs_in : X s ω ∈ Metric.ball y (δ/2) means dist (X s ω) y < δ/2
         have h1 : dist (X s ω) y < δ / 2 := Metric.mem_ball.mp hs_in
         -- he'_out : X e' ω ∉ Metric.ball y δ means ¬(dist (X e' ω) y < δ), i.e., δ ≤ dist (X e' ω) y
-        have h2 : δ ≤ dist (X e' ω) y := le_of_not_lt (Metric.mem_ball.not.mp he'_out)
+        have h2 : δ ≤ dist (X e' ω) y := not_lt.mp (Metric.mem_ball.not.mp he'_out)
         -- Use reverse triangle inequality: |dist(a,c) - dist(b,c)| ≤ dist(a,b)
         have h_rev_tri : dist (X e' ω) y - dist (X s ω) y ≤ dist (X e' ω) (X s ω) := by
           have h_abs := abs_dist_sub_le (X e' ω) (X s ω) y
@@ -631,7 +632,7 @@ lemma accumulation_point_drift_zero
         -- X_s ∈ B(y, δ/2) means dist(X_s, y) < δ/2
         have h1 : dist (X s ω) y < δ / 2 := Metric.mem_ball.mp hs_in
         -- X_e ∉ B(y, δ) means dist(X_e, y) ≥ δ
-        have h2 : δ ≤ dist (X e ω) y := le_of_not_lt (Metric.mem_ball.not.mp he_out)
+        have h2 : δ ≤ dist (X e ω) y := not_lt.mp (Metric.mem_ball.not.mp he_out)
         -- Reverse triangle inequality: |dist(a,c) - dist(b,c)| ≤ dist(a,b)
         have h_rev_tri : dist (X e ω) y - dist (X s ω) y ≤ dist (X e ω) (X s ω) := by
           have h_abs := abs_dist_sub_le (X e ω) (X s ω) y
@@ -1003,7 +1004,7 @@ theorem convergence_simplified
     have hDM_L2 : ∀ k, MemLp (ΔM (k + 1)) 2 μ := fun k => by
       -- Get AEStronglyMeasurable from Adapted (go from ℱ (k+1) to m0)
       have hDM_sm : StronglyMeasurable[m0] (ΔM (k + 1)) :=
-        (asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1))
+        ((asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1)) le_rfl).stronglyMeasurable
       have hDM_asm : AEStronglyMeasurable (ΔM (k + 1)) μ := hDM_sm.aestronglyMeasurable
       -- Use memLp_two_iff_integrable_sq_norm
       rw [memLp_two_iff_integrable_sq_norm hDM_asm]
@@ -1037,7 +1038,7 @@ theorem convergence_simplified
             congr 1; ext ω
             rw [norm_smul, mul_pow, Real.norm_eq_abs, sq_abs]
         _ = (γ (k + 1))^2 * ∫ ω, ‖ΔM (k + 1) ω‖^2 ∂μ := by
-            rw [integral_mul_left]
+            rw [integral_const_mul]
         _ ≤ (γ (k + 1))^2 * σ^2 := by
             apply mul_le_mul_of_nonneg_left (hDM_var_bound k) (sq_nonneg _)
 
@@ -1116,7 +1117,7 @@ theorem convergence_simplified
                   have hU_L2 : ∀ k, MemLp (U (k + 1)) 2 μ := fun k => by
                     simp only [U]
                     have hDM_sm : StronglyMeasurable[m0] (ΔM (k + 1)) :=
-                      (asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1))
+                      ((asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1)) le_rfl).stronglyMeasurable
                     have hDM_asm : AEStronglyMeasurable (ΔM (k + 1)) μ := hDM_sm.aestronglyMeasurable
                     have hU_asm : AEStronglyMeasurable (fun ω => γ (k + 1) • ΔM (k + 1) ω) μ :=
                       hDM_asm.const_smul (γ (k + 1))
@@ -1136,7 +1137,7 @@ theorem convergence_simplified
                   have hU_m_L2 : MemLp (U (m + 1)) 2 μ := by
                     simp only [U]
                     have hDM_sm : StronglyMeasurable[m0] (ΔM (m + 1)) :=
-                      (asm.base.martingale_diff_adapted (m + 1)).mono (ℱ.le (m + 1))
+                      ((asm.base.martingale_diff_adapted (m + 1)).mono (ℱ.le (m + 1)) le_rfl).stronglyMeasurable
                     have hDM_asm : AEStronglyMeasurable (ΔM (m + 1)) μ := hDM_sm.aestronglyMeasurable
                     have hU_asm : AEStronglyMeasurable (fun ω => γ (m + 1) • ΔM (m + 1) ω) μ :=
                       hDM_asm.const_smul (γ (m + 1))
@@ -1147,7 +1148,7 @@ theorem convergence_simplified
                     have hU_L2 : ∀ k, MemLp (U (k + 1)) 2 μ := fun k => by
                       simp only [U]
                       have hDM_sm : StronglyMeasurable[m0] (ΔM (k + 1)) :=
-                        (asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1))
+                        ((asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1)) le_rfl).stronglyMeasurable
                       have hDM_asm : AEStronglyMeasurable (ΔM (k + 1)) μ := hDM_sm.aestronglyMeasurable
                       have hU_asm : AEStronglyMeasurable (fun ω => γ (k + 1) • ΔM (k + 1) ω) μ :=
                         hDM_asm.const_smul (γ (k + 1))
@@ -1179,7 +1180,7 @@ theorem convergence_simplified
                     refine Finset.stronglyMeasurable_fun_sum _ (fun k hk => ?_)
                     have hk_lt : k < m := Finset.mem_range.mp hk
                     have h_le : ℱ (k + 1) ≤ ℱ m := ℱ.mono (Nat.succ_le_of_lt hk_lt)
-                    exact ((asm.base.martingale_diff_adapted (k + 1)).const_smul (γ (k + 1))).mono h_le
+                    exact (((asm.base.martingale_diff_adapted (k + 1)).mono h_le le_rfl).stronglyMeasurable).const_smul (γ (k + 1))
                   -- Use the martingale difference property
                   have hU_cond : μ[U (m + 1)|ℱ m] =ᵐ[μ] 0 := _hU_martingale_diff m
                   haveI : SigmaFinite (μ.trim (ℱ.le m)) := sigmaFinite_of_sigmaFiniteFiltration μ ℱ m
@@ -1191,7 +1192,7 @@ theorem convergence_simplified
                   have hU_m_L2' : MemLp (U (m + 1)) 2 μ := by
                     simp only [U]
                     have hDM_sm : StronglyMeasurable[m0] (ΔM (m + 1)) :=
-                      (asm.base.martingale_diff_adapted (m + 1)).mono (ℱ.le (m + 1))
+                      ((asm.base.martingale_diff_adapted (m + 1)).mono (ℱ.le (m + 1)) le_rfl).stronglyMeasurable
                     have hDM_asm : AEStronglyMeasurable (ΔM (m + 1)) μ := hDM_sm.aestronglyMeasurable
                     have hU_asm : AEStronglyMeasurable (fun ω => γ (m + 1) • ΔM (m + 1) ω) μ :=
                       hDM_asm.const_smul (γ (m + 1))
@@ -1202,7 +1203,7 @@ theorem convergence_simplified
                     have hU_L2 : ∀ k, MemLp (U (k + 1)) 2 μ := fun k => by
                       simp only [U]
                       have hDM_sm : StronglyMeasurable[m0] (ΔM (k + 1)) :=
-                        (asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1))
+                        ((asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1)) le_rfl).stronglyMeasurable
                       have hDM_asm : AEStronglyMeasurable (ΔM (k + 1)) μ := hDM_sm.aestronglyMeasurable
                       have hU_asm : AEStronglyMeasurable (fun ω => γ (k + 1) • ΔM (k + 1) ω) μ :=
                         hDM_asm.const_smul (γ (k + 1))
@@ -1258,7 +1259,7 @@ theorem convergence_simplified
                       2 * ∫ ω, @inner ℝ _ _ (U (m + 1) ω) (Sm ω) ∂μ +
                       ∫ ω, ‖Sm ω‖^2 ∂μ := by
                       rw [integral_add, integral_add hU_integrable (hcross_integrable.const_mul 2),
-                          integral_mul_left]
+                          integral_const_mul]
                       · exact hU_integrable.add (hcross_integrable.const_mul 2)
                       · exact hS_integrable
                   _ = ∫ ω, ‖U (m + 1) ω‖^2 ∂μ + 2 * 0 + ∫ ω, ‖Sm ω‖^2 ∂μ := by
@@ -1304,14 +1305,14 @@ theorem convergence_simplified
       intro k hk
       have hk_lt : k < n := Finset.mem_range.mp hk
       have h_le : ℱ (k + 1) ≤ ℱ n := ℱ.mono (Nat.succ_le_of_lt hk_lt)
-      exact ((asm.base.martingale_diff_adapted (k + 1)).const_smul (γ (k + 1))).mono h_le
+      exact (((asm.base.martingale_diff_adapted (k + 1)).mono h_le le_rfl).stronglyMeasurable).const_smul (γ (k + 1))
 
     -- Helper: S n is L² (and hence integrable)
     have hS_L2 : ∀ n, MemLp (S n) 2 μ := fun n => by
       apply memLp_finset_sum
       intro k _
       have hDM_sm : StronglyMeasurable[m0] (ΔM (k + 1)) :=
-        (asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1))
+        ((asm.base.martingale_diff_adapted (k + 1)).mono (ℱ.le (k + 1)) le_rfl).stronglyMeasurable
       have hDM_asm : AEStronglyMeasurable (ΔM (k + 1)) μ := hDM_sm.aestronglyMeasurable
       have hU_asm : AEStronglyMeasurable (fun ω => γ (k + 1) • ΔM (k + 1) ω) μ :=
         hDM_asm.const_smul (γ (k + 1))
@@ -1381,7 +1382,7 @@ theorem convergence_simplified
             -- U (m+1) is L² hence integrable
             have hU_m_L2 : MemLp (U (m + 1)) 2 μ := by
               have hDM_sm : StronglyMeasurable[m0] (ΔM (m + 1)) :=
-                (asm.base.martingale_diff_adapted (m + 1)).mono (ℱ.le (m + 1))
+                ((asm.base.martingale_diff_adapted (m + 1)).mono (ℱ.le (m + 1)) le_rfl).stronglyMeasurable
               have hDM_asm : AEStronglyMeasurable (ΔM (m + 1)) μ := hDM_sm.aestronglyMeasurable
               have hU_asm : AEStronglyMeasurable (fun ω => γ (m + 1) • ΔM (m + 1) ω) μ :=
                 hDM_asm.const_smul (γ (m + 1))
@@ -1521,7 +1522,7 @@ theorem convergence_simplified
         -- Use submartingale_nat: need to show (coord i n)² ≤ᵐ[μ] μ[(coord i (n+1))² | ℱ n]
         have h_mart := h_coord_martingale i
         -- The squared process is adapted (coord i n is ℱ n-measurable, so is its square)
-        have hadp_sq : Adapted ℱ (fun n ω => (coord i n ω)^2) := fun n =>
+        have hadp_sq : StronglyAdapted ℱ (fun n ω => (coord i n ω)^2) := fun n =>
           (hcoord_adapted i n).pow 2
         -- Each (coord i n)² is integrable (follows from L² bounds)
         -- coord i n = ⟪b i, S n⟫ and S n is L², so coord i n is L² by MemLp.const_inner

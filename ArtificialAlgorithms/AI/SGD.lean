@@ -13,6 +13,7 @@ open scoped RealInnerProductSpace
 variable {Ω : Type*} [m0 : MeasurableSpace Ω]
 variable (μ : Measure Ω) [IsProbabilityMeasure μ]
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
+  [MeasurableSpace E] [BorelSpace E] [SecondCountableTopology E]
 
 /-- The Stochastic Algorithm recursion defined in Eq (2.5):
 X_{n+1} = X_n - γ_{n+1} h(X_n) + γ_{n+1}(ΔM_{n+1} + R_{n+1}) -/
@@ -161,7 +162,7 @@ theorem convergence_stochastic_gradient_method
     -- Since V is C² it's continuous, and X n is F_n-measurable by X_adapted
     -- Composition of continuous with strongly measurable is strongly measurable
     intro n
-    exact asm.V_smooth.continuous.comp_stronglyMeasurable (asm.X_adapted n)
+    exact (asm.V_smooth.continuous.comp_stronglyMeasurable (asm.X_adapted n).stronglyMeasurable).measurable
 
   -- =====================================================
   -- SUBTASK 2: Prove V' = V ∘ X is integrable for all n
@@ -235,7 +236,7 @@ theorem convergence_stochastic_gradient_method
 
       -- Step 1: V(X_{n+1}) is AEStronglyMeasurable w.r.t. m0
       have hX_sm : StronglyMeasurable (X (n + 1)) :=
-        (asm.X_adapted (n + 1)).mono (ℱ.le (n + 1))
+        ((asm.X_adapted (n + 1)).mono (ℱ.le (n + 1)) le_rfl).stronglyMeasurable
       have hV'_meas : AEStronglyMeasurable (V' (n + 1)) μ :=
         (asm.V_smooth.continuous.comp_stronglyMeasurable hX_sm).aestronglyMeasurable
 
@@ -361,7 +362,7 @@ theorem convergence_stochastic_gradient_method
           have hint : IntervalIntegrable g' MeasureTheory.volume 0 1 := by
             apply Continuous.intervalIntegrable
             have hgradV_cont : Continuous gradV := by
-              have h := asm.V_smooth.continuous_fderiv (by decide : (1 : WithTop ℕ∞) ≤ 2)
+              have h := asm.V_smooth.continuous_fderiv (by decide : (2 : WithTop ℕ∞) ≠ 0)
               have heq : ∀ p, gradV p = (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := by
                 intro p; rw [← asm.V_grad_eq p, gradient]
               have : gradV = fun p => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := funext heq
@@ -393,7 +394,7 @@ theorem convergence_stochastic_gradient_method
           · exact intervalIntegrable_const
           · apply Continuous.intervalIntegrable
             have hgradV_cont : Continuous gradV := by
-              have h := asm.V_smooth.continuous_fderiv (by decide : (1 : WithTop ℕ∞) ≤ 2)
+              have h := asm.V_smooth.continuous_fderiv (by decide : (2 : WithTop ℕ∞) ≠ 0)
               have heq : ∀ p, gradV p = (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := by
                 intro p; rw [← asm.V_grad_eq p, gradient]
               have : gradV = fun p => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := funext heq
@@ -427,7 +428,7 @@ theorem convergence_stochastic_gradient_method
               MeasureTheory.volume 0 1 := by
             apply Continuous.intervalIntegrable
             have hgradV_cont : Continuous gradV := by
-              have h := asm.V_smooth.continuous_fderiv (by decide : (1 : WithTop ℕ∞) ≤ 2)
+              have h := asm.V_smooth.continuous_fderiv (by decide : (2 : WithTop ℕ∞) ≠ 0)
               have heq : ∀ p, gradV p = (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := by
                 intro p; rw [← asm.V_grad_eq p, gradient]
               have : gradV = fun p => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := funext heq
@@ -669,14 +670,14 @@ theorem convergence_stochastic_gradient_method
   -- =====================================================
   have α'_adapted : Adapted ℱ α' := by
     intro n
-    exact stronglyMeasurable_const
+    exact measurable_const
 
   -- =====================================================
   -- SUBTASK 4: Prove β' is adapted (trivial: zero)
   -- =====================================================
   have β'_adapted : Adapted ℱ β' := by
     intro n
-    exact stronglyMeasurable_const
+    exact measurable_const
 
   -- =====================================================
   -- SUBTASK 5: Prove U' is adapted
@@ -695,12 +696,12 @@ theorem convergence_stochastic_gradient_method
     intro n
     simp only [U']
     by_cases hn : n = 0
-    · simp [hn]; exact stronglyMeasurable_const
+    · simp [hn]
     · -- n > 0: need to show γ n * ⟨gradV(X(n-1)), h(X(n-1))⟩ is F_n-measurable
       simp [hn]
       -- X(n-1) is F_{n-1}-measurable, hence F_n-measurable by filtration monotonicity
       have hX_meas : StronglyMeasurable[ℱ n] (X (n - 1)) :=
-        (asm.X_adapted (n - 1)).mono (ℱ.mono (Nat.pred_le n))
+        ((asm.X_adapted (n - 1)).mono (ℱ.mono (Nat.pred_le n)) le_rfl).stronglyMeasurable
       -- gradV(X(n-1)) is measurable: V smooth ⟹ gradV = gradient V is continuous
       have gradV_cont : Continuous gradV := by
         -- From V_smooth (ContDiff ℝ 2 V), we get:
@@ -721,21 +722,21 @@ theorem convergence_stochastic_gradient_method
       have hinner_meas : StronglyMeasurable[ℱ n] (fun ω => @inner ℝ _ _ (gradV (X (n - 1) ω)) (h (X (n - 1) ω))) :=
         StronglyMeasurable.inner hgradV_meas hh_meas
       -- Scalar multiplication by constant preserves strong measurability
-      exact hinner_meas.const_smul (γ n)
+      exact (hinner_meas.const_smul (γ n)).measurable
 
   -- =====================================================
   -- SUBTASK 6: Prove predictability of α'_{n+1} (F_n-measurable)
   -- =====================================================
   have α'_predictable : Adapted ℱ (fun t => α' (t + 1)) := by
     intro n
-    exact stronglyMeasurable_const
+    exact measurable_const
 
   -- =====================================================
   -- SUBTASK 7: Prove predictability of β'_{n+1}
   -- =====================================================
   have β'_predictable : Adapted ℱ (fun t => β' (t + 1)) := by
     intro n
-    exact stronglyMeasurable_const
+    exact measurable_const
 
   -- =====================================================
   -- SUBTASK 8: Prove predictability of U'_{n+1}
@@ -754,7 +755,7 @@ theorem convergence_stochastic_gradient_method
     -- U'(n+1): since n+1 > 0, we get γ(n+1) * ⟨gradV(X n), h(X n)⟩
     simp [Nat.succ_ne_zero n]
     -- X n is F_n-measurable directly from X_adapted (no mono needed!)
-    have hX_meas : StronglyMeasurable[ℱ n] (X n) := asm.X_adapted n
+    have hX_meas : StronglyMeasurable[ℱ n] (X n) := (asm.X_adapted n).stronglyMeasurable
     -- gradV is continuous (from V_smooth: V is C², so ∇V is C¹, hence continuous)
     have gradV_cont : Continuous gradV := by
       -- From V_smooth (ContDiff ℝ 2 V): fderiv ℝ V is continuous
@@ -772,7 +773,7 @@ theorem convergence_stochastic_gradient_method
     have hinner_meas : StronglyMeasurable[ℱ n] (fun ω => @inner ℝ _ _ (gradV (X n ω)) (h (X n ω))) :=
       StronglyMeasurable.inner hgradV_meas hh_meas
     -- Scalar multiplication by constant preserves strong measurability
-    exact hinner_meas.const_smul (γ (n + 1))
+    exact (hinner_meas.const_smul (γ (n + 1))).measurable
 
   -- =====================================================
   -- SUBTASK 9: Prove V' ≥ 0
@@ -914,7 +915,7 @@ theorem convergence_stochastic_gradient_method
             (asm.V_smooth.continuous_fderiv (by decide))).congr asm.V_grad_eq
         -- X (t-1) is strongly measurable w.r.t. m0 (use Filtration.le and StronglyMeasurable.mono)
         have hX_sm : StronglyMeasurable (X (t - 1)) :=
-          (asm.X_adapted (t - 1)).mono (ℱ.le (t - 1))
+          ((asm.X_adapted (t - 1)).mono (ℱ.le (t - 1)) le_rfl).stronglyMeasurable
         have hX_asm : AEStronglyMeasurable (X (t - 1)) μ := hX_sm.aestronglyMeasurable
         -- Compositions with continuous functions are AEStronglyMeasurable
         have gradV_X_asm : AEStronglyMeasurable (fun ω => gradV (X (t - 1) ω)) μ :=
@@ -1146,7 +1147,7 @@ theorem convergence_stochastic_gradient_method
         have hint : IntervalIntegrable g' MeasureTheory.volume 0 1 := by
           apply Continuous.intervalIntegrable
           have hgradV_cont : Continuous gradV := by
-            have h := asm.V_smooth.continuous_fderiv (by decide : (1 : WithTop ℕ∞) ≤ 2)
+            have h := asm.V_smooth.continuous_fderiv (by decide : (2 : WithTop ℕ∞) ≠ 0)
             have heq : ∀ p, gradV p = (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := by
               intro p; rw [← asm.V_grad_eq p, gradient]
             have : gradV = fun p => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := funext heq
@@ -1185,7 +1186,7 @@ theorem convergence_stochastic_gradient_method
         · -- Integrability of the difference term
           apply Continuous.intervalIntegrable
           have hgradV_cont : Continuous gradV := by
-            have h := asm.V_smooth.continuous_fderiv (by decide : (1 : WithTop ℕ∞) ≤ 2)
+            have h := asm.V_smooth.continuous_fderiv (by decide : (2 : WithTop ℕ∞) ≠ 0)
             have heq : ∀ p, gradV p = (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := by
               intro p; rw [← asm.V_grad_eq p, gradient]
             have : gradV = fun p => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := funext heq
@@ -1227,7 +1228,7 @@ theorem convergence_stochastic_gradient_method
             MeasureTheory.volume 0 1 := by
           apply Continuous.intervalIntegrable
           have hgradV_cont : Continuous gradV := by
-            have h := asm.V_smooth.continuous_fderiv (by decide : (1 : WithTop ℕ∞) ≤ 2)
+            have h := asm.V_smooth.continuous_fderiv (by decide : (2 : WithTop ℕ∞) ≠ 0)
             have heq : ∀ p, gradV p = (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := by
               intro p; rw [← asm.V_grad_eq p, gradient]
             have : gradV = fun p => (InnerProductSpace.toDual ℝ E).symm (fderiv ℝ V p) := funext heq
@@ -1349,8 +1350,9 @@ theorem convergence_stochastic_gradient_method
         -- By induction on s. Base case: X_0 is F_0-measurable (assumed or trivial).
         -- Inductive case: X_{s+1} = X_s - γh(X_s) + γ(ΔM_{s+1} + R_{s+1})
         -- Each term is F_{s+1}-measurable by adaptedness of ΔM, R.
-        -- asm.X_adapted gives Adapted ℱ X, which is exactly ∀ s, StronglyMeasurable[ℱ s] (X s)
-        exact asm.X_adapted
+        -- asm.X_adapted gives Adapted ℱ X, which is ∀ s, Measurable[ℱ s] (X s)
+        intro s
+        exact (asm.X_adapted s).stronglyMeasurable
       -- SUB 17b.2: gradV(X_t) is F_t-strongly measurable
       have gradV_Xt_meas : StronglyMeasurable[ℱ t] (fun ω => gradV (X t ω)) := by
         -- gradV is continuous (from V_grad_lipschitz : ∃ L, 0 < L ∧ ∀ x y, ‖gradV x - gradV y‖ ≤ L * ‖x - y‖)
@@ -1402,12 +1404,12 @@ theorem convergence_stochastic_gradient_method
           have gradV_cont : Continuous gradV := by
             exact ((LinearIsometryEquiv.continuous _).comp
               (asm.V_smooth.continuous_fderiv (by decide))).congr asm.V_grad_eq
-          have hX_sm : StronglyMeasurable (X t) := (asm.X_adapted t).mono (ℱ.le t)
+          have hX_sm : StronglyMeasurable (X t) := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
           have hX_asm : AEStronglyMeasurable (X t) μ := hX_sm.aestronglyMeasurable
           have gradV_X_asm : AEStronglyMeasurable (fun ω => gradV (X t ω)) μ :=
             gradV_cont.comp_aestronglyMeasurable hX_asm
           have DeltaM_asm : AEStronglyMeasurable (ΔM (t + 1)) μ :=
-            (asm.martingale_diff_adapted (t + 1)).mono (ℱ.le (t + 1)) |>.aestronglyMeasurable
+            ((asm.martingale_diff_adapted (t + 1)).mono (ℱ.le (t + 1)) le_rfl).aestronglyMeasurable
           have inner_asm : AEStronglyMeasurable (fun ω => @inner ℝ _ _ (gradV (X t ω)) (ΔM (t + 1) ω)) μ :=
             gradV_X_asm.inner DeltaM_asm
           -- Step 2: Bound by (‖gradV‖² + ‖ΔM‖²)/2 using AM-GM and Cauchy-Schwarz
@@ -1459,7 +1461,7 @@ theorem convergence_stochastic_gradient_method
             have gradV_cont : Continuous gradV := by
               exact ((LinearIsometryEquiv.continuous _).comp
                 (asm.V_smooth.continuous_fderiv (by decide))).congr asm.V_grad_eq
-            have hX_sm : StronglyMeasurable (X t) := (asm.X_adapted t).mono (ℱ.le t)
+            have hX_sm : StronglyMeasurable (X t) := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
             have hX_asm : AEStronglyMeasurable (X t) μ := hX_sm.aestronglyMeasurable
             have gradV_X_asm : AEStronglyMeasurable (fun ω => gradV (X t ω)) μ :=
               gradV_cont.comp_aestronglyMeasurable hX_asm
@@ -1498,7 +1500,7 @@ theorem convergence_stochastic_gradient_method
               -- Use eLpNorm_condExp_le: eLpNorm (μ[f|m]) 2 μ ≤ eLpNorm f 2 μ
               -- ΔM is in L² by martingale_diff_L2
               have DeltaM_asm : AEStronglyMeasurable (ΔM (t + 1)) μ :=
-                (asm.martingale_diff_adapted (t + 1)).mono (ℱ.le (t + 1)) |>.aestronglyMeasurable
+                ((asm.martingale_diff_adapted (t + 1)).mono (ℱ.le (t + 1)) le_rfl).aestronglyMeasurable
               have DeltaM_L2 : MemLp (ΔM (t + 1)) 2 μ := by
                 rw [memLp_two_iff_integrable_sq_norm DeltaM_asm]
                 exact asm.martingale_diff_L2 t
@@ -1525,7 +1527,7 @@ theorem convergence_stochastic_gradient_method
           intro s hs hμs
           -- ΔM is L² hence integrable
           have DeltaM_asm : AEStronglyMeasurable (ΔM (t + 1)) μ :=
-            (asm.martingale_diff_adapted (t + 1)).mono (ℱ.le (t + 1)) |>.aestronglyMeasurable
+            ((asm.martingale_diff_adapted (t + 1)).mono (ℱ.le (t + 1)) le_rfl).aestronglyMeasurable
           have DeltaM_L2 : MemLp (ΔM (t + 1)) 2 μ := by
             rw [memLp_two_iff_integrable_sq_norm DeltaM_asm]; exact asm.martingale_diff_L2 t
           have DeltaM_int : Integrable (ΔM (t + 1)) μ := DeltaM_L2.integrable one_le_two
@@ -1536,7 +1538,7 @@ theorem convergence_stochastic_gradient_method
           have gradV_cont : Continuous gradV := ((LinearIsometryEquiv.continuous _).comp
             (asm.V_smooth.continuous_fderiv (by decide))).congr asm.V_grad_eq
           have hX_asm : AEStronglyMeasurable (X t) μ :=
-            ((asm.X_adapted t).mono (ℱ.le t)).aestronglyMeasurable
+            (((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable).aestronglyMeasurable
           have gradV_X_asm : AEStronglyMeasurable (fun ω => gradV (X t ω)) μ :=
             gradV_cont.comp_aestronglyMeasurable hX_asm
           have gradV_sq_int : Integrable (fun ω => ‖gradV (X t ω)‖^2) μ := by
@@ -1802,7 +1804,7 @@ theorem convergence_stochastic_gradient_method
         have R_sq_int : Integrable (fun ω => ‖R (t + 1) ω‖^2) μ := asm.remainder_L2 t
 
         -- 2. Get measurability
-        have hX_sm : StronglyMeasurable (X t) := (asm.X_adapted t).mono (ℱ.le t)
+        have hX_sm : StronglyMeasurable (X t) := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
         have h_cont : Continuous h := asm.h_continuous
         have h_X_sm : StronglyMeasurable (fun ω => h (X t ω)) :=
           h_cont.comp_stronglyMeasurable hX_sm
@@ -1835,7 +1837,7 @@ theorem convergence_stochastic_gradient_method
             have : AEStronglyMeasurable (fun ω => ‖X (t + 1) ω - X t ω‖^2) μ := by
               apply AEStronglyMeasurable.pow
               apply AEStronglyMeasurable.norm
-              exact ((asm.X_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable.sub
+              exact (((asm.X_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl).stronglyMeasurable).aestronglyMeasurable.sub
                 (hX_sm.aestronglyMeasurable)
             exact this) (ae_of_all _ fun ω => by
             rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact pw_bound ω)
@@ -1872,8 +1874,8 @@ theorem convergence_stochastic_gradient_method
             sum_int.const_mul _
 
           -- ‖h(X_t)‖² is ℱ_t-strongly measurable
-          -- First, X t is ℱ t-adapted, so (asm.X_adapted t) : StronglyMeasurable[ℱ t] (X t)
-          have hX_sm_Ft : StronglyMeasurable[ℱ t] (X t) := asm.X_adapted t
+          -- First, X t is ℱ t-adapted, so (asm.X_adapted t) : Measurable[ℱ t] (X t)
+          have hX_sm_Ft : StronglyMeasurable[ℱ t] (X t) := (asm.X_adapted t).stronglyMeasurable
           have h_X_sm_Ft : StronglyMeasurable[ℱ t] (fun ω => h (X t ω)) :=
             h_cont.comp_stronglyMeasurable hX_sm_Ft
           have h_sq_sm : StronglyMeasurable[ℱ t] (fun ω => ‖h (X t ω)‖^2) :=
@@ -2045,7 +2047,7 @@ theorem convergence_stochastic_gradient_method
               have := h_growth (X t ω); linarith [sq_nonneg ‖h (X t ω)‖]
             have bound_int : Integrable (fun ω => C_growth * (1 + V (X t ω))) μ :=
               one_plus_V_int.const_mul C_growth
-            have hX_sm := (asm.X_adapted t).mono (ℱ.le t)
+            have hX_sm := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
             have gradV_asm : AEStronglyMeasurable (fun ω => ‖gradV (X t ω)‖^2) μ := by
               apply AEStronglyMeasurable.pow
               apply AEStronglyMeasurable.norm
@@ -2054,11 +2056,11 @@ theorem convergence_stochastic_gradient_method
               rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact bound ω)
           have R_sq_int : Integrable (fun ω => ‖R (t + 1) ω‖^2) μ := asm.remainder_L2 t
           -- Now prove integrability of inner product using bound |⟨u,v⟩| ≤ (‖u‖² + ‖v‖²)/2
-          have hX_sm := (asm.X_adapted t).mono (ℱ.le t)
+          have hX_sm := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
           have gradV_X_asm : AEStronglyMeasurable (fun ω => gradV (X t ω)) μ :=
             gradV_cont.comp_aestronglyMeasurable hX_sm.aestronglyMeasurable
           have R_asm : AEStronglyMeasurable (R (t + 1)) μ :=
-            ((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable
+            (((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable
           have inner_asm : AEStronglyMeasurable
               (fun ω' => @inner ℝ _ _ (gradV (X t ω')) (R (t + 1) ω')) μ :=
             gradV_X_asm.inner R_asm
@@ -2113,7 +2115,7 @@ theorem convergence_stochastic_gradient_method
             have := h_growth (X t ω); linarith [sq_nonneg ‖h (X t ω)‖]
           have bound_int : Integrable (fun ω => C_growth * (1 + V (X t ω))) μ :=
             one_plus_V_int.const_mul C_growth
-          have hX_sm := (asm.X_adapted t).mono (ℱ.le t)
+          have hX_sm := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
           have gradV_asm : AEStronglyMeasurable (fun ω => ‖gradV (X t ω)‖^2) μ := by
             apply AEStronglyMeasurable.pow
             apply AEStronglyMeasurable.norm
@@ -2124,11 +2126,11 @@ theorem convergence_stochastic_gradient_method
         have sum_int : Integrable (fun ω => (‖gradV (X t ω)‖^2 + ‖R (t + 1) ω‖^2) / 2) μ :=
           (gradV_sq_int.add R_sq_int).div_const 2
         -- Integrability of the product ‖gradV‖ * ‖R‖ via bound by sum of squares
-        have hX_sm := (asm.X_adapted t).mono (ℱ.le t)
+        have hX_sm := ((asm.X_adapted t).mono (ℱ.le t) le_rfl).stronglyMeasurable
         have gradV_norm_asm : AEStronglyMeasurable (fun ω => ‖gradV (X t ω)‖) μ :=
           (gradV_cont.comp_aestronglyMeasurable hX_sm.aestronglyMeasurable).norm
         have R_norm_asm : AEStronglyMeasurable (fun ω => ‖R (t + 1) ω‖) μ :=
-          ((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable.norm
+          (((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable.norm
         have prod_norm_asm : AEStronglyMeasurable (fun ω => ‖gradV (X t ω)‖ * ‖R (t + 1) ω‖) μ :=
           gradV_norm_asm.mul R_norm_asm
         have prod_norm_int : Integrable (fun ω => ‖gradV (X t ω)‖ * ‖R (t + 1) ω‖) μ := by
@@ -2142,7 +2144,7 @@ theorem convergence_stochastic_gradient_method
         have gradV_X_asm : AEStronglyMeasurable (fun ω => gradV (X t ω)) μ :=
           gradV_cont.comp_aestronglyMeasurable hX_sm.aestronglyMeasurable
         have R_asm : AEStronglyMeasurable (R (t + 1)) μ :=
-          ((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable
+          (((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable
         have inner_asm : AEStronglyMeasurable
             (fun ω' => @inner ℝ _ _ (gradV (X t ω')) (R (t + 1) ω')) μ :=
           gradV_X_asm.inner R_asm
@@ -2166,13 +2168,13 @@ theorem convergence_stochastic_gradient_method
         have gradV_cont : Continuous gradV := by
           exact ((LinearIsometryEquiv.continuous _).comp
             (asm.V_smooth.continuous_fderiv (by decide))).congr asm.V_grad_eq
-        have hX_sm : StronglyMeasurable[ℱ t] (X t) := asm.X_adapted t
+        have hX_sm : StronglyMeasurable[ℱ t] (X t) := (asm.X_adapted t).stronglyMeasurable
         -- Step 1: Show ‖gradV (X t ·)‖ is ℱ t-strongly measurable
         have gradV_norm_sm : StronglyMeasurable[ℱ t] (fun ω' => ‖gradV (X t ω')‖) :=
           (gradV_cont.comp_stronglyMeasurable hX_sm).norm
         -- Step 2: Integrability of ‖R(t+1)‖
         have R_asm_t : AEStronglyMeasurable (R (t + 1)) μ :=
-          ((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable
+          (((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable
         have R_sq_int : Integrable (fun ω => ‖R (t + 1) ω‖^2) μ := asm.remainder_L2 t
         have R_memLp : MemLp (R (t + 1)) 2 μ := (memLp_two_iff_integrable_sq_norm R_asm_t).mpr R_sq_int
         have R_norm_int : Integrable (fun ω' => ‖R (t + 1) ω'‖) μ := R_memLp.norm.integrable one_le_two
@@ -2217,7 +2219,7 @@ theorem convergence_stochastic_gradient_method
         -- Since E[X|F] ≥ 0 for nonneg X, we get E[X|F] ≤ sqrt(E[X²|F])
         -- Establish integrability requirements
         have R_asm_t' : AEStronglyMeasurable (R (t + 1)) μ :=
-          ((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable
+          (((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable
         have R_sq_int' : Integrable (fun ω => ‖R (t + 1) ω‖^2) μ := asm.remainder_L2 t
         have R_memLp' : MemLp (R (t + 1)) 2 μ := (memLp_two_iff_integrable_sq_norm R_asm_t').mpr R_sq_int'
         have R_norm_int' : Integrable (fun ω' => ‖R (t + 1) ω'‖) μ := R_memLp'.norm.integrable one_le_two
@@ -2478,7 +2480,7 @@ theorem convergence_stochastic_gradient_method
       have gradV_cont : Continuous gradV := by
         exact ((LinearIsometryEquiv.continuous _).comp
           (asm.V_smooth.continuous_fderiv (by decide))).congr asm.V_grad_eq
-      have hX_sm : StronglyMeasurable[ℱ t] (X t) := asm.X_adapted t
+      have hX_sm : StronglyMeasurable[ℱ t] (X t) := (asm.X_adapted t).stronglyMeasurable
       have V_Xt_meas : StronglyMeasurable[ℱ t] (fun ω => V (X t ω)) :=
         asm.V_smooth.continuous.comp_stronglyMeasurable hX_sm
       have gradV_Xt_meas : StronglyMeasurable[ℱ t] (fun ω => gradV (X t ω)) :=
@@ -2521,7 +2523,7 @@ theorem convergence_stochastic_gradient_method
         have sum_int : Integrable (fun ω => (‖gradV (X t ω)‖^2 + ‖ΔM (t + 1) ω‖^2) / 2) μ :=
           (gradV_sq_int.add DM_sq_int).div_const 2
         have DM_asm : AEStronglyMeasurable (ΔM (t + 1)) μ :=
-          ((asm.martingale_diff_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable
+          (((asm.martingale_diff_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable
         have inner_asm : AEStronglyMeasurable
             (fun ω => @inner ℝ _ _ (gradV (X t ω)) (ΔM (t + 1) ω)) μ :=
           (gradV_Xt_meas.mono (ℱ.le t)).aestronglyMeasurable.inner DM_asm
@@ -2543,7 +2545,7 @@ theorem convergence_stochastic_gradient_method
         have sum_int : Integrable (fun ω => (‖gradV (X t ω)‖^2 + ‖R (t + 1) ω‖^2) / 2) μ :=
           (gradV_sq_int.add R_sq_int).div_const 2
         have R_asm : AEStronglyMeasurable (R (t + 1)) μ :=
-          ((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable
+          (((asm.remainder_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl)).aestronglyMeasurable
         have inner_asm : AEStronglyMeasurable
             (fun ω => @inner ℝ _ _ (gradV (X t ω)) (R (t + 1) ω)) μ :=
           (gradV_Xt_meas.mono (ℱ.le t)).aestronglyMeasurable.inner R_asm
@@ -2597,7 +2599,7 @@ theorem convergence_stochastic_gradient_method
           apply Integrable.const_mul
           exact (h_sq_int.add DeltaM_sq_int).add R_sq_int
         have diff_asm : AEStronglyMeasurable (fun ω => X (t + 1) ω - X t ω) μ :=
-          ((asm.X_adapted (t+1)).mono (ℱ.le (t+1))).aestronglyMeasurable.sub
+          (((asm.X_adapted (t+1)).mono (ℱ.le (t+1)) le_rfl).stronglyMeasurable).aestronglyMeasurable.sub
             (hX_sm.mono (ℱ.le t)).aestronglyMeasurable
         exact Integrable.mono' bound_int (diff_asm.norm.pow 2)
           (ae_of_all _ fun ω => by rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact bound ω)
@@ -3174,7 +3176,7 @@ theorem convergence_stochastic_gradient_method
       -- Step 4: Integrability for condExp_mono
       have DeltaM_sq_int : Integrable (fun ω => ‖ΔM (n + 1) ω‖^2) μ := asm.martingale_diff_L2 n
       have R_sq_int : Integrable (fun ω => ‖R (n + 1) ω‖^2) μ := asm.remainder_L2 n
-      have hX_sm : StronglyMeasurable (X n) := (asm.X_adapted n).mono (ℱ.le n)
+      have hX_sm : StronglyMeasurable (X n) := ((asm.X_adapted n).mono (ℱ.le n) le_rfl).stronglyMeasurable
       have h_X_sm : StronglyMeasurable (fun ω => h (X n ω)) :=
         asm.h_continuous.comp_stronglyMeasurable hX_sm
       have h_sq_int : Integrable (fun ω => ‖h (X n ω)‖^2) μ := by
@@ -3196,7 +3198,7 @@ theorem convergence_stochastic_gradient_method
           have : AEStronglyMeasurable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ := by
             apply AEStronglyMeasurable.pow
             apply AEStronglyMeasurable.norm
-            exact ((asm.X_adapted (n+1)).mono (ℱ.le (n+1))).aestronglyMeasurable.sub
+            exact ((asm.X_adapted (n+1)).mono (ℱ.le (n+1)) le_rfl).aestronglyMeasurable.sub
               hX_sm.aestronglyMeasurable
           exact this) (ae_of_all _ fun ω => by
           rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact increment_bound ω)
@@ -3219,7 +3221,7 @@ theorem convergence_stochastic_gradient_method
           (h_sq_int.add DeltaM_sq_int).add R_sq_int
 
         -- Step 2: ‖h(X_n)‖² is ℱ_n-strongly measurable
-        have hX_sm_Fn : StronglyMeasurable[ℱ n] (X n) := asm.X_adapted n
+        have hX_sm_Fn : StronglyMeasurable[ℱ n] (X n) := (asm.X_adapted n).stronglyMeasurable
         have h_X_sm_Fn : StronglyMeasurable[ℱ n] (fun ω => h (X n ω)) :=
           asm.h_continuous.comp_stronglyMeasurable hX_sm_Fn
         have h_sq_sm : StronglyMeasurable[ℱ n] (fun ω => ‖h (X n ω)‖^2) :=
@@ -3342,8 +3344,8 @@ theorem convergence_stochastic_gradient_method
       intro n
       -- Step 1: Establish integrability
       have incr_sq_int : Integrable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ := by
-        have hX_sm : StronglyMeasurable (X n) := (asm.X_adapted n).mono (ℱ.le n)
-        have hX_sm' : StronglyMeasurable (X (n + 1)) := (asm.X_adapted (n + 1)).mono (ℱ.le (n + 1))
+        have hX_sm : StronglyMeasurable (X n) := ((asm.X_adapted n).mono (ℱ.le n) le_rfl).stronglyMeasurable
+        have hX_sm' : StronglyMeasurable (X (n + 1)) := ((asm.X_adapted (n + 1)).mono (ℱ.le (n + 1)) le_rfl).stronglyMeasurable
         have h_X_sm : StronglyMeasurable (fun ω => h (X n ω)) :=
           asm.h_continuous.comp_stronglyMeasurable hX_sm
         have h_sq_int : Integrable (fun ω => ‖h (X n ω)‖^2) μ := by
@@ -3460,8 +3462,8 @@ theorem convergence_stochastic_gradient_method
       let f : ℕ → Ω → ENNReal := fun n ω => ENNReal.ofReal (‖X (n + 1) ω - X n ω‖^2)
       -- Step 1: Each f_n is measurable
       have hf_meas : ∀ n, AEMeasurable (f n) μ := fun n => by
-        have hX_sm : StronglyMeasurable (X n) := (asm.X_adapted n).mono (ℱ.le n)
-        have hX_sm' : StronglyMeasurable (X (n + 1)) := (asm.X_adapted (n + 1)).mono (ℱ.le (n + 1))
+        have hX_sm : StronglyMeasurable (X n) := ((asm.X_adapted n).mono (ℱ.le n) le_rfl).stronglyMeasurable
+        have hX_sm' : StronglyMeasurable (X (n + 1)) := ((asm.X_adapted (n + 1)).mono (ℱ.le (n + 1)) le_rfl).stronglyMeasurable
         have h_diff_sm : AEStronglyMeasurable (fun ω => X (n + 1) ω - X n ω) μ :=
           hX_sm'.aestronglyMeasurable.sub hX_sm.aestronglyMeasurable
         have h_norm_sq_meas : AEMeasurable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ :=
@@ -3473,8 +3475,8 @@ theorem convergence_stochastic_gradient_method
       have lintegral_eq : ∀ n, ∫⁻ ω, f n ω ∂μ = ENNReal.ofReal (∫ ω, ‖X (n + 1) ω - X n ω‖^2 ∂μ) := by
         intro n
         have incr_sq_int : Integrable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ := by
-          have hX_sm : StronglyMeasurable (X n) := (asm.X_adapted n).mono (ℱ.le n)
-          have hX_sm' : StronglyMeasurable (X (n + 1)) := (asm.X_adapted (n + 1)).mono (ℱ.le (n + 1))
+          have hX_sm : StronglyMeasurable (X n) := ((asm.X_adapted n).mono (ℱ.le n) le_rfl).stronglyMeasurable
+          have hX_sm' : StronglyMeasurable (X (n + 1)) := ((asm.X_adapted (n + 1)).mono (ℱ.le (n + 1)) le_rfl).stronglyMeasurable
           have h_X_sm : StronglyMeasurable (fun ω => h (X n ω)) :=
             asm.h_continuous.comp_stronglyMeasurable hX_sm
           have h_sq_int : Integrable (fun ω => ‖h (X n ω)‖^2) μ := by
@@ -3679,7 +3681,7 @@ theorem convergence_stochastic_gradient_method
       -- Step 4: Integrability for condExp_mono
       have DeltaM_sq_int : Integrable (fun ω => ‖ΔM (n + 1) ω‖^2) μ := asm.martingale_diff_L2 n
       have R_sq_int : Integrable (fun ω => ‖R (n + 1) ω‖^2) μ := asm.remainder_L2 n
-      have hX_sm : StronglyMeasurable (X n) := (asm.X_adapted n).mono (ℱ.le n)
+      have hX_sm : StronglyMeasurable (X n) := ((asm.X_adapted n).mono (ℱ.le n) le_rfl).stronglyMeasurable
       have h_X_sm : StronglyMeasurable (fun ω => h (X n ω)) :=
         asm.h_continuous.comp_stronglyMeasurable hX_sm
       have h_sq_int : Integrable (fun ω => ‖h (X n ω)‖^2) μ := by
@@ -3701,7 +3703,7 @@ theorem convergence_stochastic_gradient_method
           have : AEStronglyMeasurable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ := by
             apply AEStronglyMeasurable.pow
             apply AEStronglyMeasurable.norm
-            exact ((asm.X_adapted (n+1)).mono (ℱ.le (n+1))).aestronglyMeasurable.sub
+            exact ((asm.X_adapted (n+1)).mono (ℱ.le (n+1)) le_rfl).aestronglyMeasurable.sub
               hX_sm.aestronglyMeasurable
           exact this) (ae_of_all _ fun ω => by
           rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact increment_bound ω)
@@ -3724,7 +3726,7 @@ theorem convergence_stochastic_gradient_method
           (h_sq_int.add DeltaM_sq_int).add R_sq_int
 
         -- Step 2: ‖h(X_n)‖² is ℱ_n-strongly measurable
-        have hX_sm_Fn : StronglyMeasurable[ℱ n] (X n) := asm.X_adapted n
+        have hX_sm_Fn : StronglyMeasurable[ℱ n] (X n) := (asm.X_adapted n).stronglyMeasurable
         have h_X_sm_Fn : StronglyMeasurable[ℱ n] (fun ω => h (X n ω)) :=
           asm.h_continuous.comp_stronglyMeasurable hX_sm_Fn
         have h_sq_sm : StronglyMeasurable[ℱ n] (fun ω => ‖h (X n ω)‖^2) :=
@@ -3865,7 +3867,7 @@ theorem convergence_stochastic_gradient_method
       -- First establish integrability of ‖X (n + 1) - X n‖²
       have lhs_int : Integrable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ := by
         -- From cond_increment_bound proof context
-        have hX_sm : StronglyMeasurable (X n) := (asm.X_adapted n).mono (ℱ.le n)
+        have hX_sm : StronglyMeasurable (X n) := ((asm.X_adapted n).mono (ℱ.le n) le_rfl).stronglyMeasurable
         have h_X_sm : StronglyMeasurable (fun ω => h (X n ω)) :=
           asm.h_continuous.comp_stronglyMeasurable hX_sm
         have DeltaM_sq_int : Integrable (fun ω => ‖ΔM (n + 1) ω‖^2) μ := asm.martingale_diff_L2 n
@@ -3928,7 +3930,7 @@ theorem convergence_stochastic_gradient_method
           have : AEStronglyMeasurable (fun ω => ‖X (n + 1) ω - X n ω‖^2) μ := by
             apply AEStronglyMeasurable.pow
             apply AEStronglyMeasurable.norm
-            exact ((asm.X_adapted (n+1)).mono (ℱ.le (n+1))).aestronglyMeasurable.sub
+            exact ((asm.X_adapted (n+1)).mono (ℱ.le (n+1)) le_rfl).aestronglyMeasurable.sub
               hX_sm.aestronglyMeasurable
           exact this) (ae_of_all _ fun ω => by
           rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]; exact increment_bound ω)

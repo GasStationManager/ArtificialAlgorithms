@@ -76,7 +76,7 @@ def findMin (l : List Int) (h: l ≠ [])
           cases hz with
           | inl h_eq => 
             simp [h_eq]
-            exact le_of_not_le h_cond
+            exact not_le.mp h_cond |>.le
           | inr h_mem =>
             exact res.2.2 z h_mem⟩ 
 
