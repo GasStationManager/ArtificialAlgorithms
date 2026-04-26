@@ -13,3 +13,7 @@ require "leanprover-community" / "mathlib" @ git "v4.26.0"
 @[default_target]
 lean_lib «ArtificialAlgorithms» where
   -- add any library configuration options here
+
+@[default_target]
+lean_lib «Algolean» where
+  -- vendored mini-Algolean framework
