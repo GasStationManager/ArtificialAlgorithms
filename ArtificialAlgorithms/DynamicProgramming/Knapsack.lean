@@ -9,6 +9,9 @@ Prompt: "ultrathink to translate this code into Lean and save to knapsack.lean" 
 
 import Mathlib.Data.List.Basic
 import Mathlib.Tactic.Linarith
+import ArtificialAlgorithms.DynamicProgramming.Memoization
+
+open Memoization
 
 -- Basic function definitions
 def knapsack : List (Nat × Nat) → Nat → Nat
@@ -31,6 +34,53 @@ def knapsack_elements : List (Nat × Nat) → Nat → List (Nat × Nat)
         with_item
       else
         without
+
+abbrev KnapsackArg := List (Nat × Nat) × Nat
+
+def knapsackPair : KnapsackArg → Nat
+  | (l, limit) => knapsack l limit
+
+def knapsackMemoHelper (p : KnapsackArg) : StateM (WeakMHMap knapsackPair) {r : Nat // knapsackPair p = r} :=
+  match hp : p with
+  | ([], limit) =>
+      pure ⟨0, by simp [knapsackPair, knapsack]⟩
+  | ((weight, value) :: tail, limit) => do
+      let memo ← get
+      match WeakMHMap_find? knapsackPair memo p with
+      | some x =>
+          return ⟨x.val, by simpa [hp] using x.property⟩
+      | none =>
+          if hlt : limit < weight then
+            let r ← knapsackMemoHelper (tail, limit)
+            let m ← get
+            have hr : knapsack ((weight, value) :: tail) limit = r.val := by
+              rcases r with ⟨r', hr'⟩
+              simpa [knapsack, knapsackPair, hlt] using hr'
+            let cell : MCell knapsackPair := ⟨(p, r.val), by simpa [knapsackPair, hp] using hr⟩
+            set (m.insert p cell)
+            return ⟨r.val, hr⟩
+          else
+            let without ← knapsackMemoHelper (tail, limit)
+            let withItem ← knapsackMemoHelper (tail, limit - weight)
+            let r := max without.val (value + withItem.val)
+            let m ← get
+            have hr : knapsack ((weight, value) :: tail) limit = r := by
+              rcases without with ⟨without', hwithout⟩
+              rcases withItem with ⟨withItem', hwithItem⟩
+              simp [knapsack, hlt, r, knapsackPair] at hwithout hwithItem ⊢
+              simp [knapsack, hlt, r, hwithout, hwithItem]
+            let cell : MCell knapsackPair := ⟨(p, r), by simpa [knapsackPair, hp] using hr⟩
+            set (m.insert p cell)
+            return ⟨r, hr⟩
+
+
+def knapsackMemo (l : List (Nat × Nat)) (limit : Nat) : {r : Nat // knapsack l limit = r} :=
+  let hm : WeakMHMap knapsackPair := Batteries.mkHashMap
+  let r := knapsackMemoHelper (l, limit) hm
+  ⟨r.1.val, by simpa [knapsackPair] using r.1.property⟩
+
+theorem knapsackMemo_eq (l : List (Nat × Nat)) (limit : Nat) : (knapsackMemo l limit).val = knapsack l limit := by
+  exact (knapsackMemo l limit).property.symm
 
 -- Lemma: knapsack_elements always returns a sublist of the input
 theorem knapsackElementsSublist : ∀ (l : List (Nat × Nat)) (limit : Nat), List.Sublist (knapsack_elements l limit) l
